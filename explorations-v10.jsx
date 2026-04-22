@@ -185,11 +185,22 @@ const ExpN = () => {
 
   const LineItemsPanel = () => (
     <>
-      <SHead label="Columns" />
+      <SHead label="General settings"/>
+      {bundleItem && (
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
+          <div>
+            <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Bundle item pricing</div>
+            <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Groups bundle items with combined pricing</div>
+          </div>
+          <Tog on={bundleItem.on} onChange={()=>toggleLI(bundleItem.id)}/>
+        </div>
+      )}
+
+      <SHead label="Columns"/>
       <div style={{marginBottom:8}}>
         {lineItems.map((item,idx)=>{
           const isHov=hovLI===item.id;
-          if(item.special) return null; // rendered separately below
+          if(item.special) return null;
           return (
             <div key={item.id}
               draggable={item.drag}
@@ -224,31 +235,6 @@ const ExpN = () => {
           );
         })}
       </div>
-
-      {/* Bundle pricing — separate category */}
-      {bundleItem && (() => {
-        const isHov=hovLI===bundleItem.id;
-        return (
-          <>
-            <SHead label="Bundle pricing"/>
-            <div onMouseEnter={()=>setHovLI(bundleItem.id)} onMouseLeave={()=>setHovLI(null)}
-              style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 8px 0 14px',
-                background:isHov?C.grey10:'transparent',borderLeft:`3px solid ${isHov?C.blue:'transparent'}`,
-                opacity:bundleItem.on?1:0.45,transition:'background 100ms,border-color 100ms',minHeight:36}}>
-              <div style={{flex:1,display:'flex',flexDirection:'column',padding:'8px 0'}}>
-                <span style={{fontSize:13,color:C.black,fontFamily:'var(--font-body)'}}>{bundleItem.label}</span>
-                <span style={{fontSize:10,color:C.grey50,fontFamily:'var(--font-body)',marginTop:1}}>Groups bundle items with combined pricing</span>
-              </div>
-              <div style={{display:'flex',gap:3,opacity:isHov?1:0,transition:'opacity 150ms'}}>
-                <button onClick={()=>toggleLI(bundleItem.id)}
-                  style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',background:bundleItem.on?'transparent':C.grey20,border:`1px solid ${C.grey30}`,borderRadius:6,cursor:'pointer'}}>
-                  <FI n={bundleItem.on?'eye':'eye-slash'} sz={12} col={bundleItem.on?C.grey60:C.grey40}/>
-                </button>
-              </div>
-            </div>
-          </>
-        );
-      })()}
     </>
   );
 
