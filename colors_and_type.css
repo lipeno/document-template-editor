@@ -1,0 +1,212 @@
+/**
+ * Booqable Design System — Colors & Typography
+ * Source of truth: ui/themes/colors.js, ui/themes/app.js, ui/themes/public.js
+ * Figma: Style tokens + Web typography
+ */
+
+/* ───────────────────────────────────────────────
+   FONTS
+   Proxima Nova is the brand display + body face (app).
+   Roboto is used for the public-facing store/checkout.
+   Caveat is used for handwriting/doodle accents.
+   ─────────────────────────────────────────────── */
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Caveat:wght@400;700&display=swap");
+
+/* Proxima Nova — brand face (now using licensed brand files in /fonts) */
+@font-face { font-family: 'Proxima Nova'; src: url('fonts/ProximaNova-Light.otf')     format('opentype'), url('fonts/ProximaNova-Light.ttf')     format('truetype'); font-weight: 300; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Proxima Nova'; src: url('fonts/ProximaNova-LightIt.ttf')   format('truetype'); font-weight: 300; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Proxima Nova'; src: url('fonts/ProximaNova-Regular.otf')   format('opentype'), url('fonts/ProximaNova-Regular.ttf')   format('truetype'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Proxima Nova'; src: url('fonts/ProximaNova-RegularIt.ttf') format('truetype'); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Proxima Nova'; src: url('fonts/ProximaNova-Medium.ttf')    format('truetype'); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Proxima Nova'; src: url('fonts/ProximaNova-MediumIt.ttf')  format('truetype'); font-weight: 500; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Proxima Nova'; src: url('fonts/ProximaNova-Semibold.otf')  format('opentype'), url('fonts/ProximaNova-Semibold.ttf')  format('truetype'); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Proxima Nova'; src: url('fonts/ProximaNova-SemiboldIt.ttf')format('truetype'); font-weight: 600; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Proxima Nova'; src: url('fonts/ProximaNova-Bold.otf')      format('opentype'), url('fonts/ProximaNova-Bold.ttf')      format('truetype'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Proxima Nova'; src: url('fonts/ProximaNova-BoldIt.ttf')    format('truetype'); font-weight: 700; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Proxima Nova'; src: url('fonts/ProximaNova-Extrabold.otf') format('opentype'), url('fonts/ProximaNova-Extrabld.ttf')  format('truetype'); font-weight: 800; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Proxima Nova'; src: url('fonts/ProximaNova-ExtrabldIt.ttf')format('truetype'); font-weight: 800; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Proxima Nova'; src: url('fonts/ProximaNova-Black.otf')     format('opentype'), url('fonts/ProximaNova-Black.ttf')     format('truetype'); font-weight: 900; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Proxima Nova'; src: url('fonts/ProximaNova-BlackIt.ttf')   format('truetype'); font-weight: 900; font-style: italic; font-display: swap; }
+
+:root {
+  /* ─── PALETTE (Booqable swatches, from ui/themes/colors.js) ─── */
+  --blue-5:  #EDF5FF;  --blue-10: #E2EFFF;  --blue-20: #DDEBFF;  --blue-30: #BBDBFA;
+  --blue-40: #86C2FF;  --blue-50: #5A9FFF;  --blue-60: #136DEB;  --blue-70: #2466C3;
+  --blue-80: #1B3D6B;  --blue-90: #2C3847;
+
+  --green-5:  #E8FFEB; --green-10: #D8FFDD; --green-20: #C7FFCF; --green-30: #B1FCC1;
+  --green-40: #96FFAD; --green-50: #62DA7C; --green-60: #40A14F; --green-70: #1F772C;
+  --green-80: #0E491B; --green-90: #2D4030;
+
+  --orange-5:  #FFF2DE; --orange-10: #FFEACB; --orange-20: #FFE1B4; --orange-30: #FFDAA1;
+  --orange-40: #FFCF86; --orange-50: #FFB442; --orange-60: #E08700; --orange-70: #A34C00;
+  --orange-80: #593B0D; --orange-90: #423B2F;
+
+  --red-5:  #FFEDEF; --red-10: #FFE5E8; --red-20: #FFE0E3; --red-30: #FFB7B7;
+  --red-40: #FF8181; --red-50: #FF4252; --red-60: #E51C2C; --red-70: #C1000F;
+  --red-80: #670C13; --red-90: #4A3436;
+
+  --purple-5:  #F7F2FF; --purple-10: #F0E7FF; --purple-20: #EADEFF; --purple-30: #DDC8FF;
+  --purple-40: #C6A3FF; --purple-50: #966BDB; --purple-60: #623AA3; --purple-70: #4C248D;
+  --purple-80: #442872; --purple-90: #3B324A;
+
+  --grey-5:  #F4F9FF; --grey-10: #EDF1F5; --grey-20: #E0E4E8; --grey-30: #D6D9DB;
+  --grey-40: #A4A7A8; --grey-50: #546972; --grey-60: #415158; --grey-70: #333A40;
+  --grey-80: #2D3035; --grey-90: #1F2326;
+
+  --black: #131314;
+  --white: #FFFFFF;
+
+  /* ─── Navy (sidebar / dark chrome, from Figma) ─── */
+  --navy-deep:    #0C2747;  /* rgb(12,39,71) */
+  --navy:         #213B47;  /* rgb(33,59,71) */
+  --navy-soft:    #4F5661;  /* rgb(79,86,97) — secondary text in Figma */
+
+  /* ─── SEMANTIC — Primary (brand blue) ─── */
+  --primary-base:        var(--blue-60);
+  --primary-highlight:   var(--blue-70);
+  --primary-bg-1:        var(--blue-5);
+  --primary-bg-2:        var(--blue-20);
+  --primary-fg:          var(--white);
+  --primary-outline:     var(--blue-60);
+
+  /* ─── SEMANTIC — Status ─── */
+  --success-base: var(--green-50); --success-fg: var(--green-60); --success-bg: var(--green-5);  --success-outline: var(--green-70);
+  --warning-base: var(--orange-50);--warning-fg: var(--orange-60);--warning-bg: var(--orange-5); --warning-outline: var(--orange-60);
+  --danger-base:  var(--red-60);   --danger-fg:  var(--red-60);   --danger-bg:  var(--red-5);    --danger-outline:  var(--red-70);
+
+  /* ─── Backgrounds ─── */
+  --bg-base:      var(--grey-10);
+  --bg-surface:   var(--white);
+  --bg-subtle:    var(--grey-5);
+  --bg-hover:     rgba(0,0,0,0.07);
+  --bg-highlight: rgba(19,109,235,0.10);
+
+  /* ─── Text ─── */
+  --text-primary:    var(--black);
+  --text-secondary:  var(--grey-60);
+  --text-tertiary:   var(--grey-50);
+  --text-quaternary: var(--grey-40);
+  --text-link:       var(--blue-60);
+  --text-inverted:   var(--white);
+
+  /* ─── Borders / Dividers ─── */
+  --divider:       var(--grey-30);
+  --border:        var(--grey-30);
+  --border-hover:  var(--grey-40);
+  --border-focus:  var(--blue-60);
+
+  /* ─── Overlays ─── */
+  --overlay:       rgba(65,81,88,0.90);
+
+  /* ─── Spacing — 4px grid ─── */
+  --u-0_5: 2px;  --u-1: 4px;   --u-2: 8px;   --u-3: 12px;  --u-4: 16px;
+  --u-5:   20px; --u-6: 24px;  --u-7: 28px;  --u-8: 32px;  --u-9:  36px;
+  --u-10:  40px; --u-11: 44px; --u-12: 48px; --u-13: 52px; --u-14: 56px;
+  --u-15:  60px; --u-16: 64px;
+
+  --space-xxs: 2px; --space-xs: 4px; --space-xsplus: 8px;
+  --space-sm:  12px; --space-md: 16px; --space-mdplus: 20px;
+  --space-lg:  24px; --space-lgplus: 28px;
+  --space-xl:  32px; --space-xlplus: 44px;
+  --space-xxl: 48px; --space-xxxl: 64px;
+
+  /* ─── Radii ─── */
+  --radius-xxs: 2px; --radius-xs: 6px; --radius-sm: 6px;
+  --radius-md:  8px; --radius-mdplus: 12px;
+  --radius-lg:  18px; --radius-xl: 26px; --radius-xxl: 34px;
+  --radius-pill: 999px;
+
+  /* ─── Control heights ─── */
+  --ctrl-xs: 26px; --ctrl-sm: 38px; --ctrl-md: 42px; --ctrl-lg: 48px; --ctrl-xl: 66px;
+
+  /* ─── Shadows ─── */
+  --shadow-sm:     rgba(0,0,0,0.20) 0px 1px 2px 0px;
+  --shadow-md:     rgba(0,0,0,0.10) 0px 6px 14px 0px;
+  --shadow-lgplus: rgba(0,0,0,0.12) 0px 4px 10px 0px;
+  --shadow-xl:     rgba(0,0,0,0.12) 0px 8px 20px 0px;
+  --shadow-xxl:    rgba(0,0,0,0.20) 0px 4px 40px 0px;
+
+  /* ─── Layout constants ─── */
+  --nav-width:          41px;
+  --nav-width-expanded: 201px;
+  --sidebar-width:      220px;
+  --header-height:      62px;
+  --content-max:        1600px;
+
+  /* ─── TYPOGRAPHY ─── */
+  --font-body:        'Proxima Nova', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-public:      'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-handwriting: 'Caveat', cursive;
+  --font-mono:        ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  --fs-xs:     12px;  /* small meta / captions */
+  --fs-sm:     12px;
+  --fs-md:     14px;  /* DEFAULT body */
+  --fs-mdplus: 16px;
+  --fs-lg:     18px;  /* title 3 */
+  --fs-lgplus: 22px;  /* title 1 */
+  --fs-xl:     28px;  /* display medium / display bold */
+  --fs-xxl:    34px;
+  --fs-xxxl:   48px;
+
+  --fw-light:    300;
+  --fw-regular:  400;
+  --fw-medium:   500;
+  --fw-semibold: 600;
+  --fw-bold:     700;
+
+  --lh-tight:   1.2;
+  --lh-snug:    1.33;
+  --lh-default: 1.43;  /* 20/14 */
+  --lh-relaxed: 1.5;
+
+  --ls-tight: -0.01em;
+  --ls-body:   0;
+  --ls-small:  0.02em;
+}
+
+/* ─── SEMANTIC TYPE ROLES (from Web Typography figma) ─── */
+html, body { font-family: var(--font-body); color: var(--text-primary); font-size: var(--fs-md); line-height: var(--lh-default); -webkit-font-smoothing: antialiased; }
+
+.display-bold    { font: var(--fw-bold) var(--fs-xl)/36px var(--font-body); letter-spacing: 0; }
+.display-medium  { font: var(--fw-medium) var(--fs-xl)/36px var(--font-body); letter-spacing: 0; }
+
+.title-1-reg     { font: var(--fw-regular)  var(--fs-lgplus)/28px var(--font-body); }
+.title-1-medium  { font: var(--fw-medium)   var(--fs-lgplus)/28px var(--font-body); }
+.title-1-bold    { font: var(--fw-bold)     var(--fs-lgplus)/28px var(--font-body); }
+
+.title-2         { font: var(--fw-semibold) var(--fs-lg)/28px var(--font-body); }
+.title-2-bold    { font: var(--fw-bold)     var(--fs-lg)/28px var(--font-body); }
+
+.title-3         { font: var(--fw-semibold) var(--fs-mdplus)/24px var(--font-body); }
+.title-3-bold    { font: var(--fw-bold)     var(--fs-mdplus)/24px var(--font-body); }
+
+.body-lg         { font: var(--fw-regular)  var(--fs-mdplus)/24px var(--font-body); }
+.body-lg-medium  { font: var(--fw-semibold) var(--fs-mdplus)/24px var(--font-body); }
+.body-lg-bold    { font: var(--fw-bold)     var(--fs-mdplus)/24px var(--font-body); }
+
+.body-md         { font: var(--fw-regular)  var(--fs-md)/20px var(--font-body); }
+.body-md-medium  { font: var(--fw-semibold) var(--fs-md)/20px var(--font-body); }
+.body-md-bold    { font: var(--fw-bold)     var(--fs-md)/20px var(--font-body); }
+
+.body-sm         { font: var(--fw-regular)  var(--fs-sm)/16px var(--font-body); letter-spacing: var(--ls-small); }
+.body-sm-medium  { font: var(--fw-semibold) var(--fs-sm)/16px var(--font-body); letter-spacing: var(--ls-small); }
+.body-sm-bold    { font: var(--fw-bold)     var(--fs-sm)/16px var(--font-body); letter-spacing: var(--ls-small); }
+
+.guidance        { font: var(--fw-bold) var(--fs-mdplus)/24px var(--font-handwriting); color: var(--primary-base); }
+
+/* Default HTML roles */
+h1 { font: var(--fw-bold)     var(--fs-xl)/36px var(--font-body); margin: 0 0 var(--space-md); }
+h2 { font: var(--fw-bold)     var(--fs-lgplus)/28px var(--font-body); margin: 0 0 var(--space-sm); }
+h3 { font: var(--fw-semibold) var(--fs-lg)/28px var(--font-body); margin: 0 0 var(--space-sm); }
+h4 { font: var(--fw-semibold) var(--fs-mdplus)/24px var(--font-body); margin: 0 0 var(--space-xs); }
+p  { font: var(--fw-regular)  var(--fs-md)/20px var(--font-body); margin: 0 0 var(--space-sm); }
+small { font-size: var(--fs-sm); letter-spacing: var(--ls-small); color: var(--text-secondary); }
+code  { font-family: var(--font-mono); font-size: 0.9em; background: var(--grey-10); padding: 1px 4px; border-radius: var(--radius-xxs); }
+a     { color: var(--text-link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ─── FONT AWESOME 6 PRO (CDN substitute: Font Awesome 6 Free)
+   FLAG: the codebase uses the paid Font Awesome 6 Pro with style 'far' (regular).
+   The Free CDN substitute below covers most icons. ─── */
