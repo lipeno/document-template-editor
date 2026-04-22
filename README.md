@@ -14,11 +14,16 @@ The files in this bundle are **design references created as React/HTML prototype
 ## Running the Prototype Locally
 
 ```bash
-# Just open index.html in a browser — no build step needed.
-# Because fonts are loaded from /fonts/ via @font-face, you need a local server:
-npx serve .
-# then open http://localhost:3000
+# Install the tiny local dev server once:
+npm install
+
+# Run the prototype with live reload:
+npm run dev
+
+# Then open http://localhost:3000
 ```
+
+This dev server watches the prototype files and refreshes the browser automatically when you edit the HTML, JSX, or CSS.
 
 The prototype requires an internet connection for:
 - Font Awesome icons (`kit.fontawesome.com`) — replace with your internal FA Pro setup
