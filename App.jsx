@@ -1021,7 +1021,8 @@ const ExpN = () => {
                 <thead><tr style={{borderBottom:`2px solid ${docCfg.primaryColor}`}}>
                   {visLICols.map(col=>(
                     <th key={col.id} style={{padding:'3px 4px',fontSize:7,fontWeight:700,color:docCfg.primaryColor,textTransform:'uppercase',letterSpacing:1,
-                      textAlign:COL_DATA[col.id]?.align||'right',whiteSpace:'nowrap'}}>
+                      textAlign:COL_DATA[col.id]?.align||'right',whiteSpace:'nowrap',
+                      background:col.id===hovLI?C.blue5:'transparent',transition:'background 100ms'}}>
                       {COL_DATA[col.id]?.label||col.label}
                     </th>
                   ))}
@@ -1034,7 +1035,8 @@ const ExpN = () => {
                           <td key={col.id} style={{padding:col.id==='image'?'2px 4px':'4px',fontSize:8,
                             color:COL_DATA[col.id]?.align==='left'?C.black:C.grey60,
                             textAlign:COL_DATA[col.id]?.align||'right',
-                            whiteSpace:['image','barcode','qr'].includes(col.id)?'normal':'nowrap'}}>
+                            whiteSpace:['image','barcode','qr'].includes(col.id)?'normal':'nowrap',
+                            background:col.id===hovLI?C.blue5:'transparent',transition:'background 100ms'}}>
                             {renderCell(col,row)}
                           </td>
                         ))}
@@ -1053,7 +1055,8 @@ const ExpN = () => {
                               <td key={col.id} style={{padding:col.id==='image'?'2px 4px':'4px',fontSize:8,
                                 color:COL_DATA[col.id]?.align==='left'?C.black:C.grey60,
                                 textAlign:COL_DATA[col.id]?.align||'right',
-                                whiteSpace:['image','barcode','qr'].includes(col.id)?'normal':'nowrap'}}>
+                                whiteSpace:['image','barcode','qr'].includes(col.id)?'normal':'nowrap',
+                                background:col.id===hovLI?C.blue5:'transparent',transition:'background 100ms'}}>
                                 {renderCell(col,row)}
                               </td>
                             ))}
@@ -1081,6 +1084,7 @@ const ExpN = () => {
                                 color:COL_DATA[col.id]?.align==='left'?C.grey60:C.grey50,
                                 textAlign:COL_DATA[col.id]?.align||'right',
                                 whiteSpace:['image','barcode','qr'].includes(col.id)?'normal':'nowrap',
+                                background:col.id===hovLI?C.blue5:'transparent',transition:'background 100ms',
                                 ...(ci===0?{boxShadow:`inset 2px 0 0 ${C.grey30}`}:{})}}>
                                 {renderCell(col,krow)}
                               </td>
@@ -1094,6 +1098,7 @@ const ExpN = () => {
                               <td key={col.id} style={{padding:'3px 4px',fontSize:7,fontWeight:600,
                                 color:ci===0?C.grey50:C.grey50,
                                 textAlign:COL_DATA[col.id]?.align||'right',whiteSpace:'nowrap',
+                                background:col.id===hovLI?C.blue5:'transparent',transition:'background 100ms',
                                 ...(ci===0?{boxShadow:`inset 2px 0 0 ${C.grey30}`}:{})}}>
                                 {ci===0?'Kit total':col.id==='price_total'?`$${tp}`:col.id==='tax'?`$${tt}`:''}
                               </td>
@@ -1162,23 +1167,37 @@ const ExpN = () => {
         <div style={{background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,overflow:'visible',minHeight:pageDim.h,display:'flex',flexDirection:'column',justifyContent:'space-between'}}>
           <div>
             {visLICols.length>0&&(
-              <div style={{padding:'8px 22px 12px',overflowX:'auto'}}>
-                <table style={{width:'100%',borderCollapse:'collapse'}}>
-                  <tbody>
-                    {page2Rows.map((row,i)=>(
-                      <tr key={i} style={{borderBottom:`1px solid ${C.grey20}`}}>
-                        {visLICols.map((col,ci)=>(
-                          <td key={col.id} style={{padding:col.id==='image'?'2px 4px':'4px',fontSize:8,
-                            color:COL_DATA[col.id]?.align==='left'?C.black:C.grey60,
-                            textAlign:COL_DATA[col.id]?.align||'right',
-                            whiteSpace:['image','barcode','qr'].includes(col.id)?'normal':'nowrap'}}>
-                            {renderCell(col,row)}
-                          </td>
+              <div style={{position:'relative'}}
+                onMouseEnter={()=>isEdit&&setHovPrev('lineitems')}
+                onMouseLeave={()=>isEdit&&setHovPrev(null)}>
+                <div onClick={()=>isEdit&&setEditing('lineitems')}
+                  style={{cursor:isEdit?'pointer':'default',position:'relative'}}>
+                  {isEdit&&editing==='lineitems'&&(
+                    <div style={{position:'absolute',top:3,bottom:3,left:14,right:14,border:`2px solid ${C.blue}`,borderRadius:3,pointerEvents:'none',zIndex:2}}/>
+                  )}
+                  {isEdit&&(hovPrev==='lineitems'||hovSec==='lineitems')&&editing!=='lineitems'&&(
+                    <div style={{position:'absolute',top:3,bottom:3,left:14,right:14,border:`1px dashed ${C.grey40}`,borderRadius:3,pointerEvents:'none',zIndex:2}}/>
+                  )}
+                  <div style={{padding:'8px 22px 12px',overflowX:'auto'}}>
+                    <table style={{width:'100%',borderCollapse:'collapse'}}>
+                      <tbody>
+                        {page2Rows.map((row,i)=>(
+                          <tr key={i} style={{borderBottom:`1px solid ${C.grey20}`}}>
+                            {visLICols.map((col,ci)=>(
+                              <td key={col.id} style={{padding:col.id==='image'?'2px 4px':'4px',fontSize:8,
+                                color:COL_DATA[col.id]?.align==='left'?C.black:C.grey60,
+                                textAlign:COL_DATA[col.id]?.align||'right',
+                                whiteSpace:['image','barcode','qr'].includes(col.id)?'normal':'nowrap',
+                                background:col.id===hovLI?C.blue5:'transparent',transition:'background 100ms'}}>
+                                {renderCell(col,row)}
+                              </td>
+                            ))}
+                          </tr>
                         ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             )}
             {totalsSec&&renderSection(totalsSec)}
