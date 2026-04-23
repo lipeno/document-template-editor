@@ -103,7 +103,7 @@ const ExpN = () => {
   const getBlock = id => ({text:'',textStyle:'normal',bold:false,italic:false,underline:false,strikethrough:false,bulletList:false,numberedList:false,align:'left',...(blockData[id]||{})});
 
   const doReset = () => {
-    setDocCfg({primaryColor:'#136DEB',showLogo:true,showContact:true,showDates:true,showLocation:true,showDiscount:true,showDeposit:false,footerNote:true,font:'Inter',logoAlign:'Left'});
+    setDocCfg({primaryColor:'#136DEB',showLogo:true,showContact:true,showDates:true,showLocation:true,showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,footerNote:true,font:'Inter',logoAlign:'Left'});
     setDateFormat('datetime'); setPageSize('A4'); setDocNumLevel('global'); setDueDatesOn(false); setCustomCSS('');
     setBlockData({});
     setResetModal(false);
@@ -111,8 +111,10 @@ const ExpN = () => {
 
   const [docCfg, setDocCfg] = React.useState({
     primaryColor:'#136DEB',showLogo:true,showContact:true,logoAlign:'Left',
-    showDates:true,showLocation:true,showDiscount:true,showDeposit:false,footerNote:true,
-    font:'Inter',
+    showDates:true,showLocation:true,
+    showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,
+    showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,
+    footerNote:true,font:'Inter',
   });
   const setDoc = (k,v) => setDocCfg(p=>({...p,[k]:v!==undefined?v:!p[k]}));
 
@@ -400,14 +402,20 @@ const ExpN = () => {
     lineitems: <LineItemsPanel/>,
     totals: <>
       <SHead label="General settings"/>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
-        <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Discount line</div>
-        <Tog on={docCfg.showDiscount} onChange={()=>setDoc('showDiscount')}/>
-      </div>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
-        <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Security deposit</div>
-        <Tog on={docCfg.showDeposit} onChange={()=>setDoc('showDeposit')}/>
-      </div>
+      {[
+        ['Subtotal',          'showSubtotal',        false],
+        ['Total discount',    'showTotalDiscount',   false],
+        ['Applied coupons',   'showAppliedCoupons',  false],
+        ['Security deposit',  'showSecurityDeposit', false],
+        ['Custom charge',     'showCustomCharge',    false],
+        ['Tax breakdown',     'showTaxBreakdown',    false],
+        ['Total incl. taxes', 'showTotalInclTaxes',  false],
+      ].map(([label,key,bold])=>(
+        <div key={key} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)',fontWeight:bold?700:400}}>{label}</div>
+          <Tog on={docCfg[key]} onChange={()=>setDoc(key)}/>
+        </div>
+      ))}
     </>,
     footer: <>
       <SHead label="General settings"/>
@@ -844,10 +852,18 @@ const ExpN = () => {
           <SectionWrap key="totals" id="totals" label="Totals & fees">
             <div style={{padding:'8px 22px 14px',display:'flex',justifyContent:'flex-end',borderTop:`1px solid ${C.grey20}`}}>
               <div style={{width:140}}>
-                {[['Subtotal','$431'],['Tax (15%)','$36'],docCfg.showDiscount&&['Discount','-$20'],docCfg.showDeposit&&['Deposit','-$100'],['Total','$467']].filter(Boolean).map(([l,v],i,arr)=>(
-                  <div key={l} style={{display:'flex',justifyContent:'space-between',padding:'2px 0',borderTop:i===arr.length-1?`1px solid ${C.grey20}`:'none',marginTop:i===arr.length-1?4:0}}>
-                    <span style={{fontSize:8,color:i===arr.length-1?C.black:C.grey50,fontWeight:i===arr.length-1?700:400}}>{l}</span>
-                    <span style={{fontSize:8,color:i===arr.length-1?C.black:C.grey50,fontWeight:i===arr.length-1?700:400}}>{v}</span>
+                {[
+                  docCfg.showSubtotal        && ['Subtotal',           '$431',  false],
+                  docCfg.showTotalDiscount   && ['Total discount',     '-$20',  false],
+                  docCfg.showAppliedCoupons  && ['Applied coupons',    '-$10',  false],
+                  docCfg.showSecurityDeposit && ['Security deposit',   '-$100', false],
+                  docCfg.showCustomCharge    && ['Custom charge',      '$15',   false],
+                  docCfg.showTaxBreakdown    && ['Tax (15%)',          '$36',   false],
+                  docCfg.showTotalInclTaxes  && ['Total incl. taxes',  '$352',  true],
+                ].filter(Boolean).map(([l,v,bold],i,arr)=>(
+                  <div key={l} style={{display:'flex',justifyContent:'space-between',padding:'2px 0',borderTop:bold?`1px solid ${C.grey20}`:'none',marginTop:bold?4:0}}>
+                    <span style={{fontSize:8,color:bold?C.black:C.grey50,fontWeight:bold?700:400}}>{l}</span>
+                    <span style={{fontSize:8,color:bold?C.black:C.grey50,fontWeight:bold?700:400}}>{v}</span>
                   </div>
                 ))}
               </div>
