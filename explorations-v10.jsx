@@ -103,7 +103,7 @@ const ExpN = () => {
   const getBlock = id => ({text:'',textStyle:'normal',bold:false,italic:false,underline:false,strikethrough:false,bulletList:false,numberedList:false,align:'left',...(blockData[id]||{})});
 
   const doReset = () => {
-    setDocCfg({primaryColor:'#136DEB',showLogo:true,showContact:true,showDates:true,showLocation:true,showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,footerNote:true,font:'Inter',logoAlign:'Left'});
+    setDocCfg({primaryColor:'#136DEB',showLogo:true,showContact:true,showDates:true,showLocation:true,showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,footerShowNotes:true,footerCompanyDetails:true,footerContactDetails:true,footerVatNumber:true,footerPaymentDetails:true,footerPageNumbers:true,font:'Inter',logoAlign:'Left'});
     setDateFormat('datetime'); setPageSize('A4'); setDocNumLevel('global'); setDueDatesOn(false); setCustomCSS('');
     setBlockData({});
     setResetModal(false);
@@ -114,12 +114,16 @@ const ExpN = () => {
     showDates:true,showLocation:true,
     showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,
     showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,
-    footerNote:true,font:'Inter',
+    footerShowNotes:true,footerCompanyDetails:true,footerContactDetails:true,footerVatNumber:true,footerPaymentDetails:true,footerPageNumbers:true,
+    font:'Inter',
   });
   const setDoc = (k,v) => setDocCfg(p=>({...p,[k]:v!==undefined?v:!p[k]}));
 
   const isEdit = mode==='edit';
   const ZOOM_STEPS=[0.5,0.67,0.75,0.9,1,1.1,1.25,1.5];
+  // Page dimensions in CSS px at 72 DPI (PDF standard points)
+  const PAGE_DIMS = {A4:{w:595,h:842},A5:{w:420,h:595},Letter:{w:612,h:792},Legal:{w:612,h:1008}};
+  const pageDim = PAGE_DIMS[pageSize] || PAGE_DIMS.A4;
   const zoomIn  = () => setZoom(z=>{const i=ZOOM_STEPS.findIndex(s=>s>z);return i>=0?ZOOM_STEPS[i]:z;});
   const zoomOut = () => setZoom(z=>{const r=[...ZOOM_STEPS].reverse();const i=r.findIndex(s=>s<z);return i>=0?r[i]:z;});
 
@@ -420,8 +424,28 @@ const ExpN = () => {
     footer: <>
       <SHead label="General settings"/>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
-        <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Payment note</div>
-        <Tog on={docCfg.footerNote} onChange={()=>setDoc('footerNote')}/>
+        <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Show notes</div>
+        <Tog on={docCfg.footerShowNotes} onChange={()=>setDoc('footerShowNotes')}/>
+      </div>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
+        <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Company details</div>
+        <Tog on={docCfg.footerCompanyDetails} onChange={()=>setDoc('footerCompanyDetails')}/>
+      </div>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
+        <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Contact details</div>
+        <Tog on={docCfg.footerContactDetails} onChange={()=>setDoc('footerContactDetails')}/>
+      </div>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
+        <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>VAT number</div>
+        <Tog on={docCfg.footerVatNumber} onChange={()=>setDoc('footerVatNumber')}/>
+      </div>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
+        <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Payment details</div>
+        <Tog on={docCfg.footerPaymentDetails} onChange={()=>setDoc('footerPaymentDetails')}/>
+      </div>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
+        <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Page numbers</div>
+        <Tog on={docCfg.footerPageNumbers} onChange={()=>setDoc('footerPageNumbers')}/>
       </div>
     </>,
   };
@@ -632,9 +656,18 @@ const ExpN = () => {
   // Visible line item columns in order
   const visLICols = lineItems.filter(i=>i.on&&!i.special&&COL_DATA[i.id]);
   const liRows = [
-    {name:'Canon EOS R5',  sku:'R5-001', qty:'2', period:'7 days', unit_price:'$149', charge_lbl:'1 day', discount:'—', coupons:'—', tax:'$22', price_total:'$320', item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-    {name:'Tripod & Head', sku:'TRP-02', qty:'1', period:'7 days', unit_price:'$49',  charge_lbl:'Fixed', discount:'—', coupons:'—', tax:'$7',  price_total:'$56',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-    {name:'Memory Cards',  sku:'MEM-04', qty:'4', period:'7 days', unit_price:'$12',  charge_lbl:'1 day', discount:'—', coupons:'—', tax:'$7',  price_total:'$55',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    {name:'Canon EOS R5',      sku:'R5-001',  qty:'2', period:'7 days', unit_price:'$149', charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$22', price_total:'$320', item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    {name:'Tripod & Head',     sku:'TRP-02',  qty:'1', period:'7 days', unit_price:'$49',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$7',  price_total:'$56',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    {name:'Memory Cards',      sku:'MEM-04',  qty:'4', period:'7 days', unit_price:'$12',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$7',  price_total:'$55',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    {name:'Prime Lens 85mm',   sku:'LNS-85',  qty:'1', period:'7 days', unit_price:'$59',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$9',  price_total:'$68',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    {name:'Zoom Lens 24-70mm', sku:'LNS-24',  qty:'1', period:'7 days', unit_price:'$79',  charge_lbl:'1 day',  discount:'10%', coupons:'—', tax:'$10', price_total:'$81',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    {name:'LED Panel 600',     sku:'LED-600', qty:'3', period:'7 days', unit_price:'$35',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$15', price_total:'$120', item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    {name:'Softbox Kit',       sku:'SBX-02',  qty:'2', period:'7 days', unit_price:'$25',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$7',  price_total:'$57',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    {name:'Audio Recorder',    sku:'AUD-07',  qty:'1', period:'7 days', unit_price:'$45',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$7',  price_total:'$52',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    {name:'Boom Pole & Mic',   sku:'MIC-03',  qty:'1', period:'7 days', unit_price:'$29',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$4',  price_total:'$33',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    {name:'C-Stand Set (×4)',  sku:'CST-04',  qty:'4', period:'7 days', unit_price:'$15',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$9',  price_total:'$69',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    {name:'Sandbags (×10)',    sku:'SND-10',  qty:'1', period:'7 days', unit_price:'$18',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$3',  price_total:'$21',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    {name:'Apple Boxes (×6)',  sku:'APL-06',  qty:'1', period:'7 days', unit_price:'$12',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$2',  price_total:'$14',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
   ];
 
   // ── Visual column renderers ───────────────────────────────
@@ -752,100 +785,232 @@ const ExpN = () => {
     return row[col.id]||'—';
   };
 
-  const DocPreview = () => (
-    <div style={{background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,overflow:'visible'}}>
-      {sections.map(s=>{
-        if(s.id==='header') return (
-          <SectionWrap key="header" id="header" label="Header">
-            <div style={{padding:'18px 22px 14px',borderBottom:`1px solid ${C.grey20}`}}>
-              {(() => {
-                const align = docCfg.logoAlign || 'Left';
-                const LogoEl = docCfg.showLogo ? (
-                  <div style={{width:68,height:20,background:docCfg.primaryColor,borderRadius:3,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                    <span style={{color:'#fff',fontSize:7,fontWeight:700,letterSpacing:1}}>LOGO</span>
+  const DocPreview = () => {
+    const totalPages = 2;
+    const footerSec = sections.find(s=>s.id==='footer');
+    const footerVis = footerSec?.visible ?? true;
+    const hasFooterContent = footerVis && (docCfg.footerShowNotes||docCfg.footerCompanyDetails||docCfg.footerContactDetails||docCfg.footerVatNumber||docCfg.footerPaymentDetails);
+    const hasPageNumbers = footerVis && docCfg.footerPageNumbers;
+
+    // Lightweight wrapper for footer-linked elements (no add-section buttons)
+    const FooterWrap = ({children}) => {
+      const isActive = isEdit && editing==='footer';
+      const isHighlighted = isEdit && (hovPrev==='footer'||hovSec==='footer');
+      return (
+        <div onClick={()=>isEdit&&setEditing('footer')}
+          onMouseEnter={()=>isEdit&&setHovPrev('footer')}
+          onMouseLeave={()=>isEdit&&setHovPrev(null)}
+          style={{position:'relative',cursor:isEdit?'pointer':'default',opacity:footerVis?1:0.22,transition:'opacity 200ms'}}>
+          {isActive&&<div style={{position:'absolute',top:2,bottom:2,left:14,right:14,border:`2px solid ${C.blue}`,borderRadius:3,pointerEvents:'none',zIndex:2}}/>}
+          {isHighlighted&&!isActive&&<div style={{position:'absolute',top:2,bottom:2,left:14,right:14,border:`1px dashed ${C.grey40}`,borderRadius:3,pointerEvents:'none',zIndex:2}}/>}
+          {(isHighlighted||isActive)&&(
+            <div style={{position:'absolute',top:4,right:4,zIndex:10}}>
+              <div style={{height:22,padding:'0 8px',background:C.blue,borderRadius:4,display:'flex',alignItems:'center',gap:5,color:'#fff',fontSize:10,fontWeight:600,fontFamily:'var(--font-body)',boxShadow:'0 1px 4px rgba(0,0,0,.15)'}}>
+                <FI n="pen" sz={9} col="#fff"/> Footer
+              </div>
+            </div>
+          )}
+          {children}
+        </div>
+      );
+    };
+
+    const PageNumRow = ({page}) => !hasPageNumbers ? null : (
+      <FooterWrap>
+        <div style={{padding:'5px 22px',borderTop:`1px solid ${C.grey20}`,fontSize:8,color:C.grey50,textAlign:'right'}}>
+          Page {page} of {totalPages}
+        </div>
+      </FooterWrap>
+    );
+
+    const FooterContent = () => !hasFooterContent ? null : (
+      <FooterWrap>
+        <div style={{padding:'8px 22px',background:C.bg,borderTop:`1px solid ${C.grey20}`,fontSize:8,color:C.grey50,display:'flex',flexDirection:'column',gap:3}}>
+          {docCfg.footerShowNotes && <div>Thank you for your business.</div>}
+          {docCfg.footerCompanyDetails && <div>Acme Rentals Inc. · 123 Main St, Springfield</div>}
+          {docCfg.footerContactDetails && <div>hello@acmerentals.com · +1 555 000 1234</div>}
+          {docCfg.footerVatNumber && <div>VAT: GB123456789</div>}
+          {docCfg.footerPaymentDetails && <div>Payment due within 30 days. IBAN: GB00 BARC 1234 5678 9012 34</div>}
+        </div>
+      </FooterWrap>
+    );
+
+    const page2Rows = [
+      {name:'Backdrop Set (White)',  sku:'BKD-W',  qty:'1', period:'7 days', unit_price:'$39',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$6',  price_total:'$45',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+      {name:'Backdrop Set (Black)',  sku:'BKD-B',  qty:'1', period:'7 days', unit_price:'$39',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$6',  price_total:'$45',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+      {name:'Backdrop Stand',        sku:'BKS-01', qty:'2', period:'7 days', unit_price:'$19',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$5',  price_total:'$41',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+      {name:'Reflector 5-in-1',      sku:'RFL-05', qty:'2', period:'7 days', unit_price:'$14',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$4',  price_total:'$32',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+      {name:'Color Gels Pack',       sku:'GEL-01', qty:'1', period:'7 days', unit_price:'$9',   charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$1',  price_total:'$10',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+      {name:'V-Mount Battery ×2',    sku:'BAT-VM', qty:'2', period:'7 days', unit_price:'$22',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$6',  price_total:'$50',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+      {name:'Charger + Cables Kit',  sku:'CHG-01', qty:'1', period:'7 days', unit_price:'$12',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$2',  price_total:'$14',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+      {name:'Production Monitor 7"', sku:'MON-07', qty:'1', period:'7 days', unit_price:'$55',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$8',  price_total:'$63',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+      {name:'Wireless Follow Focus', sku:'WFF-01', qty:'1', period:'7 days', unit_price:'$69',  charge_lbl:'1 day',  discount:'5%',  coupons:'—', tax:'$9',  price_total:'$74',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+      {name:'Pelican Case (Large)',   sku:'PLC-L',  qty:'2', period:'7 days', unit_price:'$18',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$5',  price_total:'$41',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    ];
+
+    const renderSection = s => {
+      if(s.id==='header') return (
+        <SectionWrap key="header" id="header" label="Header">
+          <div style={{padding:'18px 22px 14px',borderBottom:`1px solid ${C.grey20}`}}>
+            {(() => {
+              const align = docCfg.logoAlign || 'Left';
+              const LogoEl = docCfg.showLogo ? (
+                <div style={{width:68,height:20,background:docCfg.primaryColor,borderRadius:3,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                  <span style={{color:'#fff',fontSize:7,fontWeight:700,letterSpacing:1}}>LOGO</span>
+                </div>
+              ) : null;
+              const InvoiceEl = (
+                <div style={{textAlign:'right'}}>
+                  <div style={{fontSize:13,fontWeight:700}}>INVOICE</div>
+                  <div style={{fontSize:9,color:C.grey50}}>#ORD-2024-0089</div>
+                </div>
+              );
+              return (
+                <div style={{display:'grid',gridTemplateColumns:'1fr auto 1fr',alignItems:'flex-start',marginBottom:12}}>
+                  <div style={{display:'flex',justifyContent:'flex-start'}}>
+                    {align==='Left' && LogoEl}
                   </div>
-                ) : null;
-                const InvoiceEl = (
-                  <div style={{textAlign:'right'}}>
-                    <div style={{fontSize:13,fontWeight:700}}>INVOICE</div>
-                    <div style={{fontSize:9,color:C.grey50}}>#ORD-2024-0089</div>
+                  <div style={{display:'flex',justifyContent:'center'}}>
+                    {align==='Center' && LogoEl}
                   </div>
-                );
-                return (
-                  <div style={{display:'grid',gridTemplateColumns:'1fr auto 1fr',alignItems:'flex-start',marginBottom:12}}>
-                    <div style={{display:'flex',justifyContent:'flex-start'}}>
-                      {align==='Left' && LogoEl}
-                    </div>
-                    <div style={{display:'flex',justifyContent:'center'}}>
-                      {align==='Center' && LogoEl}
-                    </div>
-                    <div style={{display:'flex',justifyContent:'flex-end',gap:12,alignItems:'flex-start'}}>
-                      {align==='Right' && LogoEl}
-                      {InvoiceEl}
-                    </div>
+                  <div style={{display:'flex',justifyContent:'flex-end',gap:12,alignItems:'flex-start'}}>
+                    {align==='Right' && LogoEl}
+                    {InvoiceEl}
                   </div>
-                );
-              })()}
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-                <div style={{fontSize:9,color:C.grey60,lineHeight:1.5}}>Acme Rentals Inc.<br/>123 Main St, NY 10001<br/>{docCfg.showContact&&'info@acme.com'}</div>
-                <div style={{fontSize:9,color:C.grey60,lineHeight:1.5}}>Sarah Johnson<br/>456 Oak Ave, NY 10002</div>
+                </div>
+              );
+            })()}
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+              <div style={{fontSize:9,color:C.grey60,lineHeight:1.5}}>Acme Rentals Inc.<br/>123 Main St, NY 10001<br/>{docCfg.showContact&&'info@acme.com'}</div>
+              <div style={{fontSize:9,color:C.grey60,lineHeight:1.5}}>Sarah Johnson<br/>456 Oak Ave, NY 10002</div>
+            </div>
+          </div>
+        </SectionWrap>
+      );
+      if(s.id==='logistics') return (
+        <SectionWrap key="logistics" id="logistics" label="Logistics & dates">
+          <div style={{padding:'8px 22px',background:C.bg,display:'flex',gap:18,borderBottom:`1px solid ${C.grey20}`}}>
+            {docCfg.showDates&&[['Pickup','Mar 5, 2024'],['Return','Mar 12, 2024']].map(([l,v])=>(
+              <div key={l}><div style={{fontSize:7,fontWeight:700,color:C.grey40,textTransform:'uppercase',letterSpacing:1}}>{l}</div>
+                <div style={{fontSize:8,color:C.black,marginTop:1}}>{v}{dateFormat==='datetime'&&' 10:00'}</div></div>
+            ))}
+            {docCfg.showLocation&&<div><div style={{fontSize:7,fontWeight:700,color:C.grey40,textTransform:'uppercase',letterSpacing:1}}>Location</div><div style={{fontSize:8,color:C.black,marginTop:1}}>Main Branch</div></div>}
+          </div>
+        </SectionWrap>
+      );
+      if(s.id==='lineitems') return (
+        <SectionWrap key="lineitems" id="lineitems" label="Line items">
+          <div style={{padding:'8px 22px 12px',overflowX:'auto'}}>
+            {visLICols.length===0 ? (
+              <div style={{padding:'12px 0',textAlign:'center',fontSize:10,color:C.grey40,fontFamily:'var(--font-body)'}}>No columns enabled</div>
+            ) : (
+              <table style={{width:'100%',borderCollapse:'collapse',marginTop:8}}>
+                <thead><tr style={{borderBottom:`2px solid ${docCfg.primaryColor}`}}>
+                  {visLICols.map(col=>(
+                    <th key={col.id} style={{padding:'3px 4px',fontSize:7,fontWeight:700,color:docCfg.primaryColor,textTransform:'uppercase',letterSpacing:1,
+                      textAlign:COL_DATA[col.id]?.align||'right',whiteSpace:'nowrap'}}>
+                      {COL_DATA[col.id]?.label||col.label}
+                    </th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  {bundleItem?.on && (<>
+                    <tr style={{background:'#f8f9fa'}}>
+                      <td colSpan={visLICols.length} style={{padding:'4px 4px 2px',fontSize:8,fontWeight:700,color:C.black}}>📦 Camera Bundle Kit</td>
+                    </tr>
+                    {[
+                      {name:'Canon EOS R5',sku:'R5-001',qty:'1',period:'7 days',unit_price:'$149',charge_lbl:'1 day',discount:'—',coupons:'—',tax:'$22',price_total:'$171',item_type:'Rental',barcode:'▐▌▐▌',qr:'⊞',custom:'—',image:'img'},
+                      {name:'  ↳ Lens 50mm',sku:'LNS-02',qty:'1',period:'7 days',unit_price:'$29',charge_lbl:'1 day',discount:'—',coupons:'—',tax:'$4',price_total:'$33',item_type:'Rental',barcode:'▐▌▐▌',qr:'⊞',custom:'—',image:'img'},
+                    ].map((row,i)=>(
+                      <tr key={i} style={{borderBottom:`1px solid ${C.grey20}`,opacity:0.8}}>
+                        {visLICols.map((col,ci)=>(
+                          <td key={col.id} style={{padding:col.id==='image'?'2px 4px':'3px 4px',fontSize:7,color:ci===0?C.grey60:C.grey50,textAlign:COL_DATA[col.id]?.align||'right',whiteSpace:['image','barcode','qr'].includes(col.id)?'normal':'nowrap',fontStyle:'italic'}}>
+                            {renderCell(col,row)}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                    <tr style={{borderBottom:`1px solid ${C.grey20}`,background:'#f8f9fa'}}>
+                      {visLICols.map((col,ci)=>(
+                        <td key={col.id} style={{padding:'3px 4px',fontSize:7,fontWeight:600,color:ci===0?C.black:C.grey60,textAlign:COL_DATA[col.id]?.align||'right',whiteSpace:'nowrap'}}>
+                          {ci===0?'Bundle total':col.id==='price_total'?'$204':col.id==='tax'?'$26':''}
+                        </td>
+                      ))}
+                    </tr>
+                  </>)}
+                  {liRows.map((row,i)=>(
+                    <tr key={i} style={{borderBottom:`1px solid ${C.grey20}`}}>
+                      {visLICols.map((col,ci)=>(
+                        <td key={col.id} style={{padding:col.id==='image'?'2px 4px':'4px',fontSize:8,
+                          color:COL_DATA[col.id]?.align==='left'?C.black:C.grey60,
+                          textAlign:COL_DATA[col.id]?.align||'right',
+                          whiteSpace:['image','barcode','qr'].includes(col.id)?'normal':'nowrap'}}>
+                          {renderCell(col,row)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </SectionWrap>
+      );
+      if(s.id==='totals') return (
+        <SectionWrap key="totals" id="totals" label="Totals & fees">
+          <div style={{padding:'8px 22px 14px',display:'flex',justifyContent:'flex-end',borderTop:`1px solid ${C.grey20}`}}>
+            <div style={{width:140}}>
+              {[
+                docCfg.showSubtotal        && ['Subtotal',          '$431',  false],
+                docCfg.showTotalDiscount   && ['Total discount',    '-$20',  false],
+                docCfg.showAppliedCoupons  && ['Applied coupons',   '-$10',  false],
+                docCfg.showSecurityDeposit && ['Security deposit',  '-$100', false],
+                docCfg.showCustomCharge    && ['Custom charge',     '$15',   false],
+                docCfg.showTaxBreakdown    && ['Tax (15%)',         '$36',   false],
+                docCfg.showTotalInclTaxes  && ['Total incl. taxes', '$352',  true],
+              ].filter(Boolean).map(([l,v,bold])=>(
+                <div key={l} style={{display:'flex',justifyContent:'space-between',padding:'2px 0',borderTop:bold?`1px solid ${C.grey20}`:'none',marginTop:bold?4:0}}>
+                  <span style={{fontSize:8,color:bold?C.black:C.grey50,fontWeight:bold?700:400}}>{l}</span>
+                  <span style={{fontSize:8,color:bold?C.black:C.grey50,fontWeight:bold?700:400}}>{v}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </SectionWrap>
+      );
+      if(s.type==='text'){
+        const b=getBlock(s.id);
+        return (
+          <SectionWrap key={s.id} id={s.id} label="Text section">
+            <div style={{padding:'10px 22px',borderTop:`1px solid ${C.grey20}`,minHeight:34,textAlign:b.align}}>
+              <div style={{fontSize:9,color:C.black,lineHeight:1.6,whiteSpace:'pre-wrap',fontWeight:b.bold?700:400,fontStyle:b.italic?'italic':'normal',textDecoration:b.underline?'underline':'none'}}>
+                {b.text||<span style={{color:C.grey30,fontStyle:'italic'}}>Empty text section</span>}
               </div>
             </div>
           </SectionWrap>
         );
-        if(s.id==='logistics') return (
-          <SectionWrap key="logistics" id="logistics" label="Logistics & dates">
-            <div style={{padding:'8px 22px',background:C.bg,display:'flex',gap:18,borderBottom:`1px solid ${C.grey20}`}}>
-              {docCfg.showDates&&[['Pickup','Mar 5, 2024'],['Return','Mar 12, 2024']].map(([l,v])=>(
-                <div key={l}><div style={{fontSize:7,fontWeight:700,color:C.grey40,textTransform:'uppercase',letterSpacing:1}}>{l}</div>
-                  <div style={{fontSize:8,color:C.black,marginTop:1}}>{v}{dateFormat==='datetime'&&' 10:00'}</div></div>
-              ))}
-              {docCfg.showLocation&&<div><div style={{fontSize:7,fontWeight:700,color:C.grey40,textTransform:'uppercase',letterSpacing:1}}>Location</div><div style={{fontSize:8,color:C.black,marginTop:1}}>Main Branch</div></div>}
-            </div>
-          </SectionWrap>
-        );
-        if(s.id==='lineitems') return (
-          <SectionWrap key="lineitems" id="lineitems" label="Line items">
-            <div style={{padding:'8px 22px 12px',overflowX:'auto'}}>
-              {visLICols.length===0 ? (
-                <div style={{padding:'12px 0',textAlign:'center',fontSize:10,color:C.grey40,fontFamily:'var(--font-body)'}}>No columns enabled</div>
-              ) : (
-                <table style={{width:'100%',borderCollapse:'collapse',marginTop:8}}>
-                  <thead><tr style={{borderBottom:`2px solid ${docCfg.primaryColor}`}}>
-                    {visLICols.map(col=>(
-                      <th key={col.id} style={{padding:'3px 4px',fontSize:7,fontWeight:700,color:docCfg.primaryColor,textTransform:'uppercase',letterSpacing:1,
-                        textAlign:COL_DATA[col.id]?.align||'right',whiteSpace:'nowrap'}}>
-                        {COL_DATA[col.id]?.label||col.label}
-                      </th>
-                    ))}
-                  </tr></thead>
+      }
+      return null;
+    };
+
+    const mainSections = sections.filter(s=>s.id!=='footer'&&s.id!=='totals');
+    const totalsSec = sections.find(s=>s.id==='totals');
+
+    return (
+      <div style={{display:'flex',flexDirection:'column',gap:8}}>
+        {/* Page 1 */}
+        <div style={{background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,overflow:'visible',minHeight:pageDim.h,display:'flex',flexDirection:'column',justifyContent:'space-between'}}>
+          <div>{mainSections.map(renderSection)}</div>
+          <PageNumRow page={1}/>
+        </div>
+        {/* Page 2 — overflow line items, totals, footer */}
+        <div style={{background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,overflow:'visible',minHeight:pageDim.h,display:'flex',flexDirection:'column',justifyContent:'space-between'}}>
+          <div>
+            {visLICols.length>0&&(
+              <div style={{padding:'8px 22px 12px',overflowX:'auto'}}>
+                <table style={{width:'100%',borderCollapse:'collapse'}}>
                   <tbody>
-                    {/* Bundle group — when bundle pricing is on */}
-                    {bundleItem?.on && (<>
-                      <tr style={{background:'#f8f9fa'}}>
-                        <td colSpan={visLICols.length} style={{padding:'4px 4px 2px',fontSize:8,fontWeight:700,color:C.black}}>📦 Camera Bundle Kit</td>
-                      </tr>
-                      {[
-                        {name:'Canon EOS R5',sku:'R5-001',qty:'1',period:'7 days',unit_price:'$149',charge_lbl:'1 day',discount:'—',coupons:'—',tax:'$22',price_total:'$171',item_type:'Rental',barcode:'▐▌▐▌',qr:'⊞',custom:'—',image:'img'},
-                        {name:'  ↳ Lens 50mm',sku:'LNS-02',qty:'1',period:'7 days',unit_price:'$29',charge_lbl:'1 day',discount:'—',coupons:'—',tax:'$4',price_total:'$33',item_type:'Rental',barcode:'▐▌▐▌',qr:'⊞',custom:'—',image:'img'},
-                      ].map((row,i)=>(
-                        <tr key={i} style={{borderBottom:`1px solid ${C.grey20}`,opacity:0.8}}>
-                          {visLICols.map((col,ci)=>(
-                            <td key={col.id} style={{padding:col.id==='image'?'2px 4px':'3px 4px',fontSize:7,color:ci===0?C.grey60:C.grey50,textAlign:COL_DATA[col.id]?.align||'right',whiteSpace:['image','barcode','qr'].includes(col.id)?'normal':'nowrap',fontStyle:'italic'}}>
-                              {renderCell(col,row)}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                      <tr style={{borderBottom:`1px solid ${C.grey20}`,background:'#f8f9fa'}}>
-                        {visLICols.map((col,ci)=>(
-                          <td key={col.id} style={{padding:'3px 4px',fontSize:7,fontWeight:600,color:ci===0?C.black:C.grey60,textAlign:COL_DATA[col.id]?.align||'right',whiteSpace:'nowrap'}}>
-                            {ci===0?'Bundle total':col.id==='price_total'?'$204':col.id==='tax'?'$26':''}
-                          </td>
-                        ))}
-                      </tr>
-                    </>)}
-                    {liRows.map((row,i)=>(
+                    {page2Rows.map((row,i)=>(
                       <tr key={i} style={{borderBottom:`1px solid ${C.grey20}`}}>
                         {visLICols.map((col,ci)=>(
                           <td key={col.id} style={{padding:col.id==='image'?'2px 4px':'4px',fontSize:8,
@@ -859,55 +1024,18 @@ const ExpN = () => {
                     ))}
                   </tbody>
                 </table>
-              )}
-            </div>
-          </SectionWrap>
-        );
-        if(s.id==='totals') return (
-          <SectionWrap key="totals" id="totals" label="Totals & fees">
-            <div style={{padding:'8px 22px 14px',display:'flex',justifyContent:'flex-end',borderTop:`1px solid ${C.grey20}`}}>
-              <div style={{width:140}}>
-                {[
-                  docCfg.showSubtotal        && ['Subtotal',           '$431',  false],
-                  docCfg.showTotalDiscount   && ['Total discount',     '-$20',  false],
-                  docCfg.showAppliedCoupons  && ['Applied coupons',    '-$10',  false],
-                  docCfg.showSecurityDeposit && ['Security deposit',   '-$100', false],
-                  docCfg.showCustomCharge    && ['Custom charge',      '$15',   false],
-                  docCfg.showTaxBreakdown    && ['Tax (15%)',          '$36',   false],
-                  docCfg.showTotalInclTaxes  && ['Total incl. taxes',  '$352',  true],
-                ].filter(Boolean).map(([l,v,bold],i,arr)=>(
-                  <div key={l} style={{display:'flex',justifyContent:'space-between',padding:'2px 0',borderTop:bold?`1px solid ${C.grey20}`:'none',marginTop:bold?4:0}}>
-                    <span style={{fontSize:8,color:bold?C.black:C.grey50,fontWeight:bold?700:400}}>{l}</span>
-                    <span style={{fontSize:8,color:bold?C.black:C.grey50,fontWeight:bold?700:400}}>{v}</span>
-                  </div>
-                ))}
               </div>
-            </div>
-          </SectionWrap>
-        );
-        if(s.id==='footer') return (
-          <SectionWrap key="footer" id="footer" label="Footer">
-            <div style={{padding:'8px 22px',background:C.bg,borderTop:`1px solid ${C.grey20}`,fontSize:8,color:C.grey50}}>
-              {docCfg.footerNote?'Thank you for your business. Payment due within 30 days.':'\u00a0'}
-            </div>
-          </SectionWrap>
-        );
-        if(s.type==='text'){
-          const b=getBlock(s.id);
-          return (
-            <SectionWrap key={s.id} id={s.id} label="Text section">
-              <div style={{padding:'10px 22px',borderTop:`1px solid ${C.grey20}`,minHeight:34,textAlign:b.align}}>
-                <div style={{fontSize:9,color:C.black,lineHeight:1.6,whiteSpace:'pre-wrap',fontWeight:b.bold?700:400,fontStyle:b.italic?'italic':'normal',textDecoration:b.underline?'underline':'none'}}>
-                  {b.text||<span style={{color:C.grey30,fontStyle:'italic'}}>Empty text section</span>}
-                </div>
-              </div>
-            </SectionWrap>
-          );
-        }
-        return null;
-      })}
-    </div>
-  );
+            )}
+            {totalsSec&&renderSection(totalsSec)}
+          </div>
+          <div>
+            <FooterContent/>
+            <PageNumRow page={2}/>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   // ── View toolbar — bottom-right, sticky ───────────────────
   const ViewToolbar = () => (
@@ -965,7 +1093,7 @@ const ExpN = () => {
           <div style={{position:'absolute',inset:0,overflowY:'auto'}}>
             <div style={{padding:'20px 40px 80px'}}>
               <div style={{transformOrigin:'top center',transform:`scale(${zoom})`,transition:'transform 200ms'}}>
-                <div style={{width:560,margin:'0 auto'}}>
+                <div style={{width:pageDim.w,margin:'0 auto'}}>
                   <DocPreview/>
                 </div>
               </div>
