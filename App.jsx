@@ -372,21 +372,21 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
 
   // ── Line items ────────────────────────────────────────────
   const [lineItems, setLineItems] = React.useState([
+    { id:'qty',         label:'Quantity',                               drag:true,  on:true,  dropdown:{val:'1x',opts:['1x','2x','Per unit']} },
     { id:'image',       label:'Image',                                  drag:true,  on:true,  dropdown:{val:'Medium',opts:['Small','Medium','Large']} },
     { id:'sku',         label:'Stock code (SKU)',                       drag:true,  on:false, dropdown:null },
     { id:'name',        label:'Product name',                           drag:true,  on:true,  dropdown:null },
-    { id:'qty',         label:'Quantity',                               drag:true,  on:true,  dropdown:{val:'1x',opts:['1x','2x','Per unit']} },
     { id:'period',      label:'Period',                                 drag:true,  on:true,  dropdown:null },
     { id:'unit_price',  label:'Unit price (rate)',                      drag:true,  on:true,  dropdown:null },
+    { id:'tax',         label:'Tax',                                    drag:true,  on:true,  dropdown:null },
     { id:'charge_lbl',  label:'Charge label (e.g. "1 day" / "Fixed")', drag:true,  on:false, dropdown:null },
     { id:'discount',    label:'Applied discount',                       drag:true,  on:false, dropdown:null },
     { id:'coupons',     label:'Applied coupons',                        drag:true,  on:false, dropdown:null },
-    { id:'tax',         label:'Tax',                                    drag:true,  on:false, dropdown:null },
     { id:'price_total', label:'Price total',                            drag:true,  on:true,  dropdown:null },
     { id:'bundle',      label:'Bundle item pricing',                    drag:false, on:true,  dropdown:null, special:true },
     { id:'barcode',     label:'Barcode',                                drag:true,  on:false, dropdown:null },
-    { id:'qr',          label:'QR code',                                drag:true,  on:true,  dropdown:null },
-    { id:'item_type',   label:'Item type (Rental, Sales, Service)',     drag:true,  on:true,  dropdown:null },
+    { id:'qr',          label:'QR code',                                drag:true,  on:false, dropdown:null },
+    { id:'item_type',   label:'Item type (Rental, Sales, Service)',     drag:true,  on:false, dropdown:null },
     { id:'custom',      label:'Custom fields',                          drag:true,  on:false, dropdown:null },
   ]);
 
@@ -394,7 +394,7 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
     image:      { label:'Image',    vals:['img','img','img'],           align:'center' },
     sku:        { label:'SKU',      vals:['R5-001','TRP-02','MEM-04'],  align:'left'   },
     name:       { label:'Product',  vals:['Canon EOS R5','Tripod & Head','Memory Cards'], align:'left' },
-    qty:        { label:'Qty',      vals:['2','1','4'],                 align:'right'  },
+    qty:        { label:'Qty',      vals:['2','1','4'],                 align:'right',  width:28 },
     period:     { label:'Period',   vals:['7 days','7 days','7 days'],  align:'right'  },
     unit_price: { label:'Rate',     vals:['$149','$49','$12'],          align:'right'  },
     charge_lbl: { label:'Charge',   vals:['1 day','Fixed','1 day'],     align:'right'  },
@@ -424,9 +424,9 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
   // ── Sections ──────────────────────────────────────────────
   const [sections, setSections] = React.useState([
     {id:'header',   type:'builtin',label:'Header',          visible:true},
-    {id:'logistics',type:'builtin',label:'Logistics & dates',visible:true},
-    {id:'lineitems',type:'builtin',label:'Line items',       visible:true},
-    {id:'totals',   type:'builtin',label:'Totals & fees',    visible:true},
+    {id:'logistics',type:'builtin',label:'Pick-up & Return',visible:true},
+    {id:'lineitems',type:'builtin',label:'Line Items',       visible:true},
+    {id:'totals',   type:'builtin',label:'Totals & Fees',    visible:true},
     {id:'footer',   type:'builtin',label:'Footer',           visible:true},
   ]);
 
@@ -822,16 +822,18 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
       </div>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
         <div>
-          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Location name</div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Pickup & return locations</div>
           <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Pickup or return branch name</div>
         </div>
         <Tog on={docCfg.showLocation} onChange={()=>setDoc('showLocation')}/>
       </div>
-      <SHead label="Date format"/>
-      <Radio checked={dateFormat==='datetime'} onChange={()=>setDateFormat('datetime')}
-        label="Show date and time" hint="Shows time in addition to date for pick up and return details"/>
-      <Radio checked={dateFormat==='dateonly'} onChange={()=>setDateFormat('dateonly')}
-        label="Show date only" hint="Shows only the date for pick up and return details"/>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
+        <div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Pickup & return times</div>
+          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Includes time with pickup & return dates</div>
+        </div>
+        <Tog on={dateFormat==='datetime'} onChange={()=>setDateFormat(dateFormat==='datetime'?'dateonly':'datetime')}/>
+      </div>
     </>,
     lineitems: <LineItemsPanel/>,
     totals: <>
@@ -1329,18 +1331,22 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
         </SectionWrap>
       );
       if(s.id==='logistics') return (
-        <SectionWrap key="logistics" id="logistics" label="Logistics & dates">
+        <SectionWrap key="logistics" id="logistics" label="Pick-up & Return">
           <div style={{padding:'8px 22px',background:C.bg,display:'flex',gap:18,borderBottom:`1px solid ${C.grey20}`}}>
-            {docCfg.showDates&&[['Pickup','Mar 5, 2024'],['Return','Mar 12, 2024']].map(([l,v])=>(
-              <div key={l}><div style={{fontSize:7,fontWeight:700,color:C.grey40,textTransform:'uppercase',letterSpacing:1}}>{l}</div>
-                <div style={{fontSize:8,color:C.black,marginTop:1}}>{v}{dateFormat==='datetime'&&' 10:00'}</div></div>
+            {[['Pickup','Mar 5, 2024'],['Return','Mar 12, 2024']].map(([l,v])=>(
+              <div key={l}>
+                <div style={{fontSize:7,fontWeight:700,color:C.grey40,textTransform:'uppercase',letterSpacing:1}}>{l}</div>
+                <div style={{fontSize:8,color:C.black,marginTop:1,display:'flex',gap:4,alignItems:'baseline'}}>
+                  {docCfg.showDates&&<span>{v}{dateFormat==='datetime'&&' 10:00'}</span>}
+                  {docCfg.showLocation&&<span style={{color:C.grey60}}>Main location</span>}
+                </div>
+              </div>
             ))}
-            {docCfg.showLocation&&<div><div style={{fontSize:7,fontWeight:700,color:C.grey40,textTransform:'uppercase',letterSpacing:1}}>Location</div><div style={{fontSize:8,color:C.black,marginTop:1}}>Main Branch</div></div>}
           </div>
         </SectionWrap>
       );
       if(s.id==='lineitems') return (
-        <SectionWrap key="lineitems" id="lineitems" label="Line items">
+        <SectionWrap key="lineitems" id="lineitems" label="Line Items">
           <div style={{padding:'8px 22px 12px',overflowX:'auto'}}>
             {visLICols.length===0 ? (
               <div style={{padding:'12px 0',textAlign:'center',fontSize:10,color:C.grey40,fontFamily:'var(--font-body)'}}>No columns enabled</div>
@@ -1350,6 +1356,7 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
                   {visLICols.map(col=>(
                     <th key={col.id} style={{padding:'3px 4px',fontSize:7,fontWeight:700,color:docCfg.primaryColor,textTransform:'uppercase',letterSpacing:1,
                       textAlign:COL_DATA[col.id]?.align||'right',whiteSpace:'nowrap',
+                      width:COL_DATA[col.id]?.width||undefined,
                       background:col.id===hovLI?C.blue5:'transparent',transition:'background 100ms'}}>
                       {COL_DATA[col.id]?.label||col.label}
                     </th>
@@ -1444,7 +1451,7 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
         </SectionWrap>
       );
       if(s.id==='totals') return (
-        <SectionWrap key="totals" id="totals" label="Totals & fees">
+        <SectionWrap key="totals" id="totals" label="Totals & Fees">
           <div style={{padding:'8px 22px 14px',display:'flex',justifyContent:'flex-end',borderTop:`1px solid ${C.grey20}`}}>
             <div style={{width:140}}>
               {[
