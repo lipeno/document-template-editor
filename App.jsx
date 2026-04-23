@@ -366,8 +366,7 @@ const _SKU_PI = {
   'MON-07':_PI.monitor, 'WFF-01':_PI.followFocus, 'PLC-L':_PI.pelicanCase,
 };
 
-const ExpN = () => {
-  const C = BQ;
+const ExpN = ({ onExit, docType }) => {  const C = BQ;
   const _nid = React.useRef(600);
   const nextId = () => String(++_nid.current);
 
@@ -439,6 +438,24 @@ const ExpN = () => {
   const [addModal,   setAddModal]   = React.useState(null);
   const [resetModal, setResetModal] = React.useState(false);
 
+  // Template switcher state (contracts only)
+  const [templates,       setTemplates]       = React.useState([{id:'tpl1', name:'Contract template'}]);
+  const [activeTplId,     setActiveTplId]     = React.useState('tpl1');
+  const [tplDropOpen,     setTplDropOpen]     = React.useState(false);
+  const [newTplName,      setNewTplName]      = React.useState('');
+  const [showNewTplInput, setShowNewTplInput] = React.useState(false);
+  const [hovTpl,          setHovTpl]          = React.useState(null);
+  const [renamingTplId,   setRenamingTplId]   = React.useState(null);
+  const [renameTplName,   setRenameTplName]   = React.useState('');
+  const tplDropRef = React.useRef(null);
+  const commitRename = id => { const v=renameTplName.trim(); if(v) setTemplates(p=>p.map(t=>t.id===id?{...t,name:v}:t)); setRenamingTplId(null); setRenameTplName(''); };
+  React.useEffect(() => {
+    if (!tplDropOpen) return;
+    const handler = e => { if (tplDropRef.current && !tplDropRef.current.contains(e.target)) { setTplDropOpen(false); setShowNewTplInput(false); setNewTplName(''); setRenamingTplId(null); setRenameTplName(''); } };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [tplDropOpen]);
+
   // Settings panel state
   const [settingsTab, setSettingsTab]   = React.useState('customize');
   const [docTypeTab,  setDocTypeTab]    = React.useState('invoices');
@@ -460,7 +477,7 @@ const ExpN = () => {
   };
 
   const [docCfg, setDocCfg] = React.useState({
-    primaryColor:'#136DEB',showLogo:true,showContact:true,showCompanyInfo:true,logoAlign:'Left',logoSize:'L',documentTitle:'Invoice',
+    primaryColor:'#136DEB',showLogo:true,showContact:true,showCompanyInfo:true,logoAlign:'Left',logoSize:'L',documentTitle:docType?.label||'Invoice',
     showDates:true,showLocation:true,
     showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,
     showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,
@@ -892,9 +909,81 @@ const ExpN = () => {
     <div style={{display:'flex',flexDirection:'column',height:'100%'}}>
       <div style={{padding:'10px 14px',borderBottom:`1px solid ${C.grey20}`}}>
         <div style={{fontSize:10,color:C.grey40,marginBottom:4,fontFamily:'var(--font-body)'}}>Template</div>
-        <div style={{height:32,border:`1px solid ${C.grey20}`,borderRadius:6,fontSize:12,padding:'0 10px',background:C.grey10,color:C.grey50,fontFamily:'var(--font-body)',display:'flex',alignItems:'center'}}>
-          Default invoice
-        </div>
+        {docType?.key==='contract'
+          ? <div ref={tplDropRef} style={{position:'relative'}}>
+              <div onClick={()=>setTplDropOpen(o=>!o)}
+                style={{height:32,border:`1px solid ${tplDropOpen?C.blue:C.grey30}`,borderRadius:6,fontSize:12,padding:'0 10px',background:C.white,color:C.black,fontFamily:'var(--font-body)',display:'flex',alignItems:'center',justifyContent:'space-between',cursor:'pointer',gap:6,userSelect:'none'}}>
+                <span style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{templates.find(t=>t.id===activeTplId)?.name||'Contract template'}</span>
+                <FI n={tplDropOpen?'chevron-up':'chevron-down'} sz={10} col={C.grey50}/>
+              </div>
+              {tplDropOpen && (
+                <div style={{position:'absolute',top:'calc(100% + 4px)',left:0,right:0,background:C.white,border:`1px solid ${C.grey20}`,borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.12)',zIndex:200,overflow:'hidden'}}>
+                  {templates.map(t=>(
+                    <div key={t.id} onMouseEnter={()=>setHovTpl(t.id)} onMouseLeave={()=>setHovTpl(null)}
+                      style={{display:'flex',alignItems:'center',padding:'0 8px 0 10px',height:34,background:hovTpl===t.id||renamingTplId===t.id?C.grey10:'transparent',gap:6}}>
+                      {renamingTplId===t.id
+                        ? <input autoFocus value={renameTplName} onChange={e=>setRenameTplName(e.target.value)}
+                            onKeyDown={e=>{if(e.key==='Enter')commitRename(t.id);if(e.key==='Escape'){setRenamingTplId(null);setRenameTplName('');}}}
+                            style={{flex:1,height:24,border:`1px solid ${C.blue}`,borderRadius:4,fontSize:12,padding:'0 6px',fontFamily:'var(--font-body)',outline:'none',minWidth:0}}/>
+                        : <div onClick={()=>{setActiveTplId(t.id);setTplDropOpen(false);setShowNewTplInput(false);}}
+                            style={{flex:1,display:'flex',alignItems:'center',gap:6,cursor:'pointer',minWidth:0}}>
+                            <FI n="check" sz={10} col={t.id===activeTplId?C.blue:'transparent'}/>
+                            <span style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.name}</span>
+                          </div>
+                      }
+                      {renamingTplId===t.id
+                        ? <div style={{display:'flex',gap:2,flexShrink:0}}>
+                            <button onMouseDown={e=>{e.preventDefault();commitRename(t.id);}}
+                              style={{width:24,height:24,display:'flex',alignItems:'center',justifyContent:'center',background:C.blue,border:'none',cursor:'pointer',borderRadius:4}}>
+                              <FI n="check" sz={11} col="#fff"/>
+                            </button>
+                            <button onMouseDown={e=>{e.preventDefault();setRenamingTplId(null);setRenameTplName('');}}
+                              style={{width:24,height:24,display:'flex',alignItems:'center',justifyContent:'center',background:'none',border:`1px solid ${C.grey30}`,cursor:'pointer',borderRadius:4}}>
+                              <FI n="xmark" sz={11} col={C.grey50}/>
+                            </button>
+                          </div>
+                        : <div style={{display:'flex',gap:2,opacity:hovTpl===t.id?1:0,transition:'opacity 100ms',flexShrink:0}}>
+                            <button onClick={e=>{e.stopPropagation();setRenamingTplId(t.id);setRenameTplName(t.name);}}
+                              style={{width:24,height:24,display:'flex',alignItems:'center',justifyContent:'center',background:'none',border:'none',cursor:'pointer',borderRadius:4}}>
+                              <FI n="pencil" sz={11} col={C.grey50}/>
+                            </button>
+                            {templates.length>1&&(
+                              <button onClick={e=>{e.stopPropagation();const remaining=templates.filter(x=>x.id!==t.id);setTemplates(remaining);if(activeTplId===t.id)setActiveTplId(remaining[0].id);}}
+                                style={{width:24,height:24,display:'flex',alignItems:'center',justifyContent:'center',background:'none',border:'none',cursor:'pointer',borderRadius:4}}>
+                                <FI n="trash" sz={11} col={C.grey50}/>
+                              </button>
+                            )}
+                          </div>
+                      }
+                    </div>
+                  ))}
+                  <div style={{borderTop:`1px solid ${C.grey20}`,padding:'4px 0'}}>
+                    {showNewTplInput
+                      ? <div style={{padding:'8px'}}>
+                          <input autoFocus value={newTplName} onChange={e=>setNewTplName(e.target.value)}
+                            onKeyDown={e=>{
+                              if(e.key==='Enter'&&newTplName.trim()){const id='tpl'+Date.now();setTemplates(p=>[...p,{id,name:newTplName.trim()}]);setActiveTplId(id);setNewTplName('');setShowNewTplInput(false);setTplDropOpen(false);}
+                              if(e.key==='Escape'){setNewTplName('');setShowNewTplInput(false);}
+                            }}
+                            placeholder="Template name"
+                            style={{display:'block',width:'100%',height:30,border:`1px solid ${C.grey30}`,borderRadius:5,fontSize:12,padding:'0 8px',fontFamily:'var(--font-body)',outline:'none',boxSizing:'border-box',marginBottom:6}}/>
+                          <button onClick={()=>{if(newTplName.trim()){const id='tpl'+Date.now();setTemplates(p=>[...p,{id,name:newTplName.trim()}]);setActiveTplId(id);setNewTplName('');setShowNewTplInput(false);setTplDropOpen(false);}}}
+                            style={{display:'block',width:'100%',height:30,background:newTplName.trim()?C.blue:C.grey20,color:newTplName.trim()?'#fff':C.grey50,border:'none',borderRadius:5,fontSize:12,cursor:newTplName.trim()?'pointer':'default',fontFamily:'var(--font-body)',fontWeight:600,transition:'background 150ms'}}>Create</button>
+                        </div>
+                      : <div onClick={()=>setShowNewTplInput(true)}
+                          style={{display:'flex',alignItems:'center',gap:8,padding:'0 10px',height:34,cursor:'pointer',color:C.blue,fontSize:12,fontFamily:'var(--font-body)'}}>
+                          <FI n="plus" sz={10} col={C.blue}/>
+                          <span>New template</span>
+                        </div>
+                    }
+                  </div>
+                </div>
+              )}
+            </div>
+          : <div style={{height:32,border:`1px solid ${C.grey20}`,borderRadius:6,fontSize:12,padding:'0 10px',background:C.grey10,color:C.grey50,fontFamily:'var(--font-body)',display:'flex',alignItems:'center'}}>
+              {(docType?.label||'Invoice')+' template'}
+            </div>
+        }
       </div>
       {[{key:'__settings__',icon:'gear',label:'Settings',sub:'Page, numbering, CSS'},{key:'__branding__',icon:'palette',label:'Branding',sub:'Colors & logo'}].map(a=>(
         <button key={a.key} onClick={()=>setEditing(a.key)}
@@ -1482,11 +1571,11 @@ const ExpN = () => {
       {/* Top bar */}
       <div style={{height:44,background:C.white,borderBottom:`1px solid ${C.grey30}`,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 16px',flexShrink:0,position:'relative'}}>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
-          <button style={{height:30,padding:'0 10px',background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,color:C.black,cursor:'pointer',display:'flex',alignItems:'center',gap:5,fontFamily:'var(--font-body)'}}>
+          <button onClick={onExit} style={{height:30,padding:'0 10px',background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,color:C.black,cursor:'pointer',display:'flex',alignItems:'center',gap:5,fontFamily:'var(--font-body)'}}>
             <FI n="arrow-left" sz={10} col={C.black}/> Exit
           </button>
         </div>
-        <span style={{fontSize:13,fontWeight:600,color:C.black,fontFamily:'var(--font-body)',position:'absolute',left:'50%',transform:'translateX(-50%)'}}>Default invoice</span>
+        <span style={{fontSize:13,fontWeight:600,color:C.black,fontFamily:'var(--font-body)',position:'absolute',left:'50%',transform:'translateX(-50%)'}}>{docType?.key==='contract' ? (templates.find(t=>t.id===activeTplId)?.name||'Contract template') : `${docType?.label||'Invoice'} template`}</span>
         <div style={{display:'flex',gap:6}}>
           <button onClick={()=>setResetModal(true)} style={{height:30,padding:'0 12px',background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,color:C.black,cursor:'pointer',display:'flex',alignItems:'center',gap:5,fontFamily:'var(--font-body)'}}>
             <FI n="rotate-left" sz={11} col={C.grey60}/> Reset
@@ -1553,5 +1642,261 @@ const ExpN = () => {
         </div>
       )}
     </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────
+// Document Type Selector — shown before the editor
+// ─────────────────────────────────────────────────────────────
+
+const DOC_TYPES = [
+  { key: 'invoice',      label: 'Invoice',      badge: 'Most used', edited: '2 days ago',   desc: 'Sent to customers when a rental is confirmed. Includes line items, pricing, taxes, and payment details.' },
+  { key: 'contract',     label: 'Contract',     badge: null,        edited: '1 week ago',   desc: 'Rental agreement presented to customers before pickup. Includes terms, conditions, and signature fields.' },
+  { key: 'quote',        label: 'Quote',        badge: null,        edited: '3 weeks ago',  desc: 'Price estimate sent before booking is confirmed. Customers can accept or request changes.' },
+  { key: 'packing_slip', label: 'Packing slip', badge: null,        edited: 'Never',        desc: 'Internal document for warehouse staff during pickup and return. Lists items with checkboxes.' },
+];
+
+const DocThumb = ({ type }) => {
+  const C = BQ;
+  const lines = (startY, count, widths) =>
+    Array.from({ length: count }, (_, i) => (
+      <rect key={i} x={8} y={startY + i * 8} width={widths ? widths[i % widths.length] : (44 - i * 4)} height={3} rx={1.5} fill="#D6D9DB"/>
+    ));
+
+  return (
+    <svg width={64} height={80} viewBox="0 0 64 80" style={{ flexShrink: 0, borderRadius: 6, border: `1px solid ${C.grey20}`, background: '#fff' }}>
+      {type === 'invoice' && <>
+        <rect x={8} y={8} width={28} height={6} rx={2} fill={C.blue}/>
+        <rect x={8} y={18} width={18} height={3} rx={1.5} fill="#D6D9DB"/>
+        {lines(26, 5, [48, 36, 44, 30, 40])}
+        <rect x={8} y={68} width={48} height={3} rx={1.5} fill="rgba(19,109,235,0.25)"/>
+      </>}
+      {type === 'contract' && <>
+        <rect x={8} y={8} width={20} height={5} rx={2} fill="#A4A7A8"/>
+        {lines(18, 6, [48, 40, 44, 32, 46, 36])}
+        <rect x={8} y={68} width={32} height={3} rx={1.5} fill="#D6D9DB"/>
+      </>}
+      {type === 'quote' && <>
+        <rect x={8} y={8} width={24} height={5} rx={2} fill={C.blue}/>
+        {lines(18, 3, [48, 36, 44])}
+        <rect x={8} y={42} width={48} height={14} rx={3} fill="rgba(19,109,235,0.08)" stroke="rgba(19,109,235,0.2)" strokeWidth={1}/>
+        <rect x={12} y={46} width={20} height={3} rx={1.5} fill={C.blue} opacity={0.4}/>
+        <rect x={12} y={52} width={14} height={3} rx={1.5} fill={C.blue} opacity={0.3}/>
+        {lines(62, 1, [40])}
+      </>}
+      {type === 'packing_slip' && <>
+        <rect x={8} y={8} width={22} height={5} rx={2} fill="#A4A7A8"/>
+        {[0,1,2,3].map(i => (
+          <React.Fragment key={i}>
+            <rect x={8} y={20 + i * 11} width={7} height={7} rx={1.5} fill="none" stroke="#D6D9DB" strokeWidth={1.2}/>
+            <rect x={19} y={22 + i * 11} width={36} height={3} rx={1.5} fill="#D6D9DB"/>
+          </React.Fragment>
+        ))}
+      </>}
+    </svg>
+  );
+};
+
+const DocTypeSelector = ({ onSelectDocType }) => {
+  const C = BQ;
+
+  const SettingsNavItem = ({ label }) => (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', padding: '6px 16px', width: '100%', flexShrink: 0, cursor: 'pointer' }}>
+      <span style={{ fontSize: 14, lineHeight: '20px', color: C.black, fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>{label}</span>
+    </div>
+  );
+
+  const MainNavItem = ({ icon, label, active }) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', margin: '0 4px', width: 'calc(100% - 8px)', flexShrink: 0, cursor: 'pointer', background: active ? C.blue5 : 'transparent', borderRadius: 6 }}>
+      <i className={`fa-regular fa-${icon}`} style={{ fontSize: 14, color: active ? C.blue : C.grey50, width: 16, textAlign: 'center', flexShrink: 0 }}/>
+      <span style={{ fontSize: 14, lineHeight: '20px', color: active ? C.blue : C.black, fontFamily: 'var(--font-body)', whiteSpace: 'nowrap', fontWeight: active ? 600 : 400 }}>{label}</span>
+    </div>
+  );
+
+  const NavDivider = () => (
+    <div style={{ height: 1, background: C.grey20, margin: '4px 0', flexShrink: 0 }}/>
+  );
+
+  return (
+    <div style={{ display: 'flex', width: '100%', height: '100vh', fontFamily: 'var(--font-body)', background: C.bg, overflow: 'hidden' }}>
+
+        {/* Main nav — 188px wide, white, matches actual Booqable sidebar */}
+        <div style={{ width: 188, background: C.white, borderRight: `1px solid ${C.grey30}`, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', overflow: 'hidden', flexShrink: 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+            {/* Logo + collapse */}
+            <div style={{ height: 44, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 12px 0 16px', flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <svg width="18" height="16" viewBox="0 0 18 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9 0L0 8L3 8L3 16L7 16L7 10L11 10L11 16L15 16L15 8L18 8L9 0Z" fill="#131314"/>
+                </svg>
+                <span style={{ fontSize: 15, fontWeight: 700, color: C.black, fontFamily: 'var(--font-body)', letterSpacing: '-0.2px' }}>booqable</span>
+              </div>
+              <i className="fa-regular fa-angles-left" style={{ fontSize: 13, color: C.grey40, cursor: 'pointer' }}/>
+            </div>
+            <NavDivider/>
+            {/* New order */}
+            <div style={{ padding: '6px 12px', flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <div style={{ width: 20, height: 20, borderRadius: '50%', background: C.blue, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <i className="fa-regular fa-plus" style={{ fontSize: 11, color: '#fff' }}/>
+                </div>
+                <span style={{ fontSize: 14, lineHeight: '20px', color: C.blue, fontFamily: 'var(--font-body)', fontWeight: 600 }}>New order</span>
+              </div>
+            </div>
+            <NavDivider/>
+            <MainNavItem icon="gauge" label="Dashboard"/>
+            <MainNavItem icon="calendar" label="Calendar"/>
+            <NavDivider/>
+            <MainNavItem icon="receipt" label="Orders"/>
+            <MainNavItem icon="user" label="Customers"/>
+            <MainNavItem icon="box" label="Inventory"/>
+            <MainNavItem icon="file-lines" label="Documents"/>
+            <NavDivider/>
+            <MainNavItem icon="store" label="Online store"/>
+            <MainNavItem icon="puzzle-piece" label="App store"/>
+            <NavDivider/>
+            <MainNavItem icon="chart-bar" label="Reports"/>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', paddingBottom: 8 }}>
+            <MainNavItem icon="barcode" label="Scan a barcode"/>
+            <MainNavItem icon="circle-question" label="Help"/>
+            <MainNavItem icon="gear" label="Settings" active/>
+            <NavDivider/>
+            {/* User */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', margin: '0 4px', cursor: 'pointer' }}>
+              <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#4FAE8C', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative' }}>
+                <span style={{ fontSize: 9, fontWeight: 700, color: '#fff', fontFamily: 'var(--font-body)', letterSpacing: '0.2px' }}>AD</span>
+                <div style={{ position: 'absolute', top: -1, right: -1, width: 6, height: 6, borderRadius: '50%', background: '#E51C2C', border: '1.5px solid #fff' }}/>
+              </div>
+              <span style={{ fontSize: 14, lineHeight: '20px', color: C.black, fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Andrej D</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Settings menu — 220px, #edf1f5 background */}
+        <div style={{ width: 220, background: C.bg, borderRight: `1px solid ${C.grey30}`, display: 'flex', flexDirection: 'column', overflowY: 'auto', flexShrink: 0 }}>
+          {/* Back office */}
+          <div style={{ display: 'flex', alignItems: 'center', padding: '16px 16px 6px', flexShrink: 0 }}>
+            <span style={{ fontSize: 16, lineHeight: '24px', fontWeight: 600, color: C.black, fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Back office</span>
+          </div>
+          <div style={{ borderBottom: `1px solid ${C.grey30}`, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', paddingBottom: 16, flexShrink: 0 }}>
+            {['General','Pricing','Taxes','Rental period','Payment providers','Custom fields','Locations','Emails'].map(l => <SettingsNavItem key={l} label={l}/>)}
+            {/* Documents — active, expanded with 3 sub-items */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', paddingBottom: 8, width: '100%', flexShrink: 0 }}>
+              <div style={{ background: '#DDEBFF', borderLeft: `2px solid ${C.blue}`, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px 16px', width: '100%', flexShrink: 0 }}>
+                <span style={{ fontSize: 14, lineHeight: '20px', fontWeight: 700, color: C.black, fontFamily: 'var(--font-body)', whiteSpace: 'nowrap', flex: 1 }}>Documents</span>
+              </div>
+              {/* Document templates — active sub-item */}
+              <div style={{ display: 'flex', alignItems: 'center', padding: '5px 16px 5px 32px', width: '100%', flexShrink: 0, cursor: 'pointer', background: C.blue5 }}>
+                <span style={{ fontSize: 14, lineHeight: '20px', color: C.blue, fontFamily: 'var(--font-body)', whiteSpace: 'nowrap', fontWeight: 600 }}>Document templates</span>
+              </div>
+            </div>
+            {['Translations','Security','Account and billing'].map(l => <SettingsNavItem key={l} label={l}/>)}
+          </div>
+          {/* Online bookings */}
+          <div style={{ display: 'flex', alignItems: 'center', padding: '16px 16px 6px', flexShrink: 0 }}>
+            <span style={{ fontSize: 16, lineHeight: '24px', fontWeight: 600, color: C.black, fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Online bookings</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', paddingBottom: 16, flexShrink: 0 }}>
+            {['Overview','Booking page','Website builder','Website integration','Preferences','Pickup and delivery','Checkout','SEO'].map(l => <SettingsNavItem key={l} label={l}/>)}
+          </div>
+        </div>
+
+        {/* Main content */}
+        <div style={{ flex: 1, background: C.bg, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+          {/* Breadcrumb header */}
+          <div style={{ height: 56, background: C.white, borderBottom: `1px solid ${C.grey30}`, display: 'flex', alignItems: 'center', padding: '0 24px', flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 22, lineHeight: '28px', color: C.grey50, fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Settings</span>
+              <i className="fa-regular fa-chevron-right" style={{ fontSize: 16, lineHeight: '24px', color: C.grey50 }}/>
+              <span style={{ fontSize: 22, lineHeight: '28px', color: C.grey50, fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Back office</span>
+              <i className="fa-regular fa-chevron-right" style={{ fontSize: 16, lineHeight: '24px', color: C.grey50 }}/>
+              <span style={{ fontSize: 22, lineHeight: '28px', fontWeight: 500, color: C.black, fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Documents</span>
+            </div>
+          </div>
+          <div style={{ borderBottom: `1px solid ${C.grey30}`, display: 'flex', gap: 24, alignItems: 'flex-start', padding: 24 }}>
+            {/* Left column */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24, alignItems: 'flex-start', flexShrink: 0, width: 328 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-start', width: '100%' }}>
+                <span style={{ fontSize: 16, lineHeight: '24px', fontWeight: 600, color: C.black, fontFamily: 'var(--font-body)' }}>Document templates</span>
+                <span style={{ fontSize: 14, lineHeight: '20px', color: C.grey50, fontFamily: 'var(--font-body)' }}>This information shows on documents your customers receive.</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ fontSize: 14, lineHeight: '20px', fontWeight: 600, color: C.blue, fontFamily: 'var(--font-body)', whiteSpace: 'nowrap', cursor: 'pointer' }}>Learn more</span>
+                <i className="fa-regular fa-arrow-up-right-from-square" style={{ fontSize: 12, color: C.blue }}/>
+              </div>
+              {/* Video card */}
+              <div style={{ height: 88, position: 'relative', width: 328, flexShrink: 0 }}>
+                <div style={{ position: 'absolute', background: C.white, height: 72, left: 0, top: 16, width: 328, borderRadius: 8, overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
+                  <div style={{ position: 'relative', border: `1px solid ${C.grey30}`, borderRadius: 4, overflow: 'hidden', margin: 8, width: 80, height: 56, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.grey10 }}>
+                    <div style={{ background: '#E51C2C', borderRadius: 6, width: 32, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0px 1px 24px rgba(0,0,0,0.1)' }}>
+                      <i className="fa-solid fa-play" style={{ fontSize: 12, color: '#fff', lineHeight: '16px' }}/>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontSize: 14, lineHeight: '20px', fontWeight: 600, color: C.black, fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Customizing your documents</span>
+                    <span style={{ fontSize: 14, lineHeight: '20px', fontWeight: 600, color: C.blue, fontFamily: 'var(--font-body)', whiteSpace: 'nowrap', cursor: 'pointer' }}>Watch video</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* Right column — 2×2 card grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, flex: 1, alignContent: 'start' }}>
+              {DOC_TYPES.map(dt => {
+                const [hov, setHov] = React.useState(false);
+                return (
+                  <div key={dt.key}
+                    onClick={() => onSelectDocType(dt)}
+                    onMouseEnter={() => setHov(true)}
+                    onMouseLeave={() => setHov(false)}
+                    style={{
+                      background: C.white,
+                      border: `1.5px solid ${hov ? C.blue : C.grey20}`,
+                      borderRadius: 10,
+                      padding: '14px 16px',
+                      display: 'flex',
+                      gap: 14,
+                      cursor: 'pointer',
+                      transition: 'border-color 150ms',
+                    }}>
+                    {/* Card content */}
+                    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 15, fontWeight: 700, color: C.black, fontFamily: 'var(--font-body)' }}>{dt.label}</span>
+                      </div>
+                      <p style={{ fontSize: 12, color: C.grey50, lineHeight: 1.55, fontFamily: 'var(--font-body)', margin: 0 }}>{dt.desc}</p>
+                      <div style={{ marginTop: 6 }}>
+                        <button onClick={e => { e.stopPropagation(); onSelectDocType(dt); }}
+                          style={{ height: 34, padding: '0 16px', background: hov ? C.blue : C.white, color: hov ? '#fff' : C.blue, border: `1px solid ${C.blue}`, borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'background 150ms, color 150ms' }}>
+                          Edit
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────
+// Root App — manages selector ↔ editor navigation
+// ─────────────────────────────────────────────────────────────
+
+const App = () => {
+  const [screen, setScreen] = React.useState('selector');
+  const [docType, setDocType] = React.useState(null);
+
+  if (screen === 'editor') {
+    return <ExpN onExit={() => setScreen('selector')} docType={docType} />;
+  }
+
+  return (
+    <DocTypeSelector
+      onSelectDocType={dt => { setDocType(dt); setScreen('editor'); }}
+    />
   );
 };
