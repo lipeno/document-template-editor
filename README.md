@@ -33,7 +33,7 @@ The prototype requires an internet connection for:
 
 ## Screens / Views
 
-### Main Layout (`ExpN` in `explorations-v10.jsx`)
+### Main Layout (`ExpN` in `App.jsx`)
 A three-zone layout at **1280 × 780px**:
 
 | Zone | Width | Description |
@@ -247,7 +247,7 @@ All tokens are in `colors_and_type.css` as CSS custom properties. Key values use
 | `--font-body` | `'Proxima Nova', -apple-system, …` | All UI text |
 
 ### Inline token alias (`BQ` object in prototype)
-The prototype uses a `BQ` constant (defined in `explorations-v10.jsx` top, sourced from `components.jsx` globals) mapping short keys to these values:
+The prototype uses a `BQ` constant (defined in `App.jsx` top, sourced from `components.jsx` globals) mapping short keys to these values:
 
 ```js
 const BQ = {
@@ -290,7 +290,7 @@ Thumb: white circle, transition: left 180ms
 | File | Purpose |
 |------|---------|
 | `index.html` | Standalone entry point — renders v10 directly, no canvas wrapper |
-| `explorations-v10.jsx` | Full v10 component (`ExpN`) — all logic and JSX |
+| `App.jsx` | Full v10 component (`ExpN`) — all logic and JSX |
 | `components.jsx` | Shared Booqable UI atoms: `Icon`, `Avatar`, `Badge`, `Button`, `Input`, `Field`, `Card`, `VCard` |
 | `colors_and_type.css` | Full Booqable design token CSS (colours, spacing, typography, shadows, radii) |
 | `fonts/` | Proxima Nova font files (all weights) |
@@ -300,7 +300,7 @@ Thumb: white circle, transition: left 180ms
 
 ## Key Implementation Notes for Claude Code
 
-1. **`ExpN` is self-contained** — all state, sub-components, and render logic live inside the single function component in `explorations-v10.jsx`. Split into smaller components as appropriate for your codebase conventions.
+1. **`ExpN` is self-contained** — all state, sub-components, and render logic live inside the single function component in `App.jsx`. Split into smaller components as appropriate for your codebase conventions.
 
 2. **Font Awesome icons** — every icon is `<i className="fa-regular fa-{name}">`. The `FI` atom in `ExpN` wraps this with size/color props. Map to your internal icon component.
 
@@ -308,7 +308,7 @@ Thumb: white circle, transition: left 180ms
 
 4. **No external state management** — all state is local React `useState`. Wire up to your API / store layer as needed.
 
-5. **The `BQ` colour object** is defined at the top of `explorations-v10.jsx` — replace references with CSS custom properties or your design token system.
+5. **The `BQ` colour object** is defined at the top of `App.jsx` — replace references with CSS custom properties or your design token system.
 
 6. **Text section debounce** — the `TextSectionPanel` debounces textarea input at 120ms to avoid re-rendering the preview on every keystroke. Keep this pattern.
 
