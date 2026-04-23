@@ -125,6 +125,247 @@ const DInput = ({value, onChange, style, placeholder, multiline}) => {
     : <input    value={local} onChange={e=>handle(e.target.value)} placeholder={placeholder} style={style}/>;
 };
 
+// ── Product image SVG content — created once at module load, never per-render ─
+const _PIBG = "#f0f2f5";
+const _PI = {
+  camera: (<><rect width="32" height="32" fill={_PIBG} rx="3"/>
+    <rect x="2" y="10" width="24" height="17" rx="2" fill="#1c1c1c"/>
+    <rect x="22" y="10" width="8" height="17" rx="2" fill="#141414"/>
+    <rect x="5" y="7" width="7" height="4" rx="2" fill="#2a2a2a"/>
+    <rect x="13" y="6" width="8" height="5" rx="1.5" fill="#222"/>
+    <circle cx="27" cy="11" r="2" fill="#999"/>
+    <circle cx="13" cy="18.5" r="7.5" fill="#444"/>
+    <circle cx="13" cy="18.5" r="6" fill="#101828"/>
+    <circle cx="13" cy="18.5" r="4.5" fill="#1a2f52"/>
+    <circle cx="11" cy="17" r="1.8" fill="rgba(255,255,255,0.18)"/>
+    <rect x="5" y="23.5" width="8" height="1.5" rx=".75" fill="#cc0000"/></>),
+  lensD: (<><rect width="32" height="32" fill={_PIBG} rx="3"/>
+    <rect x="10" y="3" width="12" height="26" rx="4" fill="#2a2a2a"/>
+    <rect x="9" y="3" width="14" height="3" rx="1.5" fill="#666"/>
+    <rect x="8" y="13" width="16" height="6" rx="1.5" fill="#4a4a4a"/>
+    <rect x="9" y="21" width="14" height="3" rx="1.5" fill="#555"/>
+    <circle cx="16" cy="7" r="5.5" fill="#1a2540"/>
+    <circle cx="16" cy="7" r="4" fill="#1e3060"/>
+    <circle cx="14.5" cy="5.8" r="1.2" fill="rgba(255,255,255,0.22)"/>
+    <rect x="11" y="27" width="10" height="2" rx="1" fill="#888"/></>),
+  lensL: (<><rect width="32" height="32" fill={_PIBG} rx="3"/>
+    <rect x="10" y="3" width="12" height="26" rx="4" fill="#3d3d3d"/>
+    <rect x="9" y="3" width="14" height="3" rx="1.5" fill="#666"/>
+    <rect x="8" y="13" width="16" height="6" rx="1.5" fill="#4a4a4a"/>
+    <rect x="9" y="21" width="14" height="3" rx="1.5" fill="#555"/>
+    <circle cx="16" cy="7" r="5.5" fill="#1a2540"/>
+    <circle cx="16" cy="7" r="4" fill="#1e3060"/>
+    <circle cx="14.5" cy="5.8" r="1.2" fill="rgba(255,255,255,0.22)"/>
+    <rect x="11" y="27" width="10" height="2" rx="1" fill="#888"/></>),
+  tripod: (<><rect width="32" height="32" fill={_PIBG} rx="3"/>
+    <circle cx="16" cy="8" r="4" fill="#333"/>
+    <rect x="13" y="7" width="6" height="3" rx="1" fill="#222"/>
+    <rect x="14.5" y="11" width="3" height="7" fill="#aaa"/>
+    <circle cx="16" cy="18" r="2.5" fill="#888"/>
+    <line x1="16" y1="18" x2="5" y2="30" stroke="#bbb" strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="16" y1="18" x2="27" y2="30" stroke="#bbb" strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="16" y1="18" x2="16" y2="31" stroke="#bbb" strokeWidth="2.5" strokeLinecap="round"/>
+    <circle cx="5" cy="30" r="1.5" fill="#444"/>
+    <circle cx="27" cy="30" r="1.5" fill="#444"/>
+    <circle cx="16" cy="31" r="1.5" fill="#444"/>
+    <rect x="14" y="4" width="4" height="2" rx=".5" fill="#555"/></>),
+  memCards: (<><rect width="32" height="32" fill={_PIBG} rx="3"/>
+    <rect x="6" y="8" width="13" height="18" rx="1.5" fill="#8090b0"/>
+    <rect x="9" y="6" width="13" height="18" rx="1.5" fill="#5570a8"/>
+    <rect x="12" y="4" width="13" height="18" rx="1.5" fill="#3a55a0"/>
+    <polygon points="22,4 25,4 25,8" fill="#2a459a"/>
+    <rect x="13" y="6" width="10" height="6" rx="0.5" fill="rgba(255,255,255,0.18)"/>
+    <rect x="13" y="16" width="1.5" height="4" rx=".5" fill="#d4a820"/>
+    <rect x="15.5" y="16" width="1.5" height="4" rx=".5" fill="#d4a820"/>
+    <rect x="18" y="16" width="1.5" height="4" rx=".5" fill="#d4a820"/>
+    <rect x="20.5" y="16" width="1.5" height="4" rx=".5" fill="#d4a820"/></>),
+  ledPanel: (<><rect width="32" height="32" fill={_PIBG} rx="3"/>
+    <rect x="2" y="6" width="28" height="20" rx="2" fill="#1a1a1a"/>
+    <rect x="4" y="8" width="24" height="16" rx="1" fill="#111"/>
+    <circle cx="8" cy="12" r="1.8" fill="#ffe060"/><circle cx="13" cy="12" r="1.8" fill="#ffd040"/>
+    <circle cx="18" cy="12" r="1.8" fill="#ffe060"/><circle cx="23" cy="12" r="1.8" fill="#ffd040"/>
+    <circle cx="8" cy="18" r="1.8" fill="#ffd040"/><circle cx="13" cy="18" r="1.8" fill="#ffe060"/>
+    <circle cx="18" cy="18" r="1.8" fill="#ffd040"/><circle cx="23" cy="18" r="1.8" fill="#ffe060"/>
+    <circle cx="28.5" cy="7.5" r="1" fill="#44ee44"/>
+    <rect x="14" y="26" width="4" height="3" rx=".5" fill="#555"/></>),
+  softbox: (<><rect width="32" height="32" fill={_PIBG} rx="3"/>
+    <polygon points="4,8 8,13 8,23 4,27" fill="#888"/>
+    <polygon points="28,8 24,13 24,23 28,27" fill="#888"/>
+    <polygon points="4,8 28,8 24,13 8,13" fill="#aaa"/>
+    <polygon points="8,23 24,23 28,27 4,27" fill="#999"/>
+    <rect x="8" y="13" width="16" height="10" fill="#f0f0f0"/>
+    <rect x="9" y="14" width="14" height="8" fill="rgba(255,255,240,0.92)"/>
+    <rect x="13" y="5" width="6" height="4" rx="1" fill="#777"/>
+    <rect x="15" y="2" width="2" height="4" rx=".5" fill="#555"/></>),
+  audioRec: (<><rect width="32" height="32" fill={_PIBG} rx="3"/>
+    <rect x="7" y="4" width="18" height="26" rx="2.5" fill="#2a2a2a"/>
+    <rect x="9" y="6" width="14" height="8" rx="1" fill="#1a3a1a"/>
+    <rect x="10" y="7.5" width="2.5" height="5" rx=".5" fill="#00cc44"/>
+    <rect x="13.5" y="8.5" width="2.5" height="4" rx=".5" fill="#00cc44"/>
+    <rect x="17" y="9" width="2.5" height="3.5" rx=".5" fill="#aacc00"/>
+    <rect x="20.5" y="9.5" width="1.5" height="3" rx=".5" fill="#ffaa00"/>
+    <circle cx="16" cy="19" r="4" fill="#cc0000"/>
+    <circle cx="16" cy="19" r="2.5" fill="#ee1111"/>
+    <circle cx="10" cy="25" r="1.5" fill="#555"/>
+    <circle cx="16" cy="25" r="1.5" fill="#555"/>
+    <circle cx="22" cy="25" r="1.5" fill="#555"/>
+    <rect x="13" y="2.5" width="6" height="2" rx="1" fill="#444"/></>),
+  boomMic: (<><rect width="32" height="32" fill={_PIBG} rx="3"/>
+    <rect x="4" y="15" width="26" height="2.5" rx="1.25" fill="#b0b0b0"/>
+    <rect x="4" y="15.5" width="18" height="1.5" rx=".75" fill="#e0e0e0"/>
+    <rect x="19" y="10" width="8" height="12" rx="2.5" fill="#333"/>
+    <line x1="21" y1="11" x2="21" y2="21" stroke="#555" strokeWidth="0.8"/>
+    <line x1="23" y1="11" x2="23" y2="21" stroke="#555" strokeWidth="0.8"/>
+    <line x1="25" y1="11" x2="25" y2="21" stroke="#555" strokeWidth="0.8"/>
+    <rect x="21" y="9" width="4" height="2" rx="1" fill="#444"/>
+    <rect x="18" y="13" width="10" height="2" rx="1" fill="#666"/>
+    <path d="M4,16.5 Q4,22 9,24" stroke="#333" strokeWidth="1.5" fill="none" strokeLinecap="round"/></>),
+  cStand: (<><rect width="32" height="32" fill={_PIBG} rx="3"/>
+    <rect x="6" y="25" width="20" height="2.5" rx="1.25" fill="#888"/>
+    <rect x="10" y="22" width="12" height="2" rx="1" fill="#aaa"/>
+    <rect x="14" y="5" width="4" height="20" rx="1" fill="#999"/>
+    <rect x="14" y="5" width="14" height="3" rx="1.5" fill="#aaa"/>
+    <rect x="25" y="3" width="3" height="7" rx="1" fill="#888"/>
+    <circle cx="14" cy="10" r="1.5" fill="#666"/>
+    <circle cx="14" cy="16" r="1.5" fill="#666"/>
+    <circle cx="28" cy="6.5" r="1.2" fill="#777"/></>),
+  sandbag: (<><rect width="32" height="32" fill={_PIBG} rx="3"/>
+    <rect x="4" y="12" width="24" height="14" rx="4" fill="#c87820"/>
+    <rect x="4" y="17" width="24" height="2" fill="rgba(0,0,0,0.12)"/>
+    <rect x="4" y="22" width="24" height="1.5" fill="rgba(0,0,0,0.10)"/>
+    <path d="M12,12 Q16,6 20,12" stroke="#a05010" strokeWidth="2" fill="none" strokeLinecap="round"/>
+    <circle cx="16" cy="7.5" r="2" fill="#a05010"/></>),
+  appleBoxes: (<><rect width="32" height="32" fill={_PIBG} rx="3"/>
+    <rect x="3" y="22" width="26" height="7" rx="1" fill="#a06820"/>
+    <line x1="8" y1="22" x2="8" y2="29" stroke="#8a5810" strokeWidth="0.8"/>
+    <line x1="14" y1="22" x2="14" y2="29" stroke="#8a5810" strokeWidth="0.8"/>
+    <line x1="20" y1="22" x2="20" y2="29" stroke="#8a5810" strokeWidth="0.8"/>
+    <line x1="26" y1="22" x2="26" y2="29" stroke="#8a5810" strokeWidth="0.8"/>
+    <rect x="4" y="15" width="24" height="7" rx="1" fill="#b87830"/>
+    <line x1="9" y1="15" x2="9" y2="22" stroke="#a06820" strokeWidth="0.8"/>
+    <line x1="15" y1="15" x2="15" y2="22" stroke="#a06820" strokeWidth="0.8"/>
+    <line x1="21" y1="15" x2="21" y2="22" stroke="#a06820" strokeWidth="0.8"/>
+    <rect x="5" y="8" width="22" height="7" rx="1" fill="#c88838"/>
+    <line x1="10" y1="8" x2="10" y2="15" stroke="#b07030" strokeWidth="0.8"/>
+    <line x1="16" y1="8" x2="16" y2="15" stroke="#b07030" strokeWidth="0.8"/>
+    <line x1="22" y1="8" x2="22" y2="15" stroke="#b07030" strokeWidth="0.8"/>
+    <circle cx="16" cy="11.5" r="1.5" fill="rgba(0,0,0,0.25)"/></>),
+  backdropW: (<><rect width="32" height="32" fill={_PIBG} rx="3"/>
+    <rect x="3" y="4" width="1.5" height="22" rx=".75" fill="#888"/>
+    <rect x="27.5" y="4" width="1.5" height="22" rx=".75" fill="#888"/>
+    <rect x="3" y="4" width="26" height="1.5" rx=".75" fill="#888"/>
+    <path d="M4.5,5.5 L4.5,20 Q4.5,28 12,28 L27.5,28 L27.5,5.5 Z" fill="#f8f8f6"/>
+    <path d="M4.5,20 Q5,26 12,27" stroke="#ddd" strokeWidth="1" fill="none"/>
+    <ellipse cx="15.5" cy="5.5" rx="11" ry="2" fill="#e8e8e4"/></>),
+  backdropB: (<><rect width="32" height="32" fill={_PIBG} rx="3"/>
+    <rect x="3" y="4" width="1.5" height="22" rx=".75" fill="#888"/>
+    <rect x="27.5" y="4" width="1.5" height="22" rx=".75" fill="#888"/>
+    <rect x="3" y="4" width="26" height="1.5" rx=".75" fill="#888"/>
+    <path d="M4.5,5.5 L4.5,20 Q4.5,28 12,28 L27.5,28 L27.5,5.5 Z" fill="#1a1a1a"/>
+    <path d="M4.5,20 Q5,26 12,27" stroke="#333" strokeWidth="1" fill="none"/>
+    <ellipse cx="15.5" cy="5.5" rx="11" ry="2" fill="#2a2a2a"/></>),
+  bkdStand: (<><rect width="32" height="32" fill={_PIBG} rx="3"/>
+    <rect x="5" y="5" width="2" height="24" rx="1" fill="#999"/>
+    <rect x="25" y="5" width="2" height="24" rx="1" fill="#999"/>
+    <rect x="5" y="5" width="22" height="2.5" rx="1.25" fill="#bbb"/>
+    <rect x="2" y="27" width="8" height="2.5" rx="1.25" fill="#888"/>
+    <rect x="22" y="27" width="8" height="2.5" rx="1.25" fill="#888"/>
+    <circle cx="6" cy="12" r="2" fill="#666"/>
+    <circle cx="26" cy="12" r="2" fill="#666"/>
+    <rect x="8" y="4" width="4" height="3" rx="1" fill="#777"/>
+    <rect x="20" y="4" width="4" height="3" rx="1" fill="#777"/></>),
+  reflector: (<><rect width="32" height="32" fill={_PIBG} rx="3"/>
+    <circle cx="16" cy="16" r="13" fill="#c8c8c8"/>
+    <path d="M16,16 L3,16 A13,13 0 0,1 9.5,5.5 Z" fill="#d4a020"/>
+    <path d="M16,16 L9.5,5.5 A13,13 0 0,1 22.5,5.5 Z" fill="#f5f5f5"/>
+    <path d="M16,16 L22.5,5.5 A13,13 0 0,1 29,16 Z" fill="#d8d8d8"/>
+    <path d="M16,16 L29,16 A13,13 0 0,1 22.5,26.5 Z" fill="#e8e8e8"/>
+    <path d="M16,16 L22.5,26.5 A13,13 0 0,1 9.5,26.5 Z" fill="#2a2a2a"/>
+    <path d="M16,16 L9.5,26.5 A13,13 0 0,1 3,16 Z" fill="#c89020"/>
+    <circle cx="16" cy="16" r="4" fill="#aaa"/>
+    <circle cx="16" cy="16" r="2.5" fill="#888"/></>),
+  colorGels: (<><rect width="32" height="32" fill={_PIBG} rx="3"/>
+    <rect x="6" y="6" width="14" height="22" rx="1" fill="rgba(220,60,60,0.85)"/>
+    <rect x="9" y="5" width="14" height="22" rx="1" fill="rgba(240,140,40,0.85)"/>
+    <rect x="12" y="4" width="14" height="22" rx="1" fill="rgba(240,220,30,0.85)"/>
+    <rect x="15" y="5" width="14" height="22" rx="1" fill="rgba(50,180,80,0.85)"/>
+    <rect x="18" y="6" width="8" height="21" rx="1" fill="rgba(50,100,220,0.85)"/>
+    <rect x="18" y="6" width="8" height="4" rx="0.5" fill="rgba(255,255,255,0.7)"/></>),
+  vBattery: (<><rect width="32" height="32" fill={_PIBG} rx="3"/>
+    <rect x="6" y="4" width="20" height="22" rx="2" fill="#1c1c1c"/>
+    <rect x="5" y="24" width="22" height="5" rx="1" fill="#333"/>
+    <rect x="8" y="25" width="6" height="3" rx=".5" fill="#555"/>
+    <rect x="18" y="25" width="6" height="3" rx=".5" fill="#555"/>
+    <rect x="9" y="8" width="14" height="4" rx="1" fill="#111"/>
+    <rect x="10" y="9" width="3" height="2" rx=".5" fill="#00cc44"/>
+    <rect x="14" y="9" width="3" height="2" rx=".5" fill="#00cc44"/>
+    <rect x="18" y="9" width="3" height="2" rx=".5" fill="#44aa00"/>
+    <rect x="22" y="9" width="1.5" height="2" rx=".5" fill="#333"/>
+    <rect x="9" y="14" width="14" height="8" rx="1" fill="#252525"/>
+    <rect x="11" y="16" width="10" height="1.5" rx=".75" fill="#444"/>
+    <rect x="13" y="18.5" width="6" height="1.5" rx=".75" fill="#3a3a3a"/></>),
+  charger: (<><rect width="32" height="32" fill={_PIBG} rx="3"/>
+    <rect x="7" y="8" width="18" height="12" rx="2.5" fill="#2a2a2a"/>
+    <rect x="8" y="9" width="16" height="4" rx="1.5" fill="rgba(255,255,255,0.07)"/>
+    <rect x="13" y="20" width="3" height="4" rx=".5" fill="#555"/>
+    <rect x="17" y="20" width="3" height="4" rx=".5" fill="#555"/>
+    <path d="M16,20 Q16,26 22,26 Q28,26 28,20 Q28,15 22,15" stroke="#444" strokeWidth="2" fill="none" strokeLinecap="round"/>
+    <rect x="20" y="13" width="5" height="3" rx="1" fill="#444"/>
+    <rect x="22" y="11" width="2" height="3" rx=".5" fill="#555"/>
+    <circle cx="16" cy="14" r="1.2" fill="#44cc44"/></>),
+  monitor: (<><rect width="32" height="32" fill={_PIBG} rx="3"/>
+    <rect x="2" y="5" width="28" height="19" rx="2" fill="#1a1a1a"/>
+    <rect x="4" y="7" width="11" height="15" rx="1" fill="#081408"/>
+    <polyline points="5,20 7,16 9,18 11,13 13,17 14,15" stroke="#00cc44" strokeWidth="0.8" fill="none"/>
+    <rect x="16" y="7" width="12" height="15" rx="1" fill="#0a0a14"/>
+    <circle cx="22" cy="14.5" r="5" fill="none" stroke="#204080" strokeWidth="0.6"/>
+    <circle cx="22" cy="14.5" r="3" fill="none" stroke="#204080" strokeWidth="0.6"/>
+    <circle cx="22" cy="11.5" r="0.8" fill="#cc4444"/>
+    <circle cx="25" cy="16.5" r="0.8" fill="#44cc44"/>
+    <circle cx="19" cy="16.5" r="0.8" fill="#4444cc"/>
+    <rect x="14" y="24" width="4" height="4" rx=".5" fill="#333"/>
+    <rect x="10" y="27" width="12" height="2" rx="1" fill="#444"/></>),
+  followFocus: (<><rect width="32" height="32" fill={_PIBG} rx="3"/>
+    <rect x="6" y="8" width="14" height="16" rx="2" fill="#222"/>
+    <rect x="7" y="9" width="12" height="2" rx=".5" fill="#333"/>
+    <rect x="7" y="12" width="12" height="2" rx=".5" fill="#333"/>
+    <rect x="7" y="15" width="12" height="2" rx=".5" fill="#333"/>
+    <rect x="7" y="18" width="12" height="2" rx=".5" fill="#333"/>
+    <circle cx="21" cy="16" r="8" fill="#3a3a3a"/>
+    <circle cx="21" cy="16" r="5.5" fill="#2a2a2a"/>
+    <rect x="20" y="8" width="2" height="3" rx=".5" fill="#4a4a4a"/>
+    <rect x="20" y="21" width="2" height="3" rx=".5" fill="#4a4a4a"/>
+    <rect x="25" y="15" width="3" height="2" rx=".5" fill="#4a4a4a"/>
+    <rect x="13" y="15" width="3" height="2" rx=".5" fill="#4a4a4a"/>
+    <circle cx="21" cy="16" r="2.5" fill="#555"/>
+    <circle cx="21" cy="16" r="1.2" fill="#333"/>
+    <rect x="3" y="14" width="6" height="4" rx="1" fill="#444"/></>),
+  pelicanCase: (<><rect width="32" height="32" fill={_PIBG} rx="3"/>
+    <rect x="2" y="6" width="28" height="22" rx="3" fill="#e8a800"/>
+    <rect x="2" y="15.5" width="28" height="1.5" fill="#c89000"/>
+    <path d="M11,6 Q16,2 21,6" stroke="#c89000" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+    <rect x="5" y="13" width="5" height="5" rx="1" fill="#888"/>
+    <rect x="6" y="14" width="3" height="3" rx=".5" fill="#aaa"/>
+    <rect x="22" y="13" width="5" height="5" rx="1" fill="#888"/>
+    <rect x="23" y="14" width="3" height="3" rx=".5" fill="#aaa"/>
+    <rect x="4" y="8" width="24" height="6" rx="1" fill="rgba(0,0,0,0.08)"/>
+    <rect x="2" y="6" width="5" height="5" rx="2" fill="#d09800"/>
+    <rect x="25" y="6" width="5" height="5" rx="2" fill="#d09800"/>
+    <rect x="2" y="23" width="5" height="5" rx="2" fill="#d09800"/>
+    <rect x="25" y="23" width="5" height="5" rx="2" fill="#d09800"/></>),
+  fallback: (<><rect width="32" height="32" fill={_PIBG} rx="3"/>
+    <rect x="5" y="10" width="22" height="16" rx="2" fill="#888"/>
+    <polygon points="5,10 16,4 27,10" fill="#aaa"/></>),
+};
+const _SKU_PI = {
+  'R5-001':_PI.camera, 'LNS-85':_PI.lensD, 'LNS-02':_PI.lensL, 'LNS-24':_PI.lensD,
+  'TRP-02':_PI.tripod, 'MEM-04':_PI.memCards, 'LED-600':_PI.ledPanel, 'SBX-02':_PI.softbox,
+  'AUD-07':_PI.audioRec, 'MIC-03':_PI.boomMic, 'CST-04':_PI.cStand, 'SND-10':_PI.sandbag,
+  'APL-06':_PI.appleBoxes, 'BKD-W':_PI.backdropW, 'BKD-B':_PI.backdropB, 'BKS-01':_PI.bkdStand,
+  'RFL-05':_PI.reflector, 'GEL-01':_PI.colorGels, 'BAT-VM':_PI.vBattery, 'CHG-01':_PI.charger,
+  'MON-07':_PI.monitor, 'WFF-01':_PI.followFocus, 'PLC-L':_PI.pelicanCase,
+};
+
 const ExpN = () => {
   const C = BQ;
   const _nid = React.useRef(600);
@@ -144,7 +385,7 @@ const ExpN = () => {
     { id:'tax',         label:'Tax',                                    drag:true,  on:false, dropdown:null },
     { id:'price_total', label:'Price total',                            drag:true,  on:true,  dropdown:null },
     { id:'bundle',      label:'Bundle item pricing',                    drag:false, on:true,  dropdown:null, special:true },
-    { id:'barcode',     label:'Barcode',                                drag:true,  on:true,  dropdown:null },
+    { id:'barcode',     label:'Barcode',                                drag:true,  on:false, dropdown:null },
     { id:'qr',          label:'QR code',                                drag:true,  on:true,  dropdown:null },
     { id:'item_type',   label:'Item type (Rental, Sales, Service)',     drag:true,  on:true,  dropdown:null },
     { id:'custom',      label:'Custom fields',                          drag:true,  on:false, dropdown:null },
@@ -778,65 +1019,33 @@ const ExpN = () => {
   ];
 
   // ── Visual column renderers ───────────────────────────────
-  const ProductImage = ({name, size}) => {
+  const _piByName = (name) => {
+    if (/canon|eos|r5|camera/i.test(name)) return _PI.camera;
+    if (/zoom lens|prime lens|lens/i.test(name)) return _PI.lensL;
+    if (/tripod/i.test(name)) return _PI.tripod;
+    if (/memory|card/i.test(name)) return _PI.memCards;
+    if (/led|panel/i.test(name)) return _PI.ledPanel;
+    if (/softbox/i.test(name)) return _PI.softbox;
+    if (/audio|recorder/i.test(name)) return _PI.audioRec;
+    if (/boom|mic/i.test(name)) return _PI.boomMic;
+    if (/c-stand|stand/i.test(name)) return _PI.cStand;
+    if (/sandbag/i.test(name)) return _PI.sandbag;
+    if (/apple box/i.test(name)) return _PI.appleBoxes;
+    if (/backdrop/i.test(name)) return /black/i.test(name) ? _PI.backdropB : _PI.backdropW;
+    if (/reflector/i.test(name)) return _PI.reflector;
+    if (/gel/i.test(name)) return _PI.colorGels;
+    if (/battery/i.test(name)) return _PI.vBattery;
+    if (/charger|cable/i.test(name)) return _PI.charger;
+    if (/monitor/i.test(name)) return _PI.monitor;
+    if (/follow focus/i.test(name)) return _PI.followFocus;
+    if (/pelican|case/i.test(name)) return _PI.pelicanCase;
+    return _PI.fallback;
+  };
+  const ProductImage = ({name, sku, size}) => {
     const sz = size==='Small'?18:size==='Large'?32:24;
-    const bg='#f2f2f2', dk='#3a3a3a', md='#888', lt='#bbb';
-    const isCamera=/canon|eos|r5|camera/i.test(name);
-    const isTripod=/tripod/i.test(name);
-    const isLens=/lens/i.test(name);
-    const isMem=/memory|card|mem/i.test(name);
-    const st={width:sz,height:sz,display:'inline-block',verticalAlign:'middle',borderRadius:2,flexShrink:0};
-    if(isCamera) return (
-      <svg style={st} viewBox="0 0 24 24">
-        <rect width="24" height="24" fill={bg} rx="2"/>
-        <rect x="3" y="7" width="18" height="12" rx="1.5" fill={dk}/>
-        <circle cx="12" cy="13" r="4.5" fill={md}/>
-        <circle cx="12" cy="13" r="3" fill={lt}/>
-        <circle cx="12" cy="13" r="1.5" fill={dk}/>
-        <rect x="7" y="5" width="5" height="3" rx="1" fill={dk}/>
-        <rect x="16.5" y="8.5" width="2" height="2" rx=".5" fill="#666"/>
-      </svg>
-    );
-    if(isTripod) return (
-      <svg style={st} viewBox="0 0 24 24">
-        <rect width="24" height="24" fill={bg} rx="2"/>
-        <rect x="9" y="2" width="6" height="3" rx="1" fill={dk}/>
-        <rect x="11" y="5" width="2" height="5" fill={dk}/>
-        <line x1="12" y1="10" x2="5" y2="21" stroke={dk} strokeWidth="1.5" strokeLinecap="round"/>
-        <line x1="12" y1="10" x2="19" y2="21" stroke={dk} strokeWidth="1.5" strokeLinecap="round"/>
-        <line x1="12" y1="13" x2="12" y2="21" stroke={dk} strokeWidth="1.5" strokeLinecap="round"/>
-      </svg>
-    );
-    if(isLens) return (
-      <svg style={st} viewBox="0 0 24 24">
-        <rect width="24" height="24" fill={bg} rx="2"/>
-        <circle cx="12" cy="12" r="9" fill={md}/>
-        <circle cx="12" cy="12" r="7" fill={lt}/>
-        <circle cx="12" cy="12" r="4" fill={dk}/>
-        <circle cx="12" cy="12" r="2" fill="#222"/>
-        <circle cx="9.5" cy="9.5" r="1" fill="rgba(255,255,255,.35)"/>
-      </svg>
-    );
-    if(isMem) return (
-      <svg style={st} viewBox="0 0 24 24">
-        <rect width="24" height="24" fill={bg} rx="2"/>
-        <path d="M6,3 L16,3 L18,5 L18,21 L6,21 Z" fill={lt}/>
-        <rect x="9" y="4" width="1.2" height="3.5" rx=".6" fill={dk}/>
-        <rect x="11.2" y="4" width="1.2" height="3.5" rx=".6" fill={dk}/>
-        <rect x="13.4" y="4" width="1.2" height="3.5" rx=".6" fill={dk}/>
-        <rect x="8" y="11" width="8" height="1" rx=".5" fill={md}/>
-        <rect x="8" y="14" width="8" height="1" rx=".5" fill={md}/>
-      </svg>
-    );
-    return (
-      <svg style={st} viewBox="0 0 24 24">
-        <rect width="24" height="24" fill={bg} rx="2"/>
-        <rect x="5" y="9" width="14" height="10" rx="1" fill={dk}/>
-        <polygon points="5,9 12,4 19,9" fill={md}/>
-        <line x1="12" y1="4" x2="12" y2="19" stroke={bg} strokeWidth=".8"/>
-        <line x1="5" y1="9" x2="19" y2="9" stroke={bg} strokeWidth=".8"/>
-      </svg>
-    );
+    const st = {width:sz,height:sz,display:'inline-block',verticalAlign:'middle',flexShrink:0};
+    const content = _SKU_PI[sku] || _piByName(name);
+    return <svg style={st} viewBox="0 0 32 32">{content}</svg>;
   };
 
   const BarcodeImg = ({sku}) => {
@@ -885,7 +1094,7 @@ const ExpN = () => {
   const renderCell = (col, row) => {
     if(col.id==='image'){
       const sz=lineItems.find(i=>i.id==='image')?.dropdown?.val||'Medium';
-      return <div style={{display:'flex',justifyContent:'center'}}><ProductImage name={row.name} size={sz}/></div>;
+      return <div style={{display:'flex',justifyContent:'center'}}><ProductImage name={row.name} sku={row.sku} size={sz}/></div>;
     }
     if(col.id==='barcode') return <div style={{display:'flex',justifyContent:'center'}}><BarcodeImg sku={row.sku}/></div>;
     if(col.id==='qr') return <div style={{display:'flex',justifyContent:'center'}}><QRImg sku={row.sku}/></div>;
