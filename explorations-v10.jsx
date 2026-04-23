@@ -23,7 +23,7 @@ const ExpN = () => {
 
   // ── Line items ────────────────────────────────────────────
   const [lineItems, setLineItems] = React.useState([
-    { id:'image',       label:'Image',                                  drag:true,  on:false, dropdown:{val:'Medium',opts:['Small','Medium','Large']} },
+    { id:'image',       label:'Image',                                  drag:true,  on:true,  dropdown:{val:'Medium',opts:['Small','Medium','Large']} },
     { id:'sku',         label:'Stock code (SKU)',                       drag:true,  on:false, dropdown:null },
     { id:'name',        label:'Product name',                           drag:true,  on:true,  dropdown:null },
     { id:'qty',         label:'Quantity',                               drag:true,  on:true,  dropdown:{val:'1x',opts:['1x','2x','Per unit']} },
@@ -35,8 +35,8 @@ const ExpN = () => {
     { id:'tax',         label:'Tax',                                    drag:true,  on:false, dropdown:null },
     { id:'price_total', label:'Price total',                            drag:true,  on:true,  dropdown:null },
     { id:'bundle',      label:'Bundle item pricing',                    drag:false, on:true,  dropdown:null, special:true },
-    { id:'barcode',     label:'Barcode',                                drag:true,  on:false, dropdown:null },
-    { id:'qr',          label:'QR code',                                drag:true,  on:false, dropdown:null },
+    { id:'barcode',     label:'Barcode',                                drag:true,  on:true,  dropdown:null },
+    { id:'qr',          label:'QR code',                                drag:true,  on:true,  dropdown:null },
     { id:'item_type',   label:'Item type (Rental, Sales, Service)',     drag:true,  on:true,  dropdown:null },
     { id:'custom',      label:'Custom fields',                          drag:true,  on:false, dropdown:null },
   ]);
@@ -607,6 +607,121 @@ const ExpN = () => {
     {name:'Memory Cards',  sku:'MEM-04', qty:'4', period:'7 days', unit_price:'$12',  charge_lbl:'1 day', discount:'—', coupons:'—', tax:'$7',  price_total:'$55',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
   ];
 
+  // ── Visual column renderers ───────────────────────────────
+  const ProductImage = ({name, size}) => {
+    const sz = size==='Small'?18:size==='Large'?32:24;
+    const bg='#f2f2f2', dk='#3a3a3a', md='#888', lt='#bbb';
+    const isCamera=/canon|eos|r5|camera/i.test(name);
+    const isTripod=/tripod/i.test(name);
+    const isLens=/lens/i.test(name);
+    const isMem=/memory|card|mem/i.test(name);
+    const st={width:sz,height:sz,display:'inline-block',verticalAlign:'middle',borderRadius:2,flexShrink:0};
+    if(isCamera) return (
+      <svg style={st} viewBox="0 0 24 24">
+        <rect width="24" height="24" fill={bg} rx="2"/>
+        <rect x="3" y="7" width="18" height="12" rx="1.5" fill={dk}/>
+        <circle cx="12" cy="13" r="4.5" fill={md}/>
+        <circle cx="12" cy="13" r="3" fill={lt}/>
+        <circle cx="12" cy="13" r="1.5" fill={dk}/>
+        <rect x="7" y="5" width="5" height="3" rx="1" fill={dk}/>
+        <rect x="16.5" y="8.5" width="2" height="2" rx=".5" fill="#666"/>
+      </svg>
+    );
+    if(isTripod) return (
+      <svg style={st} viewBox="0 0 24 24">
+        <rect width="24" height="24" fill={bg} rx="2"/>
+        <rect x="9" y="2" width="6" height="3" rx="1" fill={dk}/>
+        <rect x="11" y="5" width="2" height="5" fill={dk}/>
+        <line x1="12" y1="10" x2="5" y2="21" stroke={dk} strokeWidth="1.5" strokeLinecap="round"/>
+        <line x1="12" y1="10" x2="19" y2="21" stroke={dk} strokeWidth="1.5" strokeLinecap="round"/>
+        <line x1="12" y1="13" x2="12" y2="21" stroke={dk} strokeWidth="1.5" strokeLinecap="round"/>
+      </svg>
+    );
+    if(isLens) return (
+      <svg style={st} viewBox="0 0 24 24">
+        <rect width="24" height="24" fill={bg} rx="2"/>
+        <circle cx="12" cy="12" r="9" fill={md}/>
+        <circle cx="12" cy="12" r="7" fill={lt}/>
+        <circle cx="12" cy="12" r="4" fill={dk}/>
+        <circle cx="12" cy="12" r="2" fill="#222"/>
+        <circle cx="9.5" cy="9.5" r="1" fill="rgba(255,255,255,.35)"/>
+      </svg>
+    );
+    if(isMem) return (
+      <svg style={st} viewBox="0 0 24 24">
+        <rect width="24" height="24" fill={bg} rx="2"/>
+        <path d="M6,3 L16,3 L18,5 L18,21 L6,21 Z" fill={lt}/>
+        <rect x="9" y="4" width="1.2" height="3.5" rx=".6" fill={dk}/>
+        <rect x="11.2" y="4" width="1.2" height="3.5" rx=".6" fill={dk}/>
+        <rect x="13.4" y="4" width="1.2" height="3.5" rx=".6" fill={dk}/>
+        <rect x="8" y="11" width="8" height="1" rx=".5" fill={md}/>
+        <rect x="8" y="14" width="8" height="1" rx=".5" fill={md}/>
+      </svg>
+    );
+    return (
+      <svg style={st} viewBox="0 0 24 24">
+        <rect width="24" height="24" fill={bg} rx="2"/>
+        <rect x="5" y="9" width="14" height="10" rx="1" fill={dk}/>
+        <polygon points="5,9 12,4 19,9" fill={md}/>
+        <line x1="12" y1="4" x2="12" y2="19" stroke={bg} strokeWidth=".8"/>
+        <line x1="5" y1="9" x2="19" y2="9" stroke={bg} strokeWidth=".8"/>
+      </svg>
+    );
+  };
+
+  const BarcodeImg = ({sku}) => {
+    const w=54, h=15;
+    let seed=(sku||'X').split('').reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,7);
+    const next=()=>{ seed=(seed*1664525+1013904223)>>>0; return seed/4294967296; };
+    const segs=Array.from({length:46},(_,i)=>({dark:i%2===0,wt:i%2===0?(next()>.52?2:1):(next()>.6?2:1)}));
+    const total=segs.reduce((a,s)=>a+s.wt,0);
+    const sc=w/total;
+    const bars=[];
+    segs.reduce((x,s)=>{ if(s.dark) bars.push({x:x*sc,w:s.wt*sc}); return x+s.wt; },0);
+    return (
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{display:'inline-block',verticalAlign:'middle'}}>
+        <rect width={w} height={h} fill="white"/>
+        {bars.map((b,i)=><rect key={i} x={b.x.toFixed(2)} y={0} width={Math.max(.5,b.w).toFixed(2)} height={h*.88} fill="#111"/>)}
+      </svg>
+    );
+  };
+
+  const QRImg = ({sku}) => {
+    const sz=22, N=11;
+    const grid=Array.from({length:N},()=>Array(N).fill(0));
+    const sf=(r0,c0)=>{
+      for(let r=r0;r<r0+5;r++) for(let c=c0;c<c0+5;c++){
+        grid[r][c]=(r===r0||r===r0+4||c===c0||c===c0+4||(r===r0+2&&c===c0+2))?1:0;
+      }
+    };
+    sf(0,0); sf(0,N-5); sf(N-5,0);
+    let seed=(sku||'X').split('').reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,13);
+    const next=()=>{ seed=(seed*1664525+1013904223)>>>0; return (seed>>16)&1; };
+    for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+      if((r<5&&c<5)||(r<5&&c>=N-5)||(r>=N-5&&c<5)) continue;
+      grid[r][c]=next();
+    }
+    const cs=sz/N;
+    return (
+      <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`} style={{display:'inline-block',verticalAlign:'middle'}}>
+        <rect width={sz} height={sz} fill="white"/>
+        {grid.flatMap((row,r)=>row.map((cell,c)=>
+          cell?<rect key={`${r}-${c}`} x={(c*cs+.2).toFixed(2)} y={(r*cs+.2).toFixed(2)} width={(cs-.4).toFixed(2)} height={(cs-.4).toFixed(2)} fill="#111"/>:null
+        ))}
+      </svg>
+    );
+  };
+
+  const renderCell = (col, row) => {
+    if(col.id==='image'){
+      const sz=lineItems.find(i=>i.id==='image')?.dropdown?.val||'Medium';
+      return <div style={{display:'flex',justifyContent:'center'}}><ProductImage name={row.name} size={sz}/></div>;
+    }
+    if(col.id==='barcode') return <div style={{display:'flex',justifyContent:'center'}}><BarcodeImg sku={row.sku}/></div>;
+    if(col.id==='qr') return <div style={{display:'flex',justifyContent:'center'}}><QRImg sku={row.sku}/></div>;
+    return row[col.id]||'—';
+  };
+
   const DocPreview = () => (
     <div style={{background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,overflow:'visible'}}>
       {sections.map(s=>{
@@ -669,7 +784,7 @@ const ExpN = () => {
                   <thead><tr style={{borderBottom:`2px solid ${docCfg.primaryColor}`}}>
                     {visLICols.map(col=>(
                       <th key={col.id} style={{padding:'3px 4px',fontSize:7,fontWeight:700,color:docCfg.primaryColor,textTransform:'uppercase',letterSpacing:1,
-                        textAlign:COL_DATA[col.id]?.align==='left'?'left':'right',whiteSpace:'nowrap'}}>
+                        textAlign:COL_DATA[col.id]?.align||'right',whiteSpace:'nowrap'}}>
                         {COL_DATA[col.id]?.label||col.label}
                       </th>
                     ))}
@@ -686,15 +801,15 @@ const ExpN = () => {
                       ].map((row,i)=>(
                         <tr key={i} style={{borderBottom:`1px solid ${C.grey20}`,opacity:0.8}}>
                           {visLICols.map((col,ci)=>(
-                            <td key={col.id} style={{padding:'3px 4px',fontSize:7,color:ci===0?C.grey60:C.grey50,textAlign:COL_DATA[col.id]?.align==='left'?'left':'right',whiteSpace:'nowrap',fontStyle:'italic'}}>
-                              {row[col.id]||'—'}
+                            <td key={col.id} style={{padding:col.id==='image'?'2px 4px':'3px 4px',fontSize:7,color:ci===0?C.grey60:C.grey50,textAlign:COL_DATA[col.id]?.align||'right',whiteSpace:['image','barcode','qr'].includes(col.id)?'normal':'nowrap',fontStyle:'italic'}}>
+                              {renderCell(col,row)}
                             </td>
                           ))}
                         </tr>
                       ))}
                       <tr style={{borderBottom:`1px solid ${C.grey20}`,background:'#f8f9fa'}}>
                         {visLICols.map((col,ci)=>(
-                          <td key={col.id} style={{padding:'3px 4px',fontSize:7,fontWeight:600,color:ci===0?C.black:C.grey60,textAlign:COL_DATA[col.id]?.align==='left'?'left':'right',whiteSpace:'nowrap'}}>
+                          <td key={col.id} style={{padding:'3px 4px',fontSize:7,fontWeight:600,color:ci===0?C.black:C.grey60,textAlign:COL_DATA[col.id]?.align||'right',whiteSpace:'nowrap'}}>
                             {ci===0?'Bundle total':col.id==='price_total'?'$204':col.id==='tax'?'$26':''}
                           </td>
                         ))}
@@ -703,11 +818,11 @@ const ExpN = () => {
                     {liRows.map((row,i)=>(
                       <tr key={i} style={{borderBottom:`1px solid ${C.grey20}`}}>
                         {visLICols.map((col,ci)=>(
-                          <td key={col.id} style={{padding:'4px',fontSize:8,
+                          <td key={col.id} style={{padding:col.id==='image'?'2px 4px':'4px',fontSize:8,
                             color:COL_DATA[col.id]?.align==='left'?C.black:C.grey60,
-                            textAlign:COL_DATA[col.id]?.align==='left'?'left':'right',
-                            whiteSpace:'nowrap'}}>
-                            {row[col.id]||'—'}
+                            textAlign:COL_DATA[col.id]?.align||'right',
+                            whiteSpace:['image','barcode','qr'].includes(col.id)?'normal':'nowrap'}}>
+                            {renderCell(col,row)}
                           </td>
                         ))}
                       </tr>
