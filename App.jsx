@@ -304,7 +304,7 @@ const ExpN = () => {
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
           <div>
             <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Bundle item pricing</div>
-            <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Groups bundle items with combined pricing</div>
+            <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Shows bundles as one combined price</div>
           </div>
           <Tog on={bundleItem.on} onChange={()=>toggleLI(bundleItem.id)}/>
         </div>
@@ -490,7 +490,10 @@ const ExpN = () => {
   const sectionPanels = {
     header: <>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:docCfg.showLogo?'none':`1px solid ${C.grey20}`}}>
-        <div><div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Company logo</div></div>
+        <div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Company logo</div>
+          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Shown at the top of the document</div>
+        </div>
         <Tog on={docCfg.showLogo} onChange={()=>setDoc('showLogo')}/>
       </div>
       {docCfg.showLogo && (
@@ -553,11 +556,17 @@ const ExpN = () => {
     logistics: <>
       <SHead label="General settings"/>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
-        <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Pickup & return dates</div>
+        <div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Pickup & return dates</div>
+          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Rental start and end dates</div>
+        </div>
         <Tog on={docCfg.showDates} onChange={()=>setDoc('showDates')}/>
       </div>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
-        <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Location name</div>
+        <div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Location name</div>
+          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Pickup or return branch name</div>
+        </div>
         <Tog on={docCfg.showLocation} onChange={()=>setDoc('showLocation')}/>
       </div>
       <SHead label="Date format"/>
@@ -570,16 +579,19 @@ const ExpN = () => {
     totals: <>
       <SHead label="General settings"/>
       {[
-        ['Subtotal',          'showSubtotal',        false],
-        ['Total discount',    'showTotalDiscount',   false],
-        ['Applied coupons',   'showAppliedCoupons',  false],
-        ['Security deposit',  'showSecurityDeposit', false],
-        ['Custom charge',     'showCustomCharge',    false],
-        ['Tax breakdown',     'showTaxBreakdown',    false],
-        ['Total incl. taxes', 'showTotalInclTaxes',  false],
-      ].map(([label,key,bold])=>(
+        ['Subtotal',          'showSubtotal',        false, 'Sum before discounts and taxes'],
+        ['Total discount',    'showTotalDiscount',   false, 'All discounts combined'],
+        ['Applied coupons',   'showAppliedCoupons',  false, 'Coupon codes and savings'],
+        ['Security deposit',  'showSecurityDeposit', false, 'Refundable deposit during rental'],
+        ['Custom charge',     'showCustomCharge',    false, 'Manually added charges'],
+        ['Tax breakdown',     'showTaxBreakdown',    false, 'Tax per applicable rate'],
+        ['Total incl. taxes', 'showTotalInclTaxes',  false, 'Final amount including all taxes'],
+      ].map(([label,key,bold,hint])=>(
         <div key={key} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
-          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)',fontWeight:bold?700:400}}>{label}</div>
+          <div>
+            <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)',fontWeight:bold?700:400}}>{label}</div>
+            <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>{hint}</div>
+          </div>
           <Tog on={docCfg[key]} onChange={()=>setDoc(key)}/>
         </div>
       ))}
@@ -587,27 +599,45 @@ const ExpN = () => {
     footer: <>
       <SHead label="General settings"/>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
-        <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Show notes</div>
+        <div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Show notes</div>
+          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Thank-you message or order notes</div>
+        </div>
         <Tog on={docCfg.footerShowNotes} onChange={()=>setDoc('footerShowNotes')}/>
       </div>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
-        <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Company details</div>
+        <div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Company details</div>
+          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Business name and address</div>
+        </div>
         <Tog on={docCfg.footerCompanyDetails} onChange={()=>setDoc('footerCompanyDetails')}/>
       </div>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
-        <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Contact details</div>
+        <div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Contact details</div>
+          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Phone, email, and website</div>
+        </div>
         <Tog on={docCfg.footerContactDetails} onChange={()=>setDoc('footerContactDetails')}/>
       </div>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
-        <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>VAT number</div>
+        <div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>VAT number</div>
+          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Your registered VAT or tax ID</div>
+        </div>
         <Tog on={docCfg.footerVatNumber} onChange={()=>setDoc('footerVatNumber')}/>
       </div>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
-        <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Payment details</div>
+        <div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Payment details</div>
+          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Bank details or payment info</div>
+        </div>
         <Tog on={docCfg.footerPaymentDetails} onChange={()=>setDoc('footerPaymentDetails')}/>
       </div>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
-        <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Page numbers</div>
+        <div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Page numbers</div>
+          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Current page and total count</div>
+        </div>
         <Tog on={docCfg.footerPageNumbers} onChange={()=>setDoc('footerPageNumbers')}/>
       </div>
     </>,
