@@ -419,22 +419,34 @@ const ExpN = () => {
   const [brandColor, setBrandColor]   = React.useState('#136DEB');
   const [secondColor, setSecondColor] = React.useState('#131314');
 
-  const ColorRow = ({label, value, onChange}) => (
-    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 0',borderBottom:`1px solid ${C.grey20}`}}>
-      <span style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>{label}</span>
-      <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer'}}>
-        {/* Hex display */}
-        <div style={{height:32,padding:'0 10px',border:`1px solid ${C.grey20}`,borderRadius:8,background:C.grey10,display:'flex',alignItems:'center',minWidth:82}}>
-          <span style={{fontSize:11,color:C.grey60,fontFamily:'monospace',letterSpacing:'.03em'}}>{value.toUpperCase()}</span>
+  const ColorRow = ({label, value, onChange}) => {
+    const [hex, setHex] = React.useState(value.replace('#','').toUpperCase());
+    React.useEffect(()=>{ setHex(value.replace('#','').toUpperCase()); },[value]);
+    const commit = (raw) => {
+      const v = raw.replace(/[^0-9a-fA-F]/g,'');
+      if(v.length===6) onChange('#'+v);
+    };
+    return (
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 0',borderBottom:`1px solid ${C.grey20}`}}>
+        <span style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>{label}</span>
+        {/* Single pill: hex input + color swatch */}
+        <div style={{display:'flex',alignItems:'center',border:`1px solid ${C.grey20}`,borderRadius:8,overflow:'hidden',height:32}}>
+          <span style={{fontSize:11,color:C.grey50,fontFamily:'monospace',paddingLeft:10,userSelect:'none'}}>#</span>
+          <input
+            value={hex}
+            onChange={e=>{ const v=e.target.value.replace(/[^0-9a-fA-F]/g,'').toUpperCase().slice(0,6); setHex(v); commit(v); }}
+            onBlur={()=>commit(hex)}
+            style={{width:62,border:'none',outline:'none',background:'transparent',fontSize:11,fontFamily:'monospace',letterSpacing:'.03em',color:C.black,padding:'0 6px 0 2px'}}
+          />
+          {/* Color swatch — clicking opens native picker */}
+          <div style={{width:32,height:32,background:value,position:'relative',flexShrink:0}}>
+            <input type="color" value={value} onChange={e=>onChange(e.target.value)}
+              style={{opacity:0,position:'absolute',inset:0,width:'100%',height:'100%',cursor:'pointer',border:'none',padding:0}}/>
+          </div>
         </div>
-        {/* Color swatch — clicking opens native picker */}
-        <div style={{width:32,height:32,borderRadius:8,background:value,border:`2px solid rgba(0,0,0,.1)`,position:'relative',flexShrink:0,boxShadow:'inset 0 1px 2px rgba(0,0,0,.15)'}}>
-          <input type="color" value={value} onChange={e=>onChange(e.target.value)}
-            style={{opacity:0,position:'absolute',inset:0,width:'100%',height:'100%',cursor:'pointer',border:'none',padding:0}}/>
-        </div>
-      </label>
-    </div>
-  );
+      </div>
+    );
+  };
 
   const BrandingPanel = () => (
     <div style={{height:'100%',display:'flex',flexDirection:'column'}}>
