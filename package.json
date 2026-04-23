@@ -2,7 +2,7 @@
   "name": "babylon-doc-editor-prototype",
   "private": true,
   "scripts": {
-    "dev": "live-server --port=3000 --watch=. --ignore=fonts,.git,.context,node_modules",
+    "dev": "live-server --port=3456 --watch=. --ignore=fonts,.git,.context,node_modules,.playwright-mcp",
     "start": "npm run dev"
   },
   "devDependencies": {
