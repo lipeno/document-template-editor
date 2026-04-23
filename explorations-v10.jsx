@@ -483,21 +483,27 @@ const ExpN = () => {
     <div style={{display:'flex',flexDirection:'column',height:'100%'}}>
       <div style={{padding:'10px 14px',borderBottom:`1px solid ${C.grey20}`}}>
         <div style={{fontSize:10,color:C.grey40,marginBottom:4,fontFamily:'var(--font-body)'}}>Template</div>
-        <div style={{height:32,border:`1px solid ${C.grey20}`,borderRadius:6,fontSize:12,padding:'0 10px',background:C.grey10,color:C.grey50,fontFamily:'var(--font-body)',display:'flex',alignItems:'center',marginBottom:10}}>
+        <div style={{height:32,border:`1px solid ${C.grey20}`,borderRadius:6,fontSize:12,padding:'0 10px',background:C.grey10,color:C.grey50,fontFamily:'var(--font-body)',display:'flex',alignItems:'center'}}>
           Default invoice
         </div>
-        <div style={{display:'flex',gap:6,marginBottom:2}}>
-          {[{key:'__settings__',icon:'gear',label:'Settings'},{key:'__branding__',icon:'palette',label:'Branding'}].map(a=>(
-            <button key={a.key} onClick={()=>setEditing(a.key)}
-              style={{flex:1,height:30,display:'flex',alignItems:'center',justifyContent:'center',gap:5,
-                background:editing===a.key?C.blue5:C.white,border:`1px solid ${editing===a.key?C.blue:C.grey30}`,
-                borderRadius:6,cursor:'pointer',fontSize:11,color:editing===a.key?C.blue:C.black,
-                fontFamily:'var(--font-body)',fontWeight:editing===a.key?600:400,transition:'all 120ms'}}>
-              <FI n={a.icon} sz={10} col={editing===a.key?C.blue:C.grey60}/> {a.label}
-            </button>
-          ))}
-        </div>
       </div>
+      {[{key:'__settings__',icon:'gear',label:'Settings',sub:'Page, numbering, CSS'},{key:'__branding__',icon:'palette',label:'Branding',sub:'Colors & logo'}].map(a=>(
+        <button key={a.key} onClick={()=>setEditing(a.key)}
+          style={{width:'100%',display:'flex',alignItems:'center',gap:10,padding:'8px 12px 8px 14px',
+            background:editing===a.key?C.blue5:'transparent',border:'none',
+            borderLeft:`3px solid ${editing===a.key?C.blue:'transparent'}`,
+            cursor:'pointer',textAlign:'left',transition:'background 100ms,border-color 100ms'}}>
+          <div style={{width:34,height:34,borderRadius:8,background:editing===a.key?'#daeafd':C.grey10,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'background 100ms'}}>
+            <FI n={a.icon} sz={15} col={editing===a.key?C.blue:C.grey60}/>
+          </div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:13,fontWeight:600,color:editing===a.key?C.blue:C.black,fontFamily:'var(--font-body)',lineHeight:'1.3'}}>{a.label}</div>
+            <div style={{fontSize:11,color:C.grey50,fontFamily:'var(--font-body)',lineHeight:'1.4'}}>{a.sub}</div>
+          </div>
+          <FI n="chevron-right" sz={11} col={editing===a.key?C.blue:C.grey40}/>
+        </button>
+      ))}
+      <div style={{borderBottom:`1px solid ${C.grey20}`}}/>
       <div style={{flex:1,overflowY:'auto'}}>
         <div style={{padding:'8px 14px 4px'}}>
           <div style={{fontSize:10,fontWeight:700,color:C.grey50,textTransform:'uppercase',letterSpacing:'.07em',fontFamily:'var(--font-body)'}}>Sections</div>
@@ -524,6 +530,15 @@ const ExpN = () => {
             </div>
           </div>
         ))}
+      </div>
+      <div style={{padding:'10px 14px',borderTop:`1px solid ${C.grey20}`}}>
+        <button onClick={()=>{const nb={id:nextId(),type:'text',label:'Text section',visible:true};setSections(p=>[...p,nb]);setTimeout(()=>setEditing(nb.id),50);}}
+          style={{width:'100%',height:34,display:'flex',alignItems:'center',justifyContent:'center',gap:6,
+            background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,
+            cursor:'pointer',fontSize:13,color:C.grey60,fontFamily:'var(--font-body)',
+            fontWeight:500,transition:'background 100ms,border-color 100ms'}}>
+          <FI n="plus" sz={12} col={C.grey60}/> Add text section
+        </button>
       </div>
     </div>
   );
