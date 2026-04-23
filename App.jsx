@@ -16,6 +16,115 @@ const BQ = {
 //     with date format, page size, doc numbering, due dates
 // ─────────────────────────────────────────────────────────────
 
+const VARS = ['{{customer_name}}','{{order_number}}','{{date}}','{{due_date}}','{{company_name}}','{{total}}'];
+
+const RichTextPanel = ({id, getBlock, updateBlock}) => {
+  const C = BQ;
+  const editorRef = React.useRef(null);
+  const b = getBlock(id);
+  const [fmts, setFmts] = React.useState({});
+
+  // Populate editor when switching sections
+  React.useEffect(() => {
+    if (editorRef.current) {
+      editorRef.current.innerHTML = b.html || '';
+    }
+  }, [id]);
+
+  const save = () => updateBlock(id, {html: editorRef.current?.innerHTML || ''});
+
+  const checkFmts = () => {
+    try {
+      setFmts({
+        bold:                 document.queryCommandState('bold'),
+        italic:               document.queryCommandState('italic'),
+        underline:            document.queryCommandState('underline'),
+        strikeThrough:        document.queryCommandState('strikeThrough'),
+        insertUnorderedList:  document.queryCommandState('insertUnorderedList'),
+        insertOrderedList:    document.queryCommandState('insertOrderedList'),
+        justifyLeft:          document.queryCommandState('justifyLeft'),
+        justifyCenter:        document.queryCommandState('justifyCenter'),
+        justifyRight:         document.queryCommandState('justifyRight'),
+      });
+    } catch(e) {}
+  };
+
+  const exec = (cmd, val) => {
+    editorRef.current?.focus();
+    document.execCommand(cmd, false, val || null);
+    save();
+    checkFmts();
+  };
+
+  const Btn = ({icon, cmd, val}) => {
+    const on = !!fmts[cmd];
+    return (
+      <button onMouseDown={e=>{e.preventDefault();exec(cmd,val);}}
+        style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',
+          border:`1px solid ${on?C.blue:C.grey30}`,borderRadius:5,cursor:'pointer',
+          background:on?C.blue5:'transparent',flexShrink:0,transition:'all 120ms'}}>
+        <i className={`fa-regular fa-${icon}`} style={{fontSize:11,color:on?C.blue:C.grey60,lineHeight:1}}/>
+      </button>
+    );
+  };
+
+  return (
+    <>
+      <div style={{display:'flex',gap:4,marginBottom:6,alignItems:'center'}}>
+        <select onMouseDown={e=>e.stopPropagation()} onChange={e=>{exec('formatBlock',e.target.value);e.target.value='__';}}
+          defaultValue="__"
+          style={{height:28,border:`1px solid ${C.grey30}`,borderRadius:5,fontSize:11,padding:'0 6px',
+            background:C.white,fontFamily:'var(--font-body)',cursor:'pointer',flex:1,color:C.grey60}}>
+          <option value="__" disabled>Style…</option>
+          <option value="div">Normal</option>
+          <option value="h1">Heading 1</option>
+          <option value="h2">Heading 2</option>
+          <option value="h3">Heading 3</option>
+        </select>
+        <Btn icon="bold"          cmd="bold"/>
+        <Btn icon="italic"        cmd="italic"/>
+        <Btn icon="underline"     cmd="underline"/>
+        <Btn icon="strikethrough" cmd="strikeThrough"/>
+      </div>
+      <div style={{display:'flex',gap:4,marginBottom:8,alignItems:'center'}}>
+        <Btn icon="list-ul"     cmd="insertUnorderedList"/>
+        <Btn icon="list-ol"     cmd="insertOrderedList"/>
+        <div style={{width:1,background:C.grey20,margin:'0 2px',height:20,flexShrink:0}}/>
+        <Btn icon="align-left"   cmd="justifyLeft"/>
+        <Btn icon="align-center" cmd="justifyCenter"/>
+        <Btn icon="align-right"  cmd="justifyRight"/>
+      </div>
+      <div ref={editorRef} contentEditable suppressContentEditableWarning
+        onInput={save} onKeyUp={checkFmts} onMouseUp={checkFmts} onSelect={checkFmts}
+        style={{width:'100%',minHeight:100,border:`1px solid ${C.grey30}`,borderRadius:6,
+          fontSize:12,padding:'8px',fontFamily:'var(--font-body)',outline:'none',
+          lineHeight:1.6,color:C.black,boxSizing:'border-box',background:C.white,
+          cursor:'text'}}
+      />
+      <div style={{fontSize:10,fontWeight:700,color:C.grey50,textTransform:'uppercase',letterSpacing:'.07em',padding:'11px 0 5px',fontFamily:'var(--font-body)'}}>Insert variable</div>
+      <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
+        {VARS.map(v=>(
+          <button key={v} onMouseDown={e=>{e.preventDefault();exec('insertText',v);}}
+            style={{height:22,padding:'0 7px',background:C.blue5,color:C.blue,border:`1px solid ${C.blue30}`,
+              borderRadius:10,fontSize:10,cursor:'pointer',fontFamily:'var(--font-body)',whiteSpace:'nowrap'}}>
+            {v}
+          </button>
+        ))}
+      </div>
+    </>
+  );
+};
+
+const DInput = ({value, onChange, style, placeholder, multiline}) => {
+  const [local, setLocal] = React.useState(value);
+  const timer = React.useRef(null);
+  React.useEffect(()=>{ setLocal(value); },[value]);
+  const handle = v => { setLocal(v); clearTimeout(timer.current); timer.current=setTimeout(()=>onChange(v),150); };
+  return multiline
+    ? <textarea value={local} onChange={e=>handle(e.target.value)} placeholder={placeholder} style={style}/>
+    : <input    value={local} onChange={e=>handle(e.target.value)} placeholder={placeholder} style={style}/>;
+};
+
 const ExpN = () => {
   const C = BQ;
   const _nid = React.useRef(600);
@@ -103,14 +212,14 @@ const ExpN = () => {
   const getBlock = id => ({text:'',textStyle:'normal',bold:false,italic:false,underline:false,strikethrough:false,bulletList:false,numberedList:false,align:'left',...(blockData[id]||{})});
 
   const doReset = () => {
-    setDocCfg({primaryColor:'#136DEB',showLogo:true,showContact:true,showDates:true,showLocation:true,showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,footerShowNotes:true,footerCompanyDetails:true,footerContactDetails:true,footerVatNumber:true,footerPaymentDetails:true,footerPageNumbers:true,font:'Inter',logoAlign:'Left'});
+    setDocCfg({primaryColor:'#136DEB',showLogo:true,showContact:true,showCompanyInfo:true,logoAlign:'Left',logoSize:'L',documentTitle:'Invoice',showDates:true,showLocation:true,showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,footerShowNotes:true,footerCompanyDetails:true,footerContactDetails:true,footerVatNumber:true,footerPaymentDetails:true,footerPageNumbers:true,font:'Inter'});
     setDateFormat('datetime'); setPageSize('A4'); setDocNumLevel('global'); setDueDatesOn(false); setCustomCSS('');
     setBlockData({});
     setResetModal(false);
   };
 
   const [docCfg, setDocCfg] = React.useState({
-    primaryColor:'#136DEB',showLogo:true,showContact:true,logoAlign:'Left',
+    primaryColor:'#136DEB',showLogo:true,showContact:true,showCompanyInfo:true,logoAlign:'Left',logoSize:'L',documentTitle:'Invoice',
     showDates:true,showLocation:true,
     showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,
     showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,
@@ -184,7 +293,6 @@ const ExpN = () => {
     <button style={{height:28,padding:'0 12px',background:C.blue,color:'#fff',border:'none',borderRadius:5,fontSize:11,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)',marginTop:8}}>Save</button>
   );
 
-  const VARS=['{{customer_name}}','{{order_number}}','{{date}}','{{due_date}}','{{company_name}}','{{total}}'];
 
   // ── Line Items panel ──────────────────────────────────────
   const bundleItem = lineItems.find(i=>i.id==='bundle');
@@ -298,7 +406,7 @@ const ExpN = () => {
           <div style={{fontSize:10,color:C.grey50,marginBottom:6,fontFamily:'var(--font-body)',lineHeight:1.4}}>
             Override default styles. <span style={{color:C.blue,cursor:'pointer'}}>Learn more</span>
           </div>
-          <textarea value={customCSS} onChange={e=>setCustomCSS(e.target.value)}
+          <DInput multiline value={customCSS} onChange={setCustomCSS}
             placeholder={'/* Override default styles */\n.invoice-header { }\n.line-items td { }'}
             style={{width:'100%',height:110,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:11,padding:'8px',fontFamily:'monospace',resize:'vertical',outline:'none',lineHeight:1.6,background:'#fafafa',boxSizing:'border-box'}}/>
 
@@ -369,22 +477,65 @@ const ExpN = () => {
   // ── Section settings ──────────────────────────────────────
   const sectionPanels = {
     header: <>
-      <SHead label="General settings"/>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:docCfg.showLogo?'none':`1px solid ${C.grey20}`}}>
         <div><div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Company logo</div></div>
         <Tog on={docCfg.showLogo} onChange={()=>setDoc('showLogo')}/>
       </div>
+      {docCfg.showLogo && (
+        <div style={{borderBottom:`1px solid ${C.grey20}`,padding:'10px 0 12px'}}>
+          <div style={{marginBottom:8}}>
+            <div style={{width:'100%',height:80,background:C.grey10,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',marginBottom:6,overflow:'hidden'}}>
+              <div style={{width:56,height:32,background:docCfg.primaryColor,borderRadius:3,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                <span style={{color:'#fff',fontSize:7,fontWeight:700,letterSpacing:1}}>LOGO</span>
+              </div>
+              <div style={{fontSize:8,color:C.grey50,fontFamily:'var(--font-body)',marginTop:5,letterSpacing:'.05em'}}>COMPANY</div>
+            </div>
+            <button style={{width:'100%',height:32,border:`1px solid ${C.grey30}`,borderRadius:8,fontSize:12,cursor:'pointer',background:C.white,color:C.black,fontFamily:'var(--font-body)',fontWeight:500}}>Change</button>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+            <div style={{fontSize:11,color:C.grey60,fontFamily:'var(--font-body)',width:36,flexShrink:0}}>Size</div>
+            <div style={{display:'flex',gap:4,flex:1}}>
+              {['S','M','L'].map(sz=>(
+                <button key={sz} onClick={()=>setDoc('logoSize',sz)}
+                  style={{flex:1,height:26,border:`1px solid ${docCfg.logoSize===sz?C.blue:C.grey30}`,borderRadius:6,background:docCfg.logoSize===sz?C.blue5:C.white,color:docCfg.logoSize===sz?C.blue:C.grey60,fontSize:11,cursor:'pointer',fontFamily:'var(--font-body)',fontWeight:docCfg.logoSize===sz?600:400,transition:'all 120ms'}}>{sz}</button>
+              ))}
+            </div>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <div style={{fontSize:11,color:C.grey60,fontFamily:'var(--font-body)',width:36,flexShrink:0}}>Align</div>
+            <div style={{display:'flex',gap:4,flex:1}}>
+              {[['Left','align-left'],['Center','align-center'],['Right','align-right']].map(([a,icon])=>(
+                <button key={a} onClick={()=>setDoc('logoAlign',a)}
+                  style={{flex:1,height:26,border:`1px solid ${docCfg.logoAlign===a?C.blue:C.grey30}`,borderRadius:6,background:docCfg.logoAlign===a?C.blue5:C.white,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',transition:'all 120ms'}}>
+                  <FI n={icon} sz={11} col={docCfg.logoAlign===a?C.blue:C.grey50}/>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
-        <div><div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Contact details</div>
-          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)'}}>Phone, website, address</div></div>
+        <div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Company contact details</div>
+          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)'}}>Phone, email, website</div>
+        </div>
         <Tog on={docCfg.showContact} onChange={()=>setDoc('showContact')}/>
       </div>
-      <SHead label="Logo alignment"/>
-      <div style={{display:'flex',gap:4}}>
-        {['Left','Center','Right'].map(a=>(
-          <button key={a} onClick={()=>setDoc('logoAlign',a)}
-            style={{flex:1,height:28,border:`1px solid ${docCfg.logoAlign===a?C.blue:C.grey30}`,borderRadius:6,background:docCfg.logoAlign===a?C.blue5:C.white,color:docCfg.logoAlign===a?C.blue:C.grey60,fontSize:11,cursor:'pointer',fontFamily:'var(--font-body)',fontWeight:docCfg.logoAlign===a?600:400,transition:'all 120ms'}}>{a}</button>
-        ))}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
+        <div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Company information</div>
+          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)'}}>Address and registration info</div>
+        </div>
+        <Tog on={docCfg.showCompanyInfo} onChange={()=>setDoc('showCompanyInfo')}/>
+      </div>
+      <div style={{padding:'7px 0'}}>
+        <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)',marginBottom:6}}>Document title</div>
+        <DInput
+          value={docCfg.documentTitle}
+          onChange={v=>setDoc('documentTitle',v)}
+          style={{width:'100%',height:32,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,padding:'0 8px',background:C.white,fontFamily:'var(--font-body)',color:C.black,boxSizing:'border-box',outline:'none'}}
+        />
+        <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:4}}>Displayed at the top of the document</div>
       </div>
     </>,
     logistics: <>
@@ -450,65 +601,8 @@ const ExpN = () => {
     </>,
   };
 
-  // ── Text section panel — local state for fast typing ──────
-  const TextSectionPanel = ({id}) => {
-    const b = getBlock(id);
-    const [localText, setLocalText] = React.useState(b.text);
-    const debounceRef = React.useRef(null);
-    React.useEffect(() => { setLocalText(getBlock(id).text); }, [id]);
-    const handleText = val => {
-      setLocalText(val);
-      clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => updateBlock(id, {text: val}), 120);
-    };
-    const FmtBtn=({icon,prop})=>(
-      <button onClick={()=>updateBlock(id,{[prop]:!b[prop]})}
-        style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',border:`1px solid ${b[prop]?C.blue:C.grey30}`,borderRadius:5,cursor:'pointer',background:b[prop]?C.blue5:'transparent'}}>
-        <FI n={icon} sz={11} col={b[prop]?C.blue:C.grey60}/>
-      </button>
-    );
-    const AlignBtn=({icon,val})=>(
-      <button onClick={()=>updateBlock(id,{align:val})}
-        style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',border:`1px solid ${b.align===val?C.blue:C.grey30}`,borderRadius:5,cursor:'pointer',background:b.align===val?C.blue5:'transparent'}}>
-        <FI n={icon} sz={11} col={b.align===val?C.blue:C.grey60}/>
-      </button>
-    );
-    return <>
-      <SHead label="Formatting"/>
-      {/* Row 1: style dropdown + B I U S */}
-      <div style={{display:'flex',gap:4,marginBottom:6,alignItems:'center'}}>
-        <select value={b.textStyle} onChange={e=>updateBlock(id,{textStyle:e.target.value})}
-          style={{height:28,border:`1px solid ${C.grey30}`,borderRadius:5,fontSize:11,padding:'0 6px',background:C.white,fontFamily:'var(--font-body)',cursor:'pointer',flex:1}}>
-          {['normal','h1','h2','h3'].map(s=><option key={s} value={s}>{{normal:'Normal',h1:'Heading 1',h2:'Heading 2',h3:'Heading 3'}[s]}</option>)}
-        </select>
-        <FmtBtn icon="bold" prop="bold"/>
-        <FmtBtn icon="italic" prop="italic"/>
-        <FmtBtn icon="underline" prop="underline"/>
-        <FmtBtn icon="strikethrough" prop="strikethrough"/>
-      </div>
-      {/* Row 2: lists + alignment */}
-      <div style={{display:'flex',gap:4,marginBottom:10,alignItems:'center'}}>
-        <FmtBtn icon="list-ul" prop="bulletList"/>
-        <FmtBtn icon="list-ol" prop="numberedList"/>
-        <div style={{width:1,background:C.grey20,margin:'0 2px',height:20}}/>
-        <AlignBtn icon="align-left" val="left"/>
-        <AlignBtn icon="align-center" val="center"/>
-        <AlignBtn icon="align-right" val="right"/>
-      </div>
-      <SHead label="Content"/>
-      <textarea value={localText} onChange={e=>handleText(e.target.value)} placeholder="Enter text…"
-        style={{width:'100%',height:90,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:b.textStyle==='h1'?15:b.textStyle==='h2'?13:12,padding:'8px',fontFamily:'var(--font-body)',resize:'vertical',outline:'none',lineHeight:1.5,
-          fontWeight:b.bold||b.textStyle==='h1'||b.textStyle==='h2'?700:400,fontStyle:b.italic?'italic':'normal',
-          textDecoration:`${b.underline?'underline ':b.strikethrough?'line-through ':''}`  .trim()||'none',textAlign:b.align}}/>
-      <SHead label="Insert variable"/>
-      <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
-        {VARS.map(v=>(
-          <button key={v} onClick={()=>{ const t=(localText||'')+v; handleText(t); }}
-            style={{height:22,padding:'0 7px',background:C.blue5,color:C.blue,border:`1px solid ${C.blue30}`,borderRadius:10,fontSize:10,cursor:'pointer',fontFamily:'var(--font-body)',whiteSpace:'nowrap'}}>{v}</button>
-        ))}
-      </div>
-    </>;
-  };
+  // ── Text section panel ────────────────────────────────────
+  const TextSectionPanel = ({id}) => <RichTextPanel id={id} getBlock={getBlock} updateBlock={updateBlock}/>;
 
   // ── Sidebar ───────────────────────────────────────────────
   const SidebarList = () => (
@@ -854,14 +948,16 @@ const ExpN = () => {
           <div style={{padding:'18px 22px 14px',borderBottom:`1px solid ${C.grey20}`}}>
             {(() => {
               const align = docCfg.logoAlign || 'Left';
+              const logoW = docCfg.logoSize==='S'?44:docCfg.logoSize==='M'?60:80;
+              const logoH = docCfg.logoSize==='S'?14:docCfg.logoSize==='M'?18:24;
               const LogoEl = docCfg.showLogo ? (
-                <div style={{width:68,height:20,background:docCfg.primaryColor,borderRadius:3,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                <div style={{width:logoW,height:logoH,background:docCfg.primaryColor,borderRadius:3,display:'flex',alignItems:'center',justifyContent:'center'}}>
                   <span style={{color:'#fff',fontSize:7,fontWeight:700,letterSpacing:1}}>LOGO</span>
                 </div>
               ) : null;
               const InvoiceEl = (
                 <div style={{textAlign:'right'}}>
-                  <div style={{fontSize:13,fontWeight:700}}>INVOICE</div>
+                  <div style={{fontSize:13,fontWeight:700}}>{(docCfg.documentTitle||'Invoice').toUpperCase()}</div>
                   <div style={{fontSize:9,color:C.grey50}}>#ORD-2024-0089</div>
                 </div>
               );
@@ -881,7 +977,11 @@ const ExpN = () => {
               );
             })()}
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-              <div style={{fontSize:9,color:C.grey60,lineHeight:1.5}}>Acme Rentals Inc.<br/>123 Main St, NY 10001<br/>{docCfg.showContact&&'info@acme.com'}</div>
+              <div style={{fontSize:9,color:C.grey60,lineHeight:1.5}}>
+                Acme Rentals Inc.
+                {docCfg.showCompanyInfo&&<><br/>123 Main St, NY 10001<br/>VAT: US123456789</>}
+                {docCfg.showContact&&<><br/>info@acme.com · +1 555 123 4567<br/>www.acmerentals.com</>}
+              </div>
               <div style={{fontSize:9,color:C.grey60,lineHeight:1.5}}>Sarah Johnson<br/>456 Oak Ave, NY 10002</div>
             </div>
           </div>
@@ -982,10 +1082,11 @@ const ExpN = () => {
         const b=getBlock(s.id);
         return (
           <SectionWrap key={s.id} id={s.id} label="Text section">
-            <div style={{padding:'10px 22px',borderTop:`1px solid ${C.grey20}`,minHeight:34,textAlign:b.align}}>
-              <div style={{fontSize:9,color:C.black,lineHeight:1.6,whiteSpace:'pre-wrap',fontWeight:b.bold?700:400,fontStyle:b.italic?'italic':'normal',textDecoration:b.underline?'underline':'none'}}>
-                {b.text||<span style={{color:C.grey30,fontStyle:'italic'}}>Empty text section</span>}
-              </div>
+            <div style={{padding:'10px 22px',borderTop:`1px solid ${C.grey20}`,minHeight:34}}>
+              {b.html
+                ? <div style={{fontSize:9,color:C.black,lineHeight:1.6,fontFamily:'var(--font-body)'}} dangerouslySetInnerHTML={{__html:b.html}}/>
+                : <div style={{fontSize:9,color:C.grey30,fontStyle:'italic',lineHeight:1.6}}>Empty text section</div>
+              }
             </div>
           </SectionWrap>
         );
