@@ -562,6 +562,7 @@ const ExpN = () => {
     const sec=sections.find(s=>s.id===id);
     const vis=sec?.visible??true;
     const isHov=isEdit&&hovPrev===id;
+    const isHighlighted=isEdit&&(hovPrev===id||hovSec===id);
     const isActive=isEdit&&editing===id;
     return (
       <div style={{position:'relative'}} onMouseEnter={()=>isEdit&&setHovPrev(id)} onMouseLeave={()=>isEdit&&setHovPrev(null)}>
@@ -574,7 +575,13 @@ const ExpN = () => {
           </div>
         )}
         <div onClick={()=>isEdit&&setEditing(id)}
-          style={{cursor:isEdit?'pointer':'default',outline:isActive?`2px solid ${C.blue}`:isHov?`2px solid ${C.blue30}`:'2px solid transparent',outlineOffset:-2,opacity:vis?1:0.22,transition:'outline 120ms,opacity 200ms',position:'relative'}}>
+          style={{cursor:isEdit?'pointer':'default',opacity:vis?1:0.22,transition:'opacity 200ms',position:'relative'}}>
+          {isActive&&(
+            <div style={{position:'absolute',top:3,bottom:3,left:14,right:14,border:`2px solid ${C.blue}`,borderRadius:3,pointerEvents:'none',zIndex:2}}/>
+          )}
+          {isHighlighted&&!isActive&&(
+            <div style={{position:'absolute',top:3,bottom:3,left:14,right:14,border:`1px dashed ${C.grey40}`,borderRadius:3,pointerEvents:'none',zIndex:2}}/>
+          )}
           {(isHov||isActive)&&(
             <div style={{position:'absolute',top:4,right:4,zIndex:10,display:'flex',gap:4}}>
               {!vis&&<div style={{height:20,padding:'0 7px',background:C.grey40,borderRadius:4,display:'flex',alignItems:'center',gap:4,color:'#fff',fontSize:9,fontWeight:600,fontFamily:'var(--font-body)'}}>
