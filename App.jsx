@@ -656,10 +656,11 @@ const ExpN = () => {
   // Visible line item columns in order
   const visLICols = lineItems.filter(i=>i.on&&!i.special&&COL_DATA[i.id]);
   const liRows = [
-    {name:'Canon EOS R5',      sku:'R5-001',  qty:'2', period:'7 days', unit_price:'$149', charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$22', price_total:'$320', item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
     {name:'Tripod & Head',     sku:'TRP-02',  qty:'1', period:'7 days', unit_price:'$49',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$7',  price_total:'$56',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
     {name:'Memory Cards',      sku:'MEM-04',  qty:'4', period:'7 days', unit_price:'$12',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$7',  price_total:'$55',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
     {name:'Prime Lens 85mm',   sku:'LNS-85',  qty:'1', period:'7 days', unit_price:'$59',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$9',  price_total:'$68',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    {name:'Canon EOS R5',      sku:'R5-001',  qty:'1', period:'7 days', unit_price:'$149', charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$22', price_total:'$171', item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img', bundleKit:'Camera Bundle Kit'},
+    {name:'Lens 50mm',         sku:'LNS-02',  qty:'1', period:'7 days', unit_price:'$29',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$4',  price_total:'$33',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img', bundleKit:'Camera Bundle Kit'},
     {name:'Zoom Lens 24-70mm', sku:'LNS-24',  qty:'1', period:'7 days', unit_price:'$79',  charge_lbl:'1 day',  discount:'10%', coupons:'—', tax:'$10', price_total:'$81',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
     {name:'LED Panel 600',     sku:'LED-600', qty:'3', period:'7 days', unit_price:'$35',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$15', price_total:'$120', item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
     {name:'Softbox Kit',       sku:'SBX-02',  qty:'2', period:'7 days', unit_price:'$25',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$7',  price_total:'$57',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
@@ -914,42 +915,83 @@ const ExpN = () => {
                   ))}
                 </tr></thead>
                 <tbody>
-                  {bundleItem?.on && (<>
-                    <tr style={{background:'#f8f9fa'}}>
-                      <td colSpan={visLICols.length} style={{padding:'4px 4px 2px',fontSize:8,fontWeight:700,color:C.black}}>📦 Camera Bundle Kit</td>
-                    </tr>
-                    {[
-                      {name:'Canon EOS R5',sku:'R5-001',qty:'1',period:'7 days',unit_price:'$149',charge_lbl:'1 day',discount:'—',coupons:'—',tax:'$22',price_total:'$171',item_type:'Rental',barcode:'▐▌▐▌',qr:'⊞',custom:'—',image:'img'},
-                      {name:'  ↳ Lens 50mm',sku:'LNS-02',qty:'1',period:'7 days',unit_price:'$29',charge_lbl:'1 day',discount:'—',coupons:'—',tax:'$4',price_total:'$33',item_type:'Rental',barcode:'▐▌▐▌',qr:'⊞',custom:'—',image:'img'},
-                    ].map((row,i)=>(
-                      <tr key={i} style={{borderBottom:`1px solid ${C.grey20}`,opacity:0.8}}>
+                  {(()=>{
+                    if(!bundleItem?.on) return liRows.map((row,i)=>(
+                      <tr key={i} style={{borderBottom:`1px solid ${C.grey20}`}}>
                         {visLICols.map((col,ci)=>(
-                          <td key={col.id} style={{padding:col.id==='image'?'2px 4px':'3px 4px',fontSize:7,color:ci===0?C.grey60:C.grey50,textAlign:COL_DATA[col.id]?.align||'right',whiteSpace:['image','barcode','qr'].includes(col.id)?'normal':'nowrap',fontStyle:'italic'}}>
+                          <td key={col.id} style={{padding:col.id==='image'?'2px 4px':'4px',fontSize:8,
+                            color:COL_DATA[col.id]?.align==='left'?C.black:C.grey60,
+                            textAlign:COL_DATA[col.id]?.align||'right',
+                            whiteSpace:['image','barcode','qr'].includes(col.id)?'normal':'nowrap'}}>
                             {renderCell(col,row)}
                           </td>
                         ))}
                       </tr>
-                    ))}
-                    <tr style={{borderBottom:`1px solid ${C.grey20}`,background:'#f8f9fa'}}>
-                      {visLICols.map((col,ci)=>(
-                        <td key={col.id} style={{padding:'3px 4px',fontSize:7,fontWeight:600,color:ci===0?C.black:C.grey60,textAlign:COL_DATA[col.id]?.align||'right',whiteSpace:'nowrap'}}>
-                          {ci===0?'Bundle total':col.id==='price_total'?'$204':col.id==='tax'?'$26':''}
-                        </td>
-                      ))}
-                    </tr>
-                  </>)}
-                  {liRows.map((row,i)=>(
-                    <tr key={i} style={{borderBottom:`1px solid ${C.grey20}`}}>
-                      {visLICols.map((col,ci)=>(
-                        <td key={col.id} style={{padding:col.id==='image'?'2px 4px':'4px',fontSize:8,
-                          color:COL_DATA[col.id]?.align==='left'?C.black:C.grey60,
-                          textAlign:COL_DATA[col.id]?.align||'right',
-                          whiteSpace:['image','barcode','qr'].includes(col.id)?'normal':'nowrap'}}>
-                          {renderCell(col,row)}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
+                    ));
+                    // Collect all items per bundle kit for totals
+                    const kitAllRows={};
+                    liRows.forEach(row=>{ if(row.bundleKit)(kitAllRows[row.bundleKit]=kitAllRows[row.bundleKit]||[]).push(row); });
+                    const rendered=new Set();
+                    const els=[];
+                    liRows.forEach((row,ri)=>{
+                      if(!row.bundleKit){
+                        els.push(
+                          <tr key={`r${ri}`} style={{borderBottom:`1px solid ${C.grey20}`}}>
+                            {visLICols.map((col,ci)=>(
+                              <td key={col.id} style={{padding:col.id==='image'?'2px 4px':'4px',fontSize:8,
+                                color:COL_DATA[col.id]?.align==='left'?C.black:C.grey60,
+                                textAlign:COL_DATA[col.id]?.align||'right',
+                                whiteSpace:['image','barcode','qr'].includes(col.id)?'normal':'nowrap'}}>
+                                {renderCell(col,row)}
+                              </td>
+                            ))}
+                          </tr>
+                        );
+                      } else if(!rendered.has(row.bundleKit)){
+                        rendered.add(row.bundleKit);
+                        const kitName=row.bundleKit;
+                        const kitRows=kitAllRows[kitName];
+                        const tp=kitRows.reduce((s,r)=>s+parseFloat(r.price_total.replace(/[^0-9.]/g,'')||0),0);
+                        const tt=kitRows.reduce((s,r)=>s+parseFloat((r.tax||'').replace(/[^0-9.]/g,'')||0),0);
+                        // Header label
+                        els.push(
+                          <tr key={`bh-${kitName}`}>
+                            <td colSpan={visLICols.length} style={{padding:'8px 4px 3px',fontSize:6.5,fontWeight:600,color:C.grey40,letterSpacing:.6,textTransform:'uppercase'}}>
+                              {kitName}
+                            </td>
+                          </tr>
+                        );
+                        // Bundle items
+                        kitRows.forEach((krow,ki)=>els.push(
+                          <tr key={`bi-${kitName}-${ki}`} style={{borderBottom:`1px solid ${C.grey20}`}}>
+                            {visLICols.map((col,ci)=>(
+                              <td key={col.id} style={{padding:col.id==='image'?'2px 4px':'3px 4px',fontSize:7.5,
+                                color:COL_DATA[col.id]?.align==='left'?C.grey60:C.grey50,
+                                textAlign:COL_DATA[col.id]?.align||'right',
+                                whiteSpace:['image','barcode','qr'].includes(col.id)?'normal':'nowrap',
+                                ...(ci===0?{boxShadow:`inset 2px 0 0 ${C.grey30}`}:{})}}>
+                                {renderCell(col,krow)}
+                              </td>
+                            ))}
+                          </tr>
+                        ));
+                        // Kit total
+                        els.push(
+                          <tr key={`bt-${kitName}`} style={{borderBottom:`1px solid ${C.grey20}`}}>
+                            {visLICols.map((col,ci)=>(
+                              <td key={col.id} style={{padding:'3px 4px',fontSize:7,fontWeight:600,
+                                color:ci===0?C.grey50:C.grey50,
+                                textAlign:COL_DATA[col.id]?.align||'right',whiteSpace:'nowrap',
+                                ...(ci===0?{boxShadow:`inset 2px 0 0 ${C.grey30}`}:{})}}>
+                                {ci===0?'Kit total':col.id==='price_total'?`$${tp}`:col.id==='tax'?`$${tt}`:''}
+                              </td>
+                            ))}
+                          </tr>
+                        );
+                      }
+                    });
+                    return els;
+                  })()}
                 </tbody>
               </table>
             )}
