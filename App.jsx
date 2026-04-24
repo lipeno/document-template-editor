@@ -679,13 +679,11 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
           </div>
           <div style={{padding:'10px 0',display:'flex',flexDirection:'column',gap:8}}>
             <button onClick={()=>{setBrandColor('#136DEB');setSecondColor('#131314');setDoc('primaryColor','#136DEB');}} style={{width:'100%',height:32,background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,fontWeight:500,color:C.black,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6,fontFamily:'var(--font-body)'}}>
-              <FI n="rotate-left" sz={11} col={C.grey60}/> Load branding defaults
+              <FI n="rotate-left" sz={11} col={C.grey60}/> Load defaults
             </button>
-            <div style={{textAlign:'center'}}>
-              <a href="#" onClick={e=>e.preventDefault()} style={{fontSize:11,color:C.grey50,fontFamily:'var(--font-body)',textDecoration:'none',display:'inline-flex',alignItems:'center',gap:4}}>
-                <FI n="arrow-up-right-from-square" sz={10} col={C.grey50}/> Edit global branding settings
-              </a>
-            </div>
+            <button onClick={e=>e.preventDefault()} style={{width:'100%',height:32,background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,fontWeight:500,color:C.black,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6,fontFamily:'var(--font-body)'}}>
+              <FI n="arrow-up-right-from-square" sz={10} col={C.grey60}/> Global Branding
+            </button>
           </div>
 
           {/* Format */}
@@ -733,7 +731,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
         </div>
         <div style={{padding:'12px 14px',borderTop:`1px solid ${C.grey20}`,flexShrink:0}}>
           <button onClick={()=>setResetModal(true)} style={{width:'100%',height:32,background:'#e53e3e',border:'none',borderRadius:6,fontSize:12,fontWeight:600,color:'#fff',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6,fontFamily:'var(--font-body)'}}>
-            <FI n="rotate-left" sz={11} col="#fff"/> Reset template to default
+            <FI n="rotate-left" sz={11} col="#fff"/> Reset template
           </button>
         </div>
       </div>
@@ -964,7 +962,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   // ── Sidebar ───────────────────────────────────────────────
   const SidebarList = () => (
     <div style={{display:'flex',flexDirection:'column',height:'100%'}}>
-      <div style={{padding:'10px 14px',borderBottom:`1px solid ${C.grey20}`}}>
+      <div style={{padding:'10px 14px'}}>
         <div style={{fontSize:10,color:C.grey40,marginBottom:4,fontFamily:'var(--font-body)'}}>Template</div>
         {docType?.key==='contract'
           ? <div ref={tplDropRef} style={{position:'relative'}}>
@@ -1042,22 +1040,15 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
             </div>
         }
       </div>
-      {[{key:'__settings__',icon:'gear',label:'Settings',sub:'Colors, logo, page, CSS'}].map(a=>(
-        <button key={a.key} onClick={()=>setEditing(a.key)}
-          style={{width:'100%',display:'flex',alignItems:'center',gap:10,padding:'8px 12px 8px 14px',
-            background:editing===a.key?C.blue5:'transparent',border:'none',
-            borderLeft:`3px solid ${editing===a.key?C.blue:'transparent'}`,
-            cursor:'pointer',textAlign:'left',transition:'background 100ms,border-color 100ms'}}>
-          <div style={{width:34,height:34,borderRadius:8,background:editing===a.key?'#daeafd':C.grey10,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'background 100ms'}}>
-            <FI n={a.icon} sz={15} col={editing===a.key?C.blue:C.grey60}/>
-          </div>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{fontSize:13,fontWeight:600,color:editing===a.key?C.blue:C.black,fontFamily:'var(--font-body)',lineHeight:'1.3'}}>{a.label}</div>
-            <div style={{fontSize:11,color:C.grey50,fontFamily:'var(--font-body)',lineHeight:'1.4'}}>{a.sub}</div>
-          </div>
-          <FI n="chevron-right" sz={11} col={editing===a.key?C.blue:C.grey40}/>
+      <div style={{padding:'0 14px 10px'}}>
+        <button onClick={()=>setEditing('__settings__')}
+          style={{width:'100%',height:34,display:'flex',alignItems:'center',justifyContent:'center',gap:6,
+            background:editing==='__settings__'?C.blue5:C.white,border:`1px solid ${editing==='__settings__'?C.blue:C.grey30}`,borderRadius:6,
+            cursor:'pointer',fontSize:13,color:editing==='__settings__'?C.blue:C.grey60,fontFamily:'var(--font-body)',
+            fontWeight:500,transition:'background 100ms,border-color 100ms,color 100ms'}}>
+          <FI n="gear" sz={12} col={editing==='__settings__'?C.blue:C.grey60}/> Settings
         </button>
-      ))}
+      </div>
       <div style={{borderBottom:`1px solid ${C.grey20}`}}/>
       <div style={{flex:1,overflowY:'auto'}}>
         <div style={{padding:'8px 14px 4px'}}>
