@@ -560,7 +560,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     return disabled&&tooltip ? <Tooltip text={tooltip}>{el}</Tooltip> : el;
   };
   const SHead = ({label}) => (
-    <div style={{margin:'0 -14px',padding:'11px 14px',background:C.grey10,borderBottom:`1px solid ${C.grey20}`,fontSize:13,fontWeight:700,color:C.black,fontFamily:'var(--font-body)'}}>{label}</div>
+    <div style={{margin:'-1px -14px 0',padding:'11px 14px',background:C.grey10,borderTop:`1px solid ${C.grey20}`,borderBottom:`1px solid ${C.grey20}`,fontSize:13,fontWeight:700,color:C.black,fontFamily:'var(--font-body)'}}>{label}</div>
   );
   const SelF = ({label,value,onChange,opts}) => (
     <div style={{marginTop:8,marginBottom:10}}>
@@ -592,7 +592,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
 
   const LineItemsPanel = () => (
     <>
-      <SHead label="General settings"/>
+      <SHead label="Line item settings"/>
       {bundleItem && (
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
           <div>
@@ -848,7 +848,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
       </div>
     </>,
     logistics: <>
-      <SHead label="General settings"/>
+      <SHead label="Pickup & return settings"/>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
         <div>
           <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Pickup & return dates</div>
@@ -880,7 +880,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     </>,
     lineitems: <LineItemsPanel/>,
     totals: <>
-      <SHead label="General settings"/>
+      <SHead label="Totals & fees settings"/>
       {[
         ['Subtotal',          'showSubtotal',        false, 'Sum before discounts and taxes'],
         ['Total discount',    'showTotalDiscount',   false, 'All discounts combined'],
@@ -900,7 +900,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
       ))}
     </>,
     footer: <>
-      <SHead label="General settings"/>
+      <SHead label="Footer settings"/>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
         <div>
           <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Company details</div>
