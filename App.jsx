@@ -790,15 +790,6 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
       </div>
       {docCfg.showLogo && (
         <div style={{padding:'10px 0 12px'}}>
-          <div style={{marginBottom:8}}>
-            <div style={{width:'100%',height:80,background:C.grey10,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',marginBottom:6,overflow:'hidden'}}>
-              <div style={{width:56,height:32,background:docCfg.primaryColor,borderRadius:3,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                <span style={{color:'#fff',fontSize:7,fontWeight:700,letterSpacing:1}}>LOGO</span>
-              </div>
-              <div style={{fontSize:8,color:C.grey50,fontFamily:'var(--font-body)',marginTop:5,letterSpacing:'.05em'}}>COMPANY</div>
-            </div>
-            <button style={{width:'100%',height:32,border:`1px solid ${C.grey30}`,borderRadius:8,fontSize:12,cursor:'pointer',background:C.white,color:C.black,fontFamily:'var(--font-body)',fontWeight:500}}>Change</button>
-          </div>
           <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
             <div style={{fontSize:11,color:C.grey60,fontFamily:'var(--font-body)',width:36,flexShrink:0}}>Size</div>
             <div style={{display:'flex',gap:4,flex:1}}>
@@ -809,9 +800,9 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
             </div>
           </div>
           <div style={{display:'flex',alignItems:'center',gap:8}}>
-            <div style={{fontSize:11,color:C.grey60,fontFamily:'var(--font-body)',width:36,flexShrink:0}}>Align</div>
+            <div style={{fontSize:11,color:C.grey60,fontFamily:'var(--font-body)',width:36,flexShrink:0}}>Side</div>
             <div style={{display:'flex',gap:4,flex:1}}>
-              {[['Left','align-left'],['Center','align-center'],['Right','align-right']].map(([a,icon])=>(
+              {[['Left','align-left'],['Right','align-right']].map(([a,icon])=>(
                 <button key={a} onClick={()=>setDoc('logoAlign',a)}
                   style={{flex:1,height:26,border:`1px solid ${docCfg.logoAlign===a?C.blue:C.grey30}`,borderRadius:6,background:docCfg.logoAlign===a?C.blue5:C.white,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',transition:'all 120ms'}}>
                   <FI n={icon} sz={11} col={docCfg.logoAlign===a?C.blue:C.grey50}/>
@@ -828,7 +819,6 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
           onChange={v=>setDoc('documentTitle',v)}
           style={{width:'100%',height:32,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,padding:'0 8px',background:C.white,fontFamily:'var(--font-body)',color:C.black,boxSizing:'border-box',outline:'none'}}
         />
-        <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:4}}>Displayed at the top of the document</div>
       </div>
       <SHead label="Company details"/>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
@@ -1362,28 +1352,25 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
               const logoW = docCfg.logoSize==='S'?44:docCfg.logoSize==='M'?60:80;
               const logoH = docCfg.logoSize==='S'?14:docCfg.logoSize==='M'?18:24;
               const LogoEl = docCfg.showLogo ? (
-                <div style={{width:logoW,height:logoH,background:docCfg.primaryColor,borderRadius:3,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                  <span style={{color:'#fff',fontSize:7,fontWeight:700,letterSpacing:1}}>LOGO</span>
+                <div style={{display:'flex',alignItems:'center',gap:logoH*0.25}}>
+                  <svg width={logoH} height={logoH} viewBox="0 0 36 36" fill="none">
+                    <circle cx="18" cy="18" r="16" fill="#222"/>
+                    <path d="M10 26 C10 18 18 10 26 14 C22 18 20 22 18 26Z" fill="#fff" opacity=".6"/>
+                    <path d="M14 28 C14 20 20 14 28 18 C24 22 22 26 18 28Z" fill="#fff" opacity=".4"/>
+                  </svg>
+                  <span style={{fontSize:logoH*0.45,fontWeight:700,letterSpacing:'0.1em',color:C.black}}>COMPANY</span>
                 </div>
               ) : null;
               const InvoiceEl = (
-                <div style={{textAlign:'right'}}>
+                <div style={{textAlign:align==='Right'?'left':'right'}}>
                   <div style={{fontSize:13,fontWeight:700}}>{(docCfg.documentTitle||'Invoice').toUpperCase()}</div>
                   <div style={{fontSize:9,color:C.grey50}}>#ORD-2024-0089</div>
                 </div>
               );
               return (
-                <div style={{display:'grid',gridTemplateColumns:'1fr auto 1fr',alignItems:'flex-start',marginBottom:12}}>
-                  <div style={{display:'flex',justifyContent:'flex-start'}}>
-                    {align==='Left' && LogoEl}
-                  </div>
-                  <div style={{display:'flex',justifyContent:'center'}}>
-                    {align==='Center' && LogoEl}
-                  </div>
-                  <div style={{display:'flex',justifyContent:'flex-end',gap:12,alignItems:'flex-start'}}>
-                    {align==='Right' && LogoEl}
-                    {InvoiceEl}
-                  </div>
+                <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:12}}>
+                  {align==='Right' ? InvoiceEl : LogoEl}
+                  {align==='Right' ? LogoEl : InvoiceEl}
                 </div>
               );
             })()}
