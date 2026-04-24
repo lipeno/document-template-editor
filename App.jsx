@@ -1823,18 +1823,12 @@ const DocTypeSelector = ({ onSelectDocType }) => {
           </div>
           <div style={{ borderBottom: `1px solid ${C.grey30}`, display: 'flex', gap: 24, alignItems: 'flex-start', padding: 24 }}>
             {/* Left column */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 24, alignItems: 'flex-start', flexShrink: 0, width: 328 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-start', width: '100%' }}>
-                <span style={{ fontSize: 16, lineHeight: '24px', fontWeight: 600, color: C.black, fontFamily: 'var(--font-body)' }}>Document templates</span>
-                <span style={{ fontSize: 14, lineHeight: '20px', color: C.grey50, fontFamily: 'var(--font-body)' }}>This information shows on documents your customers receive.</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span style={{ fontSize: 14, lineHeight: '20px', fontWeight: 600, color: C.blue, fontFamily: 'var(--font-body)', whiteSpace: 'nowrap', cursor: 'pointer' }}>Learn more</span>
-                <i className="fa-regular fa-arrow-up-right-from-square" style={{ fontSize: 12, color: C.blue }}/>
-              </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24, alignItems: 'flex-start', flexShrink: 1, width: 260, minWidth: 180 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100%' }}>
+              <span style={{ fontSize: 16, lineHeight: '24px', fontWeight: 600, color: C.black, fontFamily: 'var(--font-body)' }}>Document templates</span>
               {/* Video card */}
-              <div style={{ height: 88, position: 'relative', width: 328, flexShrink: 0 }}>
-                <div style={{ position: 'absolute', background: C.white, height: 72, left: 0, top: 16, width: 328, borderRadius: 8, overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
+              <div style={{ height: 88, position: 'relative', width: '100%' }}>
+                <div style={{ position: 'absolute', background: C.white, height: 72, left: 0, right: 0, top: 16, borderRadius: 8, overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
                   <div style={{ position: 'relative', border: `1px solid ${C.grey30}`, borderRadius: 4, overflow: 'hidden', margin: 8, width: 80, height: 56, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.grey10 }}>
                     <div style={{ background: '#E51C2C', borderRadius: 6, width: 32, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0px 1px 24px rgba(0,0,0,0.1)' }}>
                       <i className="fa-solid fa-play" style={{ fontSize: 12, color: '#fff', lineHeight: '16px' }}/>
@@ -1846,36 +1840,41 @@ const DocTypeSelector = ({ onSelectDocType }) => {
                   </div>
                 </div>
               </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'flex-start', width: '100%' }}>
+                <span style={{ fontSize: 14, lineHeight: '20px', color: C.grey50, fontFamily: 'var(--font-body)' }}>Tailor the content and appearance of documents sent to your customers. For full control, add custom CSS to override the default styles.</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ fontSize: 14, lineHeight: '20px', fontWeight: 600, color: C.blue, fontFamily: 'var(--font-body)', whiteSpace: 'nowrap', cursor: 'pointer' }}>Learn more</span>
+                  <i className="fa-regular fa-arrow-up-right-from-square" style={{ fontSize: 12, color: C.blue }}/>
+                </div>
+              </div>
             </div>
             {/* Right column — 2×2 card grid */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, flex: 1, alignContent: 'start' }}>
               {DOC_TYPES.map(dt => {
-                const [hov, setHov] = React.useState(false);
+                const [btnHov, setBtnHov] = React.useState(false);
                 return (
                   <div key={dt.key}
-                    onClick={() => onSelectDocType(dt)}
-                    onMouseEnter={() => setHov(true)}
-                    onMouseLeave={() => setHov(false)}
                     style={{
                       background: C.white,
-                      border: `1.5px solid ${hov ? C.blue : C.grey20}`,
+                      border: `1.5px solid ${C.grey20}`,
                       borderRadius: 10,
                       padding: '14px 16px',
                       display: 'flex',
                       gap: 14,
-                      cursor: 'pointer',
-                      transition: 'border-color 150ms',
                     }}>
                     {/* Card content */}
-                    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
                         <span style={{ fontSize: 15, fontWeight: 700, color: C.black, fontFamily: 'var(--font-body)' }}>{dt.label}</span>
                       </div>
                       <p style={{ fontSize: 12, color: C.grey50, lineHeight: 1.55, fontFamily: 'var(--font-body)', margin: 0 }}>{dt.desc}</p>
                       <div style={{ marginTop: 6 }}>
-                        <button onClick={e => { e.stopPropagation(); onSelectDocType(dt); }}
-                          style={{ height: 34, padding: '0 16px', background: hov ? C.blue : C.white, color: hov ? '#fff' : C.blue, border: `1px solid ${C.blue}`, borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'background 150ms, color 150ms' }}>
-                          Edit
+                        <button onClick={() => onSelectDocType(dt)}
+                          onMouseEnter={() => setBtnHov(true)}
+                          onMouseLeave={() => setBtnHov(false)}
+                          style={{ height: 34, padding: '0 16px', background: btnHov ? '#EBEBEB' : C.white, color: C.black, border: `1px solid ${C.grey20}`, borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'background 150ms', whiteSpace: 'nowrap' }}>
+                          Edit {dt.label.toLowerCase()} template
                         </button>
                       </div>
                     </div>
