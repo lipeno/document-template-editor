@@ -525,7 +525,7 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
     </div>
   );
   const SHead = ({label}) => (
-    <div style={{fontSize:10,fontWeight:700,color:C.grey50,textTransform:'uppercase',letterSpacing:'.07em',padding:'11px 0 5px',fontFamily:'var(--font-body)'}}>{label}</div>
+    <div style={{margin:'0 -14px',padding:'11px 14px',background:C.grey10,borderBottom:`1px solid ${C.grey20}`,fontSize:13,fontWeight:700,color:C.black,fontFamily:'var(--font-body)'}}>{label}</div>
   );
   const SelF = ({label,value,onChange,opts}) => (
     <div style={{marginBottom:10}}>
@@ -559,7 +559,7 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
     <>
       <SHead label="General settings"/>
       {bundleItem && (
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
           <div>
             <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Bundle item pricing</div>
             <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Shows bundles as one combined price</div>
@@ -715,10 +715,11 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
         </button>
       </div>
       <div style={{flex:1,overflowY:'auto',padding:'0 14px'}}>
+        <SHead label="Colors"/>
         <ColorRow label="Brand color"     value={brandColor}  onChange={v=>{setBrandColor(v);setDoc('primaryColor',v);}}/>
         <ColorRow label="Secondary color" value={secondColor} onChange={setSecondColor}/>
 
-        {/* Logo */}
+        <SHead label="Logo"/>
         <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',padding:'12px 0',borderBottom:`1px solid ${C.grey20}`}}>
           <span style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)',paddingTop:4}}>Logo</span>
           <div style={{display:'flex',flexDirection:'column',alignItems:'stretch',gap:6,width:140}}>
@@ -735,11 +736,18 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
         </div>
       </div>
 
-      {/* Reset to org defaults — sticky button at bottom */}
-      <div style={{padding:'12px 14px',borderTop:`1px solid ${C.grey20}`}}>
+      {/* Footer actions — sticky at bottom */}
+      <div style={{padding:'12px 14px',borderTop:`1px solid ${C.grey20}`,display:'flex',flexDirection:'column',gap:8}}>
         <button style={{width:'100%',height:32,background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,color:C.black,fontSize:12,fontWeight:500,cursor:'pointer',fontFamily:'var(--font-body)',display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
           <FI n="rotate-left" sz={11} col={C.grey60}/> Reset to org defaults
         </button>
+        <div style={{textAlign:'center'}}>
+          <a href="#" onClick={e=>e.preventDefault()} style={{fontSize:11,color:C.grey50,fontFamily:'var(--font-body)',textDecoration:'none',display:'inline-flex',alignItems:'center',gap:4}}
+            title="Global branding settings are not available in this prototype">
+            <FI n="arrow-up-right-from-square" sz={10} col={C.grey50}/>
+            Edit global branding settings
+          </a>
+        </div>
       </div>
     </div>
   );
@@ -747,6 +755,7 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
   // ── Section settings ──────────────────────────────────────
   const sectionPanels = {
     header: <>
+      <SHead label="General settings"/>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:docCfg.showLogo?'none':`1px solid ${C.grey20}`}}>
         <div>
           <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Company logo</div>
