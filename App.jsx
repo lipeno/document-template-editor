@@ -448,6 +448,7 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
   const [renamingTplId,   setRenamingTplId]   = React.useState(null);
   const [renameTplName,   setRenameTplName]   = React.useState('');
   const tplDropRef = React.useRef(null);
+  const sectionRefs = React.useRef({});
   const commitRename = id => { const v=renameTplName.trim(); if(v) setTemplates(p=>p.map(t=>t.id===id?{...t,name:v}:t)); setRenamingTplId(null); setRenameTplName(''); };
   React.useEffect(() => {
     if (!tplDropOpen) return;
@@ -455,6 +456,11 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [tplDropOpen]);
+  React.useEffect(() => {
+    if (!hovSec) return;
+    const el = sectionRefs.current[hovSec];
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [hovSec]);
 
   // Settings panel state
   const [settingsTab, setSettingsTab]   = React.useState('customize');
@@ -1107,7 +1113,7 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
     const isHighlighted=isEdit&&(hovPrev===id||hovSec===id);
     const isActive=isEdit&&editing===id;
     return (
-      <div style={{position:'relative'}} onMouseEnter={()=>isEdit&&setHovPrev(id)} onMouseLeave={()=>isEdit&&setHovPrev(null)}>
+      <div ref={el => { sectionRefs.current[id] = el; }} style={{position:'relative'}} onMouseEnter={()=>isEdit&&setHovPrev(id)} onMouseLeave={()=>isEdit&&setHovPrev(null)}>
         {isHov&&(
           <div style={{position:'absolute',top:-11,left:'50%',transform:'translateX(-50%)',zIndex:20}}>
             <div onClick={e=>{e.stopPropagation();setAddModal({afterId:id,position:'above'});}}
@@ -1261,7 +1267,7 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
       const isActive = isEdit && editing==='footer';
       const isHighlighted = isEdit && (hovPrev==='footer'||hovSec==='footer');
       return (
-        <div onClick={()=>isEdit&&setEditing('footer')}
+        <div ref={el => { if (el) sectionRefs.current['footer'] = el; }} onClick={()=>isEdit&&setEditing('footer')}
           onMouseEnter={()=>isEdit&&setHovPrev('footer')}
           onMouseLeave={()=>isEdit&&setHovPrev(null)}
           style={{position:'relative',cursor:isEdit?'pointer':'default',opacity:footerVis?1:0.22,transition:'opacity 200ms'}}>
