@@ -589,9 +589,9 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
               style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 8px 0 14px',
                 background:isHov?C.grey10:'transparent',
                 borderLeft:`3px solid ${isHov?C.blue:'transparent'}`,
-                opacity:item.on?1:0.45,transition:'background 100ms,border-color 100ms',minHeight:36}}>
+                transition:'background 100ms,border-color 100ms',minHeight:36}}>
               <div style={{flex:1,display:'flex',alignItems:'center',gap:8,padding:'8px 0'}}>
-                <span style={{fontSize:13,color:C.black,fontFamily:'var(--font-body)',textDecoration:item.on?'none':'line-through',lineHeight:1.3}}>{item.label}</span>
+                <span style={{fontSize:13,color:C.black,fontFamily:'var(--font-body)',lineHeight:1.3}}>{item.label}</span>
                 {item.dropdown&&item.on&&(
                   <select value={item.dropdown.val} onChange={e=>setLIDrop(item.id,e.target.value)}
                     style={{height:22,border:`1px solid ${C.grey30}`,borderRadius:5,fontSize:10,padding:'0 4px',background:C.white,fontFamily:'var(--font-body)',maxWidth:72,cursor:'pointer'}}>
@@ -599,12 +599,12 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
                   </select>
                 )}
               </div>
-              <div style={{display:'flex',gap:3,alignItems:'center',opacity:isHov?1:0,transition:'opacity 150ms'}}>
+              <div style={{display:'flex',gap:3,alignItems:'center'}}>
                 <button onClick={()=>toggleLI(item.id)}
-                  style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',background:item.on?'transparent':C.grey20,border:`1px solid ${C.grey30}`,borderRadius:6,cursor:'pointer'}}>
-                  <FI n={item.on?'eye':'eye-slash'} sz={12} col={item.on?C.grey60:C.grey40}/>
+                  style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',background:'transparent',border:'1px solid transparent',borderRadius:6,cursor:'pointer',opacity:item.on?(isHov?1:0):1,transition:'opacity 150ms'}}>
+                  <FI n={item.on?'eye':'eye-slash'} sz={12} col={item.on?C.grey60:C.grey50}/>
                 </button>
-                <div style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',border:`1px solid ${C.grey30}`,borderRadius:6,cursor:'grab'}}>
+                <div style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',border:`1px solid ${C.grey30}`,borderRadius:6,cursor:'grab',opacity:isHov?1:0,transition:'opacity 150ms'}}>
                   <FI n="grip-lines" sz={12} col={C.grey50}/>
                 </div>
               </div>
@@ -1045,17 +1045,17 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
             onMouseEnter={()=>setHovSec(s.id)} onMouseLeave={()=>setHovSec(null)}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 8px 0 14px',
               background:hovSec===s.id?C.grey10:'transparent',borderLeft:`3px solid ${hovSec===s.id?C.blue:'transparent'}`,
-              opacity:s.visible?1:0.45,transition:'background 100ms,border-color 100ms',minHeight:36}}>
+              transition:'background 100ms,border-color 100ms',minHeight:36}}>
               <div onClick={()=>setEditing(s.id)} style={{flex:1,display:'flex',alignItems:'center',gap:8,cursor:'pointer',padding:'8px 0'}}>
-                <span style={{fontSize:13,color:C.black,fontFamily:'var(--font-body)',textDecoration:s.visible?'none':'line-through'}}>{s.label}</span>
+                <span style={{fontSize:13,color:C.black,fontFamily:'var(--font-body)'}}>{s.label}</span>
                 {s.type==='text'&&<span style={{fontSize:9,color:C.grey40,background:C.grey10,padding:'1px 5px',borderRadius:3,fontFamily:'var(--font-body)'}}>Text</span>}
               </div>
-              <div style={{display:'flex',gap:3,alignItems:'center',opacity:hovSec===s.id?1:0,transition:'opacity 150ms'}}>
+              <div style={{display:'flex',gap:3,alignItems:'center'}}>
                 <button onClick={e=>{e.stopPropagation();toggleSection(s.id);}}
-                  style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',background:s.visible?'transparent':C.grey20,border:`1px solid ${C.grey30}`,borderRadius:6,cursor:'pointer'}}>
-                  <FI n={s.visible?'eye':'eye-slash'} sz={12} col={s.visible?C.grey60:C.grey40}/>
+                  style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',background:'transparent',border:'1px solid transparent',borderRadius:6,cursor:'pointer',opacity:s.visible?(hovSec===s.id?1:0):1,transition:'opacity 150ms'}}>
+                  <FI n={s.visible?'eye':'eye-slash'} sz={12} col={s.visible?C.grey60:C.grey50}/>
                 </button>
-                <div style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',border:`1px solid ${C.grey30}`,borderRadius:6,cursor:'grab'}}>
+                <div style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',border:`1px solid ${C.grey30}`,borderRadius:6,cursor:'grab',opacity:hovSec===s.id?1:0,transition:'opacity 150ms'}}>
                   <FI n="grip-lines" sz={12} col={C.grey50}/>
                 </div>
               </div>
@@ -1122,7 +1122,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
           </div>
         )}
         <div onClick={()=>isEdit&&setEditing(id)}
-          style={{cursor:isEdit?'pointer':'default',opacity:vis?1:0.22,transition:'opacity 200ms',position:'relative'}}>
+          style={{cursor:isEdit?'pointer':'default',position:'relative',display:vis?'block':'none'}}>
           {isActive&&(
             <div style={{position:'absolute',top:3,bottom:3,left:14,right:14,border:`2px solid ${C.blue}`,borderRadius:3,pointerEvents:'none',zIndex:2}}/>
           )}
@@ -1529,7 +1529,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
         {/* Page 2 — overflow line items, totals, footer */}
         <div style={{background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,overflow:'visible',minHeight:pageDim.h,display:'flex',flexDirection:'column',justifyContent:'space-between'}}>
           <div>
-            {visLICols.length>0&&(
+            {visLICols.length>0&&(sections.find(s=>s.id==='lineitems')?.visible??true)&&(
               <div style={{position:'relative'}}
                 onMouseEnter={()=>isEdit&&setHovPrev('lineitems')}
                 onMouseLeave={()=>isEdit&&setHovPrev(null)}>
