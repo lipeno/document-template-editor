@@ -477,6 +477,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   const doReset = () => {
     setDocCfg({primaryColor:'#136DEB',showLogo:true,showContact:true,showCompanyInfo:true,logoAlign:'Left',logoSize:'L',documentTitle:'Invoice',showDates:true,showLocation:true,showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,footerCompanyDetails:true,footerContactDetails:true,footerVatNumber:true,footerPaymentDetails:true,footerPageNumbers:true,font:'Inter'});
     setDateFormat('datetime'); setPageSize('A4'); setDocNumLevel('global'); setDueDatesOn(false); setCustomCSS('');
+    setBrandColor('#136DEB'); setSecondColor('#131314');
     setBlockData({});
     setResetModal(false);
   };
@@ -644,7 +645,36 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
         </div>
         <div style={{flex:1,overflowY:'auto',padding:'0 14px'}}>
 
-          {/* Typography — at top */}
+          {/* Branding */}
+          <SHead label="Branding"/>
+          <ColorRow label="Brand color"     value={brandColor}  onChange={v=>{setBrandColor(v);setDoc('primaryColor',v);}}/>
+          <ColorRow label="Secondary color" value={secondColor} onChange={setSecondColor}/>
+          <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',padding:'8px 0',borderBottom:`1px solid ${C.grey20}`}}>
+            <span style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Logo</span>
+            <div style={{display:'flex',flexDirection:'column',alignItems:'stretch',gap:6,width:140}}>
+              <div style={{height:90,background:C.grey10,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:4,border:`1px solid ${C.grey20}`}}>
+                <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                  <circle cx="18" cy="18" r="16" fill="#222"/>
+                  <path d="M10 26 C10 18 18 10 26 14 C22 18 20 22 18 26Z" fill="#fff" opacity=".6"/>
+                  <path d="M14 28 C14 20 20 14 28 18 C24 22 22 26 18 28Z" fill="#fff" opacity=".4"/>
+                </svg>
+                <span style={{fontSize:9,fontWeight:700,color:C.black,letterSpacing:2,fontFamily:'var(--font-body)'}}>COMPANY</span>
+              </div>
+              <button style={{height:30,border:`1px solid ${C.grey30}`,borderRadius:16,background:C.white,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)',color:C.black}}>Change</button>
+            </div>
+          </div>
+          <div style={{padding:'10px 0',display:'flex',flexDirection:'column',gap:8,borderBottom:`1px solid ${C.grey20}`}}>
+            <button onClick={()=>{setBrandColor('#136DEB');setSecondColor('#131314');setDoc('primaryColor','#136DEB');}} style={{width:'100%',height:32,background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,fontWeight:500,color:C.black,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6,fontFamily:'var(--font-body)'}}>
+              <FI n="rotate-left" sz={11} col={C.grey60}/> Load branding defaults
+            </button>
+            <div style={{textAlign:'center'}}>
+              <a href="#" onClick={e=>e.preventDefault()} style={{fontSize:11,color:C.grey50,fontFamily:'var(--font-body)',textDecoration:'none',display:'inline-flex',alignItems:'center',gap:4}}>
+                <FI n="arrow-up-right-from-square" sz={10} col={C.grey50}/> Edit global branding settings
+              </a>
+            </div>
+          </div>
+
+          {/* Typography */}
           <SHead label="Typography"/>
           <SelF label="Font family" value={docCfg.font} onChange={v=>setDoc('font',v)} opts={['Inter','Helvetica','Georgia','Garamond','Courier']}/>
 
@@ -690,6 +720,11 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
             style={{width:'100%',height:110,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:11,padding:'8px',fontFamily:'monospace',resize:'vertical',outline:'none',lineHeight:1.6,background:'#fafafa',boxSizing:'border-box'}}/>
 
         </div>
+        <div style={{padding:'12px 14px',borderTop:`1px solid ${C.grey20}`,flexShrink:0}}>
+          <button onClick={()=>setResetModal(true)} style={{width:'100%',height:32,background:'#e53e3e',border:'none',borderRadius:6,fontSize:12,fontWeight:600,color:'#fff',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6,fontFamily:'var(--font-body)'}}>
+            <FI n="rotate-left" sz={11} col="#fff"/> Reset template to default
+          </button>
+        </div>
       </div>
     );
   };
@@ -706,7 +741,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
       if(v.length===6) onChange('#'+v);
     };
     return (
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 0',borderBottom:`1px solid ${C.grey20}`}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
         <span style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>{label}</span>
         {/* Single pill: hex input + color swatch */}
         <div style={{display:'flex',alignItems:'center',border:`1px solid ${C.grey20}`,borderRadius:8,overflow:'hidden',height:32}}>
@@ -727,51 +762,6 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     );
   };
 
-  const BrandingPanel = () => (
-    <div style={{height:'100%',display:'flex',flexDirection:'column'}}>
-      <div style={{padding:'0 14px',borderBottom:`1px solid ${C.grey20}`}}>
-        <button onClick={()=>setEditing(null)}
-          style={{height:40,display:'flex',alignItems:'center',gap:6,background:'none',border:'none',cursor:'pointer',color:C.grey50,fontSize:12,fontFamily:'var(--font-body)',padding:0}}>
-          <FI n="chevron-left" sz={10} col={C.grey50}/> Branding
-        </button>
-      </div>
-      <div style={{flex:1,overflowY:'auto',padding:'0 14px'}}>
-        <SHead label="Colors"/>
-        <ColorRow label="Brand color"     value={brandColor}  onChange={v=>{setBrandColor(v);setDoc('primaryColor',v);}}/>
-        <ColorRow label="Secondary color" value={secondColor} onChange={setSecondColor}/>
-
-        <SHead label="Logo"/>
-        <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',padding:'12px 0',borderBottom:`1px solid ${C.grey20}`}}>
-          <span style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)',paddingTop:4}}>Logo</span>
-          <div style={{display:'flex',flexDirection:'column',alignItems:'stretch',gap:6,width:140}}>
-            <div style={{height:90,background:C.grey10,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:4,border:`1px solid ${C.grey20}`}}>
-              <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-                <circle cx="18" cy="18" r="16" fill="#222"/>
-                <path d="M10 26 C10 18 18 10 26 14 C22 18 20 22 18 26Z" fill="#fff" opacity=".6"/>
-                <path d="M14 28 C14 20 20 14 28 18 C24 22 22 26 18 28Z" fill="#fff" opacity=".4"/>
-              </svg>
-              <span style={{fontSize:9,fontWeight:700,color:C.black,letterSpacing:2,fontFamily:'var(--font-body)'}}>COMPANY</span>
-            </div>
-            <button style={{height:30,border:`1px solid ${C.grey30}`,borderRadius:16,background:C.white,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)',color:C.black}}>Change</button>
-          </div>
-        </div>
-      </div>
-
-      {/* Footer actions — sticky at bottom */}
-      <div style={{padding:'12px 14px',borderTop:`1px solid ${C.grey20}`,display:'flex',flexDirection:'column',gap:8}}>
-        <button style={{width:'100%',height:32,background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,color:C.black,fontSize:12,fontWeight:500,cursor:'pointer',fontFamily:'var(--font-body)',display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
-          <FI n="rotate-left" sz={11} col={C.grey60}/> Reset to org defaults
-        </button>
-        <div style={{textAlign:'center'}}>
-          <a href="#" onClick={e=>e.preventDefault()} style={{fontSize:11,color:C.grey50,fontFamily:'var(--font-body)',textDecoration:'none',display:'inline-flex',alignItems:'center',gap:4}}
-            title="Global branding settings are not available in this prototype">
-            <FI n="arrow-up-right-from-square" sz={10} col={C.grey50}/>
-            Edit global branding settings
-          </a>
-        </div>
-      </div>
-    </div>
-  );
 
   // ── Section settings ──────────────────────────────────────
   const sectionPanels = {
@@ -1029,7 +1019,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
             </div>
         }
       </div>
-      {[{key:'__settings__',icon:'gear',label:'Settings',sub:'Page, numbering, CSS'},{key:'__branding__',icon:'palette',label:'Branding',sub:'Colors & logo'}].map(a=>(
+      {[{key:'__settings__',icon:'gear',label:'Settings',sub:'Colors, logo, page, CSS'}].map(a=>(
         <button key={a.key} onClick={()=>setEditing(a.key)}
           style={{width:'100%',display:'flex',alignItems:'center',gap:10,padding:'8px 12px 8px 14px',
             background:editing===a.key?C.blue5:'transparent',border:'none',
@@ -1093,7 +1083,6 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
 
   const SidebarSection = () => {
     if(editing==='__settings__') return <SettingsPanel/>;
-    if(editing==='__branding__') return <BrandingPanel/>;
     const sec=sections.find(s=>s.id===editing);
     const isText=sec?.type==='text';
     const label=sec?.label||'';
@@ -1619,9 +1608,6 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
         <div style={{display:'flex',alignItems:'center',gap:6}}>
           <button onClick={onExit} style={{height:30,padding:'0 10px',background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,color:C.black,cursor:'pointer',display:'flex',alignItems:'center',gap:5,fontFamily:'var(--font-body)'}}>
             <FI n="arrow-left" sz={10} col={C.black}/> Exit
-          </button>
-          <button onClick={()=>setResetModal(true)} style={{height:30,padding:'0 12px',background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,color:C.black,cursor:'pointer',display:'flex',alignItems:'center',gap:5,fontFamily:'var(--font-body)'}}>
-            <FI n="rotate-left" sz={11} col={C.grey60}/> Reset
           </button>
         </div>
         <span style={{fontSize:13,fontWeight:600,color:C.black,fontFamily:'var(--font-body)',position:'absolute',left:'50%',transform:'translateX(-50%)'}}>{docType?.key==='contract' ? (templates.find(t=>t.id===activeTplId)?.name||'Contract template') : `${docType?.label||'Invoice'} template`}</span>
