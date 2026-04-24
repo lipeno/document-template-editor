@@ -499,6 +499,22 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   const zoomIn  = () => setZoom(z=>{const i=ZOOM_STEPS.findIndex(s=>s>z);return i>=0?ZOOM_STEPS[i]:z;});
   const zoomOut = () => setZoom(z=>{const r=[...ZOOM_STEPS].reverse();const i=r.findIndex(s=>s<z);return i>=0?r[i]:z;});
 
+  const canvasRef = React.useRef(null);
+  const [viewScale, setViewScale] = React.useState(1);
+  React.useEffect(() => {
+    const el = canvasRef.current;
+    if (!el) return;
+    const update = () => {
+      const available = el.clientWidth - 80;
+      const fill = Math.max(0.55, Math.min(0.90, 0.85 - (available - 600) * 0.00025));
+      setViewScale(Math.max(0.5, Math.min(1.45, available * fill / pageDim.w)));
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [pageDim.w]);
+
   const dragRef = React.useRef(null);
   const onDragStart = (e,i) => {dragRef.current=i;e.dataTransfer.effectAllowed='move';};
   const onDrop = (e,i) => {
@@ -1626,12 +1642,10 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
 
         {/* Preview — outer wrapper holds toolbar fixed, inner div scrolls */}
         <div style={{flex:1,position:'relative',background:C.bg}}>
-          <div style={{position:'absolute',inset:0,overflowY:'auto'}}>
-            <div style={{padding:'20px 40px 80px'}}>
-              <div style={{transformOrigin:'top center',transform:`scale(${zoom})`,transition:'transform 200ms'}}>
-                <div style={{width:pageDim.w,margin:'0 auto'}}>
-                  <DocPreview/>
-                </div>
+          <div ref={canvasRef} style={{position:'absolute',inset:0,overflowY:'auto'}}>
+            <div style={{padding:'20px 40px 80px',display:'flex',justifyContent:'center',alignItems:'flex-start'}}>
+              <div style={{transformOrigin:'top center',transform:`scale(${zoom * viewScale})`,transition:'transform 200ms',width:pageDim.w,flexShrink:0}}>
+                <DocPreview/>
               </div>
             </div>
           </div>
