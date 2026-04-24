@@ -475,7 +475,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   const getBlock = id => ({text:'',textStyle:'normal',bold:false,italic:false,underline:false,strikethrough:false,bulletList:false,numberedList:false,align:'left',bgStyle:'white',...(blockData[id]||{})});
 
   const doReset = () => {
-    setDocCfg({primaryColor:'#136DEB',showLogo:true,showContact:true,showCompanyInfo:true,logoAlign:'Left',logoSize:'L',documentTitle:'Invoice',showDates:true,showLocation:true,showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,footerCompanyDetails:true,footerContactDetails:true,footerVatNumber:true,footerPaymentDetails:true,footerPageNumbers:true,font:'Inter'});
+    setDocCfg({primaryColor:'#136DEB',showLogo:true,showContact:true,showCompanyInfo:true,logoAlign:'Left',logoSize:'L',documentTitle:'Invoice',showDates:true,showLocation:true,showAddress:false,showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,footerCompanyDetails:true,footerContactDetails:true,footerVatNumber:true,footerPaymentDetails:true,footerPageNumbers:true,font:'Inter',partyOrder:'seller-first',showPartyLabels:false});
     setDateFormat('datetime'); setPageSize('A4'); setDocNumLevel('global'); setDueDatesOn(false); setCustomCSS('');
     setBrandColor('#136DEB'); setSecondColor('#131314');
     setBlockData({});
@@ -484,11 +484,12 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
 
   const [docCfg, setDocCfg] = React.useState({
     primaryColor:'#136DEB',showLogo:true,showContact:true,showCompanyInfo:true,logoAlign:'Left',logoSize:'L',documentTitle:docType?.label||'Invoice',
-    showDates:true,showLocation:true,
+    showDates:true,showLocation:true,showAddress:false,
     showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,
     showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,
     footerCompanyDetails:true,footerContactDetails:true,footerVatNumber:true,footerPaymentDetails:true,footerPageNumbers:true,
     font:'Inter',
+    partyOrder:'seller-first',showPartyLabels:false,
   });
   const setDoc = (k,v) => setDocCfg(p=>({...p,[k]:v!==undefined?v:!p[k]}));
 
@@ -541,11 +542,23 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
       <div style={{width:12,height:12,borderRadius:'50%',background:'#fff',position:'absolute',top:3,left:on?19:3,transition:'left 180ms'}}/>
     </div>
   );
-  const Tog = ({on,onChange}) => (
-    <div onClick={onChange} style={{width:32,height:17,borderRadius:9,background:on?C.blue:C.grey30,cursor:'pointer',position:'relative',transition:'background 180ms',flexShrink:0}}>
-      <div style={{width:11,height:11,borderRadius:'50%',background:'#fff',position:'absolute',top:3,left:on?18:3,transition:'left 180ms'}}/>
-    </div>
-  );
+  const Tooltip = ({text, children}) => {
+    const [show, setShow] = React.useState(false);
+    return (
+      <div style={{position:'relative',flexShrink:0}} onMouseEnter={()=>setShow(true)} onMouseLeave={()=>setShow(false)}>
+        {children}
+        {show&&<div style={{position:'absolute',bottom:'calc(100% + 6px)',right:0,background:C.black,color:'#fff',fontSize:10,lineHeight:1.4,padding:'5px 8px',borderRadius:5,whiteSpace:'nowrap',fontFamily:'var(--font-body)',pointerEvents:'none',zIndex:200}}>{text}</div>}
+      </div>
+    );
+  };
+  const Tog = ({on,onChange,disabled,tooltip}) => {
+    const el = (
+      <div onClick={disabled?undefined:onChange} style={{width:32,height:17,borderRadius:9,background:disabled?C.grey20:on?C.blue:C.grey30,cursor:disabled?'default':'pointer',position:'relative',transition:'background 180ms',flexShrink:0,opacity:disabled?0.5:1}}>
+        <div style={{width:11,height:11,borderRadius:'50%',background:'#fff',position:'absolute',top:3,left:on&&!disabled?18:3,transition:'left 180ms'}}/>
+      </div>
+    );
+    return disabled&&tooltip ? <Tooltip text={tooltip}>{el}</Tooltip> : el;
+  };
   const SHead = ({label}) => (
     <div style={{margin:'0 -14px',padding:'11px 14px',background:C.grey10,borderBottom:`1px solid ${C.grey20}`,fontSize:13,fontWeight:700,color:C.black,fontFamily:'var(--font-body)'}}>{label}</div>
   );
@@ -559,7 +572,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     </div>
   );
   const Radio = ({checked,onChange,label,hint}) => (
-    <label style={{display:'flex',alignItems:'flex-start',gap:8,padding:'7px 0',cursor:'pointer',borderBottom:`1px solid ${C.grey20}`}}>
+    <label style={{display:'flex',alignItems:'flex-start',gap:8,padding:'7px 0',cursor:'pointer'}}>
       <div style={{width:16,height:16,borderRadius:'50%',border:`2px solid ${checked?C.blue:C.grey30}`,background:checked?C.blue:'transparent',flexShrink:0,marginTop:1,display:'flex',alignItems:'center',justifyContent:'center',transition:'all 150ms'}} onClick={onChange}>
         {checked&&<div style={{width:5,height:5,borderRadius:'50%',background:'#fff'}}/>}
       </div>
@@ -604,6 +617,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
               onMouseEnter={()=>setHovLI(item.id)}
               onMouseLeave={()=>setHovLI(null)}
               style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 8px 0 14px',
+                margin:'0 -14px',
                 background:isHov?C.grey10:'transparent',
                 borderLeft:`3px solid ${isHov?C.blue:'transparent'}`,
                 transition:'background 100ms,border-color 100ms',minHeight:36}}>
@@ -702,7 +716,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
           <div style={{fontSize:10,color:C.grey50,marginBottom:6,fontFamily:'var(--font-body)',lineHeight:1.4}}>
             Track payments by assigning automatic due-dates to all finalized invoices.
           </div>
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
             <div>
               <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Enable invoice due dates</div>
               <div style={{fontSize:10,color:C.grey50,fontFamily:'var(--font-body)',marginTop:1}}>Automatically set a due date for every finalized invoice.</div>
@@ -766,8 +780,8 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   // ── Section settings ──────────────────────────────────────
   const sectionPanels = {
     header: <>
-      <SHead label="General settings"/>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:docCfg.showLogo?'none':`1px solid ${C.grey20}`}}>
+      <SHead label="Logo & title"/>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
         <div>
           <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Company logo</div>
           <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Shown at the top of the document</div>
@@ -775,7 +789,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
         <Tog on={docCfg.showLogo} onChange={()=>setDoc('showLogo')}/>
       </div>
       {docCfg.showLogo && (
-        <div style={{borderBottom:`1px solid ${C.grey20}`,padding:'10px 0 12px'}}>
+        <div style={{padding:'10px 0 12px'}}>
           <div style={{marginBottom:8}}>
             <div style={{width:'100%',height:80,background:C.grey10,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',marginBottom:6,overflow:'hidden'}}>
               <div style={{width:56,height:32,background:docCfg.primaryColor,borderRadius:3,display:'flex',alignItems:'center',justifyContent:'center'}}>
@@ -807,20 +821,6 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
           </div>
         </div>
       )}
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
-        <div>
-          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Company contact details</div>
-          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)'}}>Phone, email, website</div>
-        </div>
-        <Tog on={docCfg.showContact} onChange={()=>setDoc('showContact')}/>
-      </div>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
-        <div>
-          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Company information</div>
-          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)'}}>Address and registration info</div>
-        </div>
-        <Tog on={docCfg.showCompanyInfo} onChange={()=>setDoc('showCompanyInfo')}/>
-      </div>
       <div style={{padding:'7px 0'}}>
         <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)',marginBottom:6}}>Document title</div>
         <DInput
@@ -830,15 +830,51 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
         />
         <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:4}}>Displayed at the top of the document</div>
       </div>
+      <SHead label="Company details"/>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
+        <div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Company contact details</div>
+          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)'}}>Phone, email, website</div>
+        </div>
+        <Tog on={docCfg.showContact} onChange={()=>setDoc('showContact')}/>
+      </div>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
+        <div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Company information</div>
+          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)'}}>Address and registration info</div>
+        </div>
+        <Tog on={docCfg.showCompanyInfo} onChange={()=>setDoc('showCompanyInfo')}/>
+      </div>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
+        <div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Swap party order</div>
+          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Places customer on the left, seller on the right</div>
+        </div>
+        <Tog on={docCfg.partyOrder==='customer-first'} onChange={()=>setDoc('partyOrder',docCfg.partyOrder==='customer-first'?'seller-first':'customer-first')}/>
+      </div>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
+        <div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Party labels</div>
+          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Shows "From" and "Bill to" above each column</div>
+        </div>
+        <Tog on={docCfg.showPartyLabels} onChange={()=>setDoc('showPartyLabels')}/>
+      </div>
     </>,
     logistics: <>
       <SHead label="General settings"/>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
         <div>
           <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Pickup & return dates</div>
           <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Rental start and end dates</div>
         </div>
         <Tog on={docCfg.showDates} onChange={()=>setDoc('showDates')}/>
+      </div>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
+        <div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Pickup & return times</div>
+          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Includes time with pickup & return dates</div>
+        </div>
+        <Tog on={dateFormat==='datetime'} onChange={()=>setDateFormat(dateFormat==='datetime'?'dateonly':'datetime')} disabled={!docCfg.showDates} tooltip="Requires pickup & return dates"/>
       </div>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
         <div>
@@ -847,12 +883,12 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
         </div>
         <Tog on={docCfg.showLocation} onChange={()=>setDoc('showLocation')}/>
       </div>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
         <div>
-          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Pickup & return times</div>
-          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Includes time with pickup & return dates</div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Pickup & return addresses</div>
+          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Location name with its address</div>
         </div>
-        <Tog on={dateFormat==='datetime'} onChange={()=>setDateFormat(dateFormat==='datetime'?'dateonly':'datetime')}/>
+        <Tog on={docCfg.showAddress} onChange={()=>setDoc('showAddress')} disabled={!docCfg.showLocation} tooltip="Requires pickup & return locations"/>
       </div>
     </>,
     lineitems: <LineItemsPanel/>,
@@ -867,7 +903,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
         ['Tax breakdown',     'showTaxBreakdown',    false, 'Tax per applicable rate'],
         ['Total incl. taxes', 'showTotalInclTaxes',  false, 'Final amount including all taxes'],
       ].map(([label,key,bold,hint])=>(
-        <div key={key} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
+        <div key={key} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
           <div>
             <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)',fontWeight:bold?700:400}}>{label}</div>
             <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>{hint}</div>
@@ -878,35 +914,35 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     </>,
     footer: <>
       <SHead label="General settings"/>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
         <div>
           <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Company details</div>
           <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Business name and address</div>
         </div>
         <Tog on={docCfg.footerCompanyDetails} onChange={()=>setDoc('footerCompanyDetails')}/>
       </div>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
         <div>
           <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Contact details</div>
           <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Phone, email, and website</div>
         </div>
         <Tog on={docCfg.footerContactDetails} onChange={()=>setDoc('footerContactDetails')}/>
       </div>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
         <div>
           <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>VAT number</div>
           <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Your registered VAT or tax ID</div>
         </div>
         <Tog on={docCfg.footerVatNumber} onChange={()=>setDoc('footerVatNumber')}/>
       </div>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
         <div>
           <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Payment details</div>
           <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Bank details or payment info</div>
         </div>
         <Tog on={docCfg.footerPaymentDetails} onChange={()=>setDoc('footerPaymentDetails')}/>
       </div>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
         <div>
           <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Page numbers</div>
           <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Current page and total count</div>
@@ -1351,14 +1387,27 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
                 </div>
               );
             })()}
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-              <div style={{fontSize:9,color:C.grey60,lineHeight:1.5}}>
-                Acme Rentals Inc.
-                {docCfg.showCompanyInfo&&<><br/>123 Main St, NY 10001<br/>VAT: US123456789</>}
-                {docCfg.showContact&&<><br/>info@acme.com · +1 555 123 4567<br/>www.acmerentals.com</>}
-              </div>
-              <div style={{fontSize:9,color:C.grey60,lineHeight:1.5}}>Sarah Johnson<br/>456 Oak Ave, NY 10002</div>
-            </div>
+            {(()=>{
+              const labelStyle={fontSize:7,fontWeight:700,color:C.grey40,textTransform:'uppercase',letterSpacing:1,marginBottom:2};
+              const sellerEl=(
+                <div>
+                  {docCfg.showPartyLabels&&<div style={labelStyle}>From</div>}
+                  <div style={{fontSize:9,color:C.grey60,lineHeight:1.5}}>
+                    Acme Rentals Inc.
+                    {docCfg.showCompanyInfo&&<><br/>123 Main St, NY 10001<br/>VAT: US123456789</>}
+                    {docCfg.showContact&&<><br/>info@acme.com · +1 555 123 4567<br/>www.acmerentals.com</>}
+                  </div>
+                </div>
+              );
+              const customerEl=(
+                <div>
+                  {docCfg.showPartyLabels&&<div style={labelStyle}>Bill to</div>}
+                  <div style={{fontSize:9,color:C.grey60,lineHeight:1.5}}>Sarah Johnson<br/>456 Oak Ave, NY 10002</div>
+                </div>
+              );
+              const [left,right]=docCfg.partyOrder==='customer-first'?[customerEl,sellerEl]:[sellerEl,customerEl];
+              return <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>{left}{right}</div>;
+            })()}
           </div>
         </SectionWrap>
       );
@@ -1372,6 +1421,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
                   {docCfg.showDates&&<span>{v}{dateFormat==='datetime'&&' 10:00'}</span>}
                   {docCfg.showLocation&&<span style={{color:C.grey60}}>Main location</span>}
                 </div>
+                {docCfg.showLocation&&docCfg.showAddress&&<div style={{fontSize:7,color:C.grey60,marginTop:1}}>123 Main St, NY 10001</div>}
               </div>
             ))}
           </div>
