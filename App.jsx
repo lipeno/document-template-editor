@@ -1577,16 +1577,16 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
     <div style={{display:'flex',flexDirection:'column',width:'100%',height:'100vh',fontFamily:'var(--font-body)',background:C.bg,overflow:'hidden',position:'relative'}}>
       {/* Top bar */}
       <div style={{height:44,background:C.white,borderBottom:`1px solid ${C.grey30}`,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 16px',flexShrink:0,position:'relative'}}>
-        <div style={{display:'flex',alignItems:'center',gap:10}}>
+        <div style={{display:'flex',alignItems:'center',gap:6}}>
           <button onClick={onExit} style={{height:30,padding:'0 10px',background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,color:C.black,cursor:'pointer',display:'flex',alignItems:'center',gap:5,fontFamily:'var(--font-body)'}}>
             <FI n="arrow-left" sz={10} col={C.black}/> Exit
+          </button>
+          <button onClick={()=>setResetModal(true)} style={{height:30,padding:'0 12px',background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,color:C.black,cursor:'pointer',display:'flex',alignItems:'center',gap:5,fontFamily:'var(--font-body)'}}>
+            <FI n="rotate-left" sz={11} col={C.grey60}/> Reset
           </button>
         </div>
         <span style={{fontSize:13,fontWeight:600,color:C.black,fontFamily:'var(--font-body)',position:'absolute',left:'50%',transform:'translateX(-50%)'}}>{docType?.key==='contract' ? (templates.find(t=>t.id===activeTplId)?.name||'Contract template') : `${docType?.label||'Invoice'} template`}</span>
         <div style={{display:'flex',gap:6}}>
-          <button onClick={()=>setResetModal(true)} style={{height:30,padding:'0 12px',background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,color:C.black,cursor:'pointer',display:'flex',alignItems:'center',gap:5,fontFamily:'var(--font-body)'}}>
-            <FI n="rotate-left" sz={11} col={C.grey60}/> Reset
-          </button>
           <button style={{height:30,padding:'0 16px',background:C.blue,color:'#fff',border:'none',borderRadius:6,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)'}}>Save</button>
         </div>
       </div>
