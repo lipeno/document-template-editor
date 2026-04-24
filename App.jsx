@@ -467,10 +467,10 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
 
   const [blockData, setBlockData] = React.useState({});
   const updateBlock = (id,p2) => setBlockData(p=>({...p,[id]:{...(p[id]||{}),...p2}}));
-  const getBlock = id => ({text:'',textStyle:'normal',bold:false,italic:false,underline:false,strikethrough:false,bulletList:false,numberedList:false,align:'left',...(blockData[id]||{})});
+  const getBlock = id => ({text:'',textStyle:'normal',bold:false,italic:false,underline:false,strikethrough:false,bulletList:false,numberedList:false,align:'left',bgStyle:'white',...(blockData[id]||{})});
 
   const doReset = () => {
-    setDocCfg({primaryColor:'#136DEB',showLogo:true,showContact:true,showCompanyInfo:true,logoAlign:'Left',logoSize:'L',documentTitle:'Invoice',showDates:true,showLocation:true,showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,footerShowNotes:true,footerCompanyDetails:true,footerContactDetails:true,footerVatNumber:true,footerPaymentDetails:true,footerPageNumbers:true,font:'Inter'});
+    setDocCfg({primaryColor:'#136DEB',showLogo:true,showContact:true,showCompanyInfo:true,logoAlign:'Left',logoSize:'L',documentTitle:'Invoice',showDates:true,showLocation:true,showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,footerCompanyDetails:true,footerContactDetails:true,footerVatNumber:true,footerPaymentDetails:true,footerPageNumbers:true,font:'Inter'});
     setDateFormat('datetime'); setPageSize('A4'); setDocNumLevel('global'); setDueDatesOn(false); setCustomCSS('');
     setBlockData({});
     setResetModal(false);
@@ -481,7 +481,7 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
     showDates:true,showLocation:true,
     showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,
     showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,
-    footerShowNotes:true,footerCompanyDetails:true,footerContactDetails:true,footerVatNumber:true,footerPaymentDetails:true,footerPageNumbers:true,
+    footerCompanyDetails:true,footerContactDetails:true,footerVatNumber:true,footerPaymentDetails:true,footerPageNumbers:true,
     font:'Inter',
   });
   const setDoc = (k,v) => setDocCfg(p=>({...p,[k]:v!==undefined?v:!p[k]}));
@@ -860,13 +860,6 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
       <SHead label="General settings"/>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
         <div>
-          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Show notes</div>
-          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Thank-you message or order notes</div>
-        </div>
-        <Tog on={docCfg.footerShowNotes} onChange={()=>setDoc('footerShowNotes')}/>
-      </div>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
-        <div>
           <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Company details</div>
           <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Business name and address</div>
         </div>
@@ -904,7 +897,26 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
   };
 
   // ── Text section panel ────────────────────────────────────
-  const TextSectionPanel = ({id}) => <RichTextPanel id={id} getBlock={getBlock} updateBlock={updateBlock}/>;
+  const TextSectionPanel = ({id}) => {
+    const b = getBlock(id);
+    return (
+      <>
+        <RichTextPanel id={id} getBlock={getBlock} updateBlock={updateBlock}/>
+        <div style={{fontSize:10,fontWeight:700,color:C.grey50,textTransform:'uppercase',letterSpacing:'.07em',padding:'11px 0 5px',fontFamily:'var(--font-body)'}}>Background</div>
+        <div style={{display:'flex',gap:4,paddingBottom:12}}>
+          {[['white','White',C.white],['grey','Grey',C.bg]].map(([val,lbl,bg])=>{
+            const active = (b.bgStyle||'white')===val;
+            return (
+              <button key={val} onClick={()=>updateBlock(id,{bgStyle:val})}
+                style={{flex:1,height:32,border:`1px solid ${active?C.blue:C.grey30}`,borderRadius:6,background:bg,cursor:'pointer',fontSize:11,fontFamily:'var(--font-body)',color:active?C.blue:C.grey60,fontWeight:active?700:400,display:'flex',alignItems:'center',justifyContent:'center',gap:5,transition:'all 120ms'}}>
+                {lbl}
+              </button>
+            );
+          })}
+        </div>
+      </>
+    );
+  };
 
   // ── Sidebar ───────────────────────────────────────────────
   const SidebarList = () => (
@@ -1226,7 +1238,7 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
     const totalPages = 2;
     const footerSec = sections.find(s=>s.id==='footer');
     const footerVis = footerSec?.visible ?? true;
-    const hasFooterContent = footerVis && (docCfg.footerShowNotes||docCfg.footerCompanyDetails||docCfg.footerContactDetails||docCfg.footerVatNumber||docCfg.footerPaymentDetails);
+    const hasFooterContent = footerVis && (docCfg.footerCompanyDetails||docCfg.footerContactDetails||docCfg.footerVatNumber||docCfg.footerPaymentDetails);
     const hasPageNumbers = footerVis && docCfg.footerPageNumbers;
 
     // Lightweight wrapper for footer-linked elements (no add-section buttons)
@@ -1252,25 +1264,20 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
       );
     };
 
-    const PageNumRow = ({page}) => !hasPageNumbers ? null : (
-      <FooterWrap>
-        <div style={{padding:'5px 22px',borderTop:`1px solid ${C.grey20}`,fontSize:8,color:C.grey50,textAlign:'right'}}>
-          Page {page} of {totalPages}
-        </div>
-      </FooterWrap>
-    );
-
-    const FooterContent = () => !hasFooterContent ? null : (
-      <FooterWrap>
-        <div style={{padding:'8px 22px',background:C.bg,borderTop:`1px solid ${C.grey20}`,fontSize:8,color:C.grey50,display:'flex',flexDirection:'column',gap:3}}>
-          {docCfg.footerShowNotes && <div>Thank you for your business.</div>}
-          {docCfg.footerCompanyDetails && <div>Acme Rentals Inc. · 123 Main St, Springfield</div>}
-          {docCfg.footerContactDetails && <div>hello@acmerentals.com · +1 555 000 1234</div>}
-          {docCfg.footerVatNumber && <div>VAT: GB123456789</div>}
-          {docCfg.footerPaymentDetails && <div>Payment due within 30 days. IBAN: GB00 BARC 1234 5678 9012 34</div>}
-        </div>
-      </FooterWrap>
-    );
+    const FooterContent = ({page}) => {
+      if (!footerVis || (!hasFooterContent && !hasPageNumbers)) return null;
+      return (
+        <FooterWrap>
+          <div style={{padding:'8px 22px',background:C.bg,borderTop:`1px solid ${C.grey20}`,fontSize:8,color:C.grey50,display:'flex',flexDirection:'column',gap:3}}>
+            {docCfg.footerCompanyDetails && <div>Acme Rentals Inc. · 123 Main St, Springfield</div>}
+            {docCfg.footerContactDetails && <div>hello@acmerentals.com · +1 555 000 1234</div>}
+            {docCfg.footerVatNumber && <div>VAT: GB123456789</div>}
+            {docCfg.footerPaymentDetails && <div>Payment due within 30 days. IBAN: GB00 BARC 1234 5678 9012 34</div>}
+            {hasPageNumbers && <div style={{textAlign:'right'}}>Page {page} of {totalPages}</div>}
+          </div>
+        </FooterWrap>
+      );
+    };
 
     const page2Rows = [
       {name:'Backdrop Set (White)',  sku:'BKD-W',  qty:'1', period:'7 days', unit_price:'$39',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$6',  price_total:'$45',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
@@ -1474,9 +1481,10 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
       );
       if(s.type==='text'){
         const b=getBlock(s.id);
+        const sectionBg = b.bgStyle==='grey' ? C.bg : C.white;
         return (
           <SectionWrap key={s.id} id={s.id} label="Text section">
-            <div style={{padding:'10px 22px',borderTop:`1px solid ${C.grey20}`,minHeight:34}}>
+            <div style={{padding:'10px 22px',borderTop:`1px solid ${C.grey20}`,minHeight:34,background:sectionBg}}>
               {b.html
                 ? <div style={{fontSize:9,color:C.black,lineHeight:1.6,fontFamily:'var(--font-body)'}} dangerouslySetInnerHTML={{__html:b.html}}/>
                 : <div style={{fontSize:9,color:C.grey30,fontStyle:'italic',lineHeight:1.6}}>Empty text section</div>
@@ -1496,7 +1504,7 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
         {/* Page 1 */}
         <div style={{background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,overflow:'visible',minHeight:pageDim.h,display:'flex',flexDirection:'column',justifyContent:'space-between'}}>
           <div>{mainSections.map(renderSection)}</div>
-          <PageNumRow page={1}/>
+          <FooterContent page={1}/>
         </div>
         {/* Page 2 — overflow line items, totals, footer */}
         <div style={{background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,overflow:'visible',minHeight:pageDim.h,display:'flex',flexDirection:'column',justifyContent:'space-between'}}>
@@ -1537,10 +1545,7 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
             )}
             {totalsSec&&renderSection(totalsSec)}
           </div>
-          <div>
-            <FooterContent/>
-            <PageNumRow page={2}/>
-          </div>
+          <FooterContent page={2}/>
         </div>
       </div>
     );
