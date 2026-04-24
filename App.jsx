@@ -1008,6 +1008,12 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
         <div style={{padding:'8px 14px 4px'}}>
           <div style={{fontSize:10,fontWeight:700,color:C.grey50,textTransform:'uppercase',letterSpacing:'.07em',fontFamily:'var(--font-body)'}}>Sections</div>
         </div>
+        {!editing&&<div style={{padding:'2px 14px 6px'}}>
+          <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',background:C.blue5,border:`1px solid ${C.blue30}`,borderRadius:6}}>
+            <FI n="circle-info" sz={13} col={C.blue}/>
+            <span style={{fontSize:12,color:C.grey60,fontFamily:'var(--font-body)',lineHeight:1.4}}>Select a section to edit and configure its content.</span>
+          </div>
+        </div>}
         {sections.map((s,idx)=>(
           <div key={s.id} draggable onDragStart={e=>onDragStart(e,idx)} onDragOver={e=>e.preventDefault()} onDrop={e=>onDrop(e,idx)}
             onMouseEnter={()=>setHovSec(s.id)} onMouseLeave={()=>setHovSec(null)}>
