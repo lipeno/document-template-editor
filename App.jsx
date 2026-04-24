@@ -563,7 +563,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     <div style={{margin:'0 -14px',padding:'11px 14px',background:C.grey10,borderBottom:`1px solid ${C.grey20}`,fontSize:13,fontWeight:700,color:C.black,fontFamily:'var(--font-body)'}}>{label}</div>
   );
   const SelF = ({label,value,onChange,opts}) => (
-    <div style={{marginBottom:10}}>
+    <div style={{marginTop:8,marginBottom:10}}>
       <div style={{fontSize:11,color:C.grey60,marginBottom:4,fontFamily:'var(--font-body)'}}>{label}</div>
       <select value={value} onChange={e=>onChange(e.target.value)}
         style={{width:'100%',height:30,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,padding:'0 8px',background:C.white,fontFamily:'var(--font-body)'}}>
@@ -663,7 +663,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
           <SHead label="Branding"/>
           <ColorRow label="Brand color"     value={brandColor}  onChange={v=>{setBrandColor(v);setDoc('primaryColor',v);}}/>
           <ColorRow label="Secondary color" value={secondColor} onChange={setSecondColor}/>
-          <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',padding:'8px 0',borderBottom:`1px solid ${C.grey20}`}}>
+          <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',padding:'8px 0'}}>
             <span style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Logo</span>
             <div style={{display:'flex',flexDirection:'column',alignItems:'stretch',gap:6,width:140}}>
               <div style={{height:90,background:C.grey10,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:4,border:`1px solid ${C.grey20}`}}>
@@ -677,7 +677,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
               <button style={{height:30,border:`1px solid ${C.grey30}`,borderRadius:16,background:C.white,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)',color:C.black}}>Change</button>
             </div>
           </div>
-          <div style={{padding:'10px 0',display:'flex',flexDirection:'column',gap:8,borderBottom:`1px solid ${C.grey20}`}}>
+          <div style={{padding:'10px 0',display:'flex',flexDirection:'column',gap:8}}>
             <button onClick={()=>{setBrandColor('#136DEB');setSecondColor('#131314');setDoc('primaryColor','#136DEB');}} style={{width:'100%',height:32,background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,fontWeight:500,color:C.black,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6,fontFamily:'var(--font-body)'}}>
               <FI n="rotate-left" sz={11} col={C.grey60}/> Load branding defaults
             </button>
@@ -688,24 +688,24 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
             </div>
           </div>
 
-          {/* Typography */}
-          <SHead label="Typography"/>
+          {/* Format */}
+          <SHead label="Format"/>
           <SelF label="Font family" value={docCfg.font} onChange={v=>setDoc('font',v)} opts={['Inter','Helvetica','Georgia','Garamond','Courier']}/>
-
-          {/* Page size */}
-          <SHead label="Page size"/>
-          <div style={{display:'flex',gap:4,marginBottom:4}}>
-            {['A4','Letter','Legal','A5'].map(s=>(
-              <button key={s} onClick={()=>setPageSize(s)}
-                style={{flex:1,height:28,border:`1px solid ${pageSize===s?C.blue:C.grey30}`,borderRadius:6,background:pageSize===s?C.blue5:C.white,color:pageSize===s?C.blue:C.grey60,fontSize:11,cursor:'pointer',fontFamily:'var(--font-body)',fontWeight:pageSize===s?600:400,transition:'all 120ms'}}>
-                {s}
-              </button>
-            ))}
+          <div style={{marginBottom:10}}>
+            <div style={{fontSize:11,color:C.grey60,marginBottom:4,fontFamily:'var(--font-body)'}}>Page size</div>
+            <div style={{display:'flex',gap:4}}>
+              {['A4','Letter','Legal','A5'].map(s=>(
+                <button key={s} onClick={()=>setPageSize(s)}
+                  style={{flex:1,height:28,border:`1px solid ${pageSize===s?C.blue:C.grey30}`,borderRadius:6,background:pageSize===s?C.blue5:C.white,color:pageSize===s?C.blue:C.grey60,fontSize:11,cursor:'pointer',fontFamily:'var(--font-body)',fontWeight:pageSize===s?600:400,transition:'all 120ms'}}>
+                  {s}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Document numbering */}
           <SHead label="Document numbering"/>
-          <div style={{fontSize:10,color:C.grey50,marginBottom:6,fontFamily:'var(--font-body)',lineHeight:1.4}}>Choose how document numbers ascend — globally or by prefix.</div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)',marginTop:8,marginBottom:4}}>Document numbering</div>
           <Radio checked={docNumLevel==='global'} onChange={()=>setDocNumLevel('global')}
             label="Global level" hint="Numbers increment by one: #1, #2, #3, etc."/>
           <Radio checked={docNumLevel==='prefix'} onChange={()=>setDocNumLevel('prefix')}
@@ -713,9 +713,6 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
 
           {/* Invoice due dates */}
           <SHead label="Invoice due dates"/>
-          <div style={{fontSize:10,color:C.grey50,marginBottom:6,fontFamily:'var(--font-body)',lineHeight:1.4}}>
-            Track payments by assigning automatic due-dates to all finalized invoices.
-          </div>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
             <div>
               <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Enable invoice due dates</div>
@@ -755,7 +752,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
       if(v.length===6) onChange('#'+v);
     };
     return (
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
         <span style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>{label}</span>
         {/* Single pill: hex input + color swatch */}
         <div style={{display:'flex',alignItems:'center',border:`1px solid ${C.grey20}`,borderRadius:8,overflow:'hidden',height:32}}>
@@ -876,7 +873,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
         </div>
         <Tog on={dateFormat==='datetime'} onChange={()=>setDateFormat(dateFormat==='datetime'?'dateonly':'datetime')} disabled={!docCfg.showDates} tooltip="Requires pickup & return dates"/>
       </div>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderBottom:`1px solid ${C.grey20}`}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
         <div>
           <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Pickup & return locations</div>
           <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Pickup or return branch name</div>
