@@ -366,7 +366,7 @@ const _SKU_PI = {
   'MON-07':_PI.monitor, 'WFF-01':_PI.followFocus, 'PLC-L':_PI.pelicanCase,
 };
 
-const ExpN = ({ onExit, docType }) => {  const C = BQ;
+const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   const _nid = React.useRef(600);
   const nextId = () => String(++_nid.current);
 
@@ -430,8 +430,7 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
     {id:'footer',   type:'builtin',label:'Footer',           visible:true},
   ]);
 
-  const [editing,  setEditing]  = React.useState(null);
-  const [mode,     setMode]     = React.useState('edit');
+  const [editing, setEditing] = React.useState(null);
   const [zoom,     setZoom]     = React.useState(1);
   const [hovSec,   setHovSec]   = React.useState(null);
   const [hovPrev,  setHovPrev]  = React.useState(null);
@@ -448,6 +447,7 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
   const [renamingTplId,   setRenamingTplId]   = React.useState(null);
   const [renameTplName,   setRenameTplName]   = React.useState('');
   const tplDropRef = React.useRef(null);
+  const sectionRefs = React.useRef({});
   const commitRename = id => { const v=renameTplName.trim(); if(v) setTemplates(p=>p.map(t=>t.id===id?{...t,name:v}:t)); setRenamingTplId(null); setRenameTplName(''); };
   React.useEffect(() => {
     if (!tplDropOpen) return;
@@ -455,6 +455,11 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [tplDropOpen]);
+  React.useEffect(() => {
+    if (!hovSec) return;
+    const el = sectionRefs.current[hovSec];
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [hovSec]);
 
   // Settings panel state
   const [settingsTab, setSettingsTab]   = React.useState('customize');
@@ -486,7 +491,7 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
   });
   const setDoc = (k,v) => setDocCfg(p=>({...p,[k]:v!==undefined?v:!p[k]}));
 
-  const isEdit = mode==='edit';
+  const isEdit = !isPreviewOnly;
   const ZOOM_STEPS=[0.5,0.67,0.75,0.9,1,1.1,1.25,1.5];
   // Page dimensions in CSS px at 72 DPI (PDF standard points)
   const PAGE_DIMS = {A4:{w:595,h:842},A5:{w:420,h:595},Letter:{w:612,h:792},Legal:{w:612,h:1008}};
@@ -1123,7 +1128,7 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
     const isHighlighted=isEdit&&(hovPrev===id||hovSec===id);
     const isActive=isEdit&&editing===id;
     return (
-      <div style={{position:'relative'}} onMouseEnter={()=>isEdit&&setHovPrev(id)} onMouseLeave={()=>isEdit&&setHovPrev(null)}>
+      <div ref={el => { sectionRefs.current[id] = el; }} style={{position:'relative'}} onMouseEnter={()=>isEdit&&setHovPrev(id)} onMouseLeave={()=>isEdit&&setHovPrev(null)}>
         {isHov&&(
           <div style={{position:'absolute',top:-11,left:'50%',transform:'translateX(-50%)',zIndex:20}}>
             <div onClick={e=>{e.stopPropagation();setAddModal({afterId:id,position:'above'});}}
@@ -1277,7 +1282,7 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
       const isActive = isEdit && editing==='footer';
       const isHighlighted = isEdit && (hovPrev==='footer'||hovSec==='footer');
       return (
-        <div onClick={()=>isEdit&&setEditing('footer')}
+        <div ref={el => { if (el) sectionRefs.current['footer'] = el; }} onClick={()=>isEdit&&setEditing('footer')}
           onMouseEnter={()=>isEdit&&setHovPrev('footer')}
           onMouseLeave={()=>isEdit&&setHovPrev(null)}
           style={{position:'relative',cursor:isEdit?'pointer':'default',opacity:footerVis?1:0.22,transition:'opacity 200ms'}}>
@@ -1582,19 +1587,17 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
     );
   };
 
+  if (isPreviewOnly) return (
+    <div style={{width:'100%',minHeight:'100vh',background:C.bg,fontFamily:'var(--font-body)',padding:'40px 20px'}}>
+      <div style={{width:pageDim.w,margin:'0 auto',transformOrigin:'top center',transform:`scale(${zoom})`}}>
+        <DocPreview/>
+      </div>
+    </div>
+  );
+
   // ── View toolbar — bottom-right, sticky ───────────────────
   const ViewToolbar = () => (
     <div style={{display:'flex',alignItems:'center',background:C.white,border:`1px solid ${C.grey30}`,borderRadius:8,boxShadow:'0 2px 10px rgba(0,0,0,.09)',overflow:'hidden'}}>
-      <div style={{display:'flex',padding:3,gap:2,borderRight:`1px solid ${C.grey20}`}}>
-        {[{key:'edit',icon:'pen',label:'Edit'},{key:'preview',icon:'eye',label:'Preview'}].map(m=>(
-          <button key={m.key} onClick={()=>{setMode(m.key);if(m.key==='preview')setEditing(null);}}
-            style={{height:26,padding:'0 10px',borderRadius:4,border:'none',fontSize:11,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)',
-              background:mode===m.key?C.blue:'transparent',color:mode===m.key?'#fff':C.grey50,
-              display:'flex',alignItems:'center',gap:4,transition:'all 150ms'}}>
-            <FI n={m.icon} sz={10} col={mode===m.key?'#fff':C.grey50}/> {m.label}
-          </button>
-        ))}
-      </div>
       <button onClick={zoomOut} disabled={zoom<=ZOOM_STEPS[0]}
         style={{width:30,height:32,display:'flex',alignItems:'center',justifyContent:'center',background:'none',border:'none',cursor:zoom<=ZOOM_STEPS[0]?'default':'pointer',opacity:zoom<=ZOOM_STEPS[0]?0.3:1,borderRight:`1px solid ${C.grey20}`}}>
         <FI n="minus" sz={10} col={C.grey60}/>
@@ -1623,6 +1626,10 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
         </div>
         <span style={{fontSize:13,fontWeight:600,color:C.black,fontFamily:'var(--font-body)',position:'absolute',left:'50%',transform:'translateX(-50%)'}}>{docType?.key==='contract' ? (templates.find(t=>t.id===activeTplId)?.name||'Contract template') : `${docType?.label||'Invoice'} template`}</span>
         <div style={{display:'flex',gap:6}}>
+          <button onClick={()=>window.open(window.location.href.replace(/\?.*$/,'')+`?preview&dt=${docType?.key||'invoice'}`, '_blank')}
+            style={{height:30,padding:'0 12px',background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:5,fontFamily:'var(--font-body)',color:C.black}}>
+            <FI n="eye" sz={11} col={C.grey60}/> Preview
+          </button>
           <button style={{height:30,padding:'0 16px',background:C.blue,color:'#fff',border:'none',borderRadius:6,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)'}}>Save</button>
         </div>
       </div>
@@ -1634,7 +1641,7 @@ const ExpN = ({ onExit, docType }) => {  const C = BQ;
         </div>
 
         {/* Preview — outer wrapper holds toolbar fixed, inner div scrolls */}
-        <div style={{flex:1,position:'relative',background:isEdit?C.bg:'#efefeb'}}>
+        <div style={{flex:1,position:'relative',background:C.bg}}>
           <div ref={canvasRef} style={{position:'absolute',inset:0,overflowY:'auto'}}>
             <div style={{padding:'20px 40px 80px',display:'flex',justifyContent:'center',alignItems:'flex-start'}}>
               <div style={{transformOrigin:'top center',transform:`scale(${zoom * viewScale})`,transition:'transform 200ms',width:pageDim.w,flexShrink:0}}>
@@ -1927,8 +1934,17 @@ const DocTypeSelector = ({ onSelectDocType }) => {
 // ─────────────────────────────────────────────────────────────
 
 const App = () => {
+  const params = new URLSearchParams(window.location.search);
+  const isPreview = params.has('preview');
+
   const [screen, setScreen] = React.useState('selector');
   const [docType, setDocType] = React.useState(null);
+
+  if (isPreview) {
+    const dtKey = params.get('dt') || 'invoice';
+    const dtLabels = {invoice:'Invoice',quote:'Quote',contract:'Contract',packing_slip:'Packing Slip'};
+    return <ExpN onExit={()=>{}} docType={{key:dtKey,label:dtLabels[dtKey]||'Invoice'}} isPreviewOnly={true}/>;
+  }
 
   if (screen === 'editor') {
     return <ExpN onExit={() => setScreen('selector')} docType={docType} />;
