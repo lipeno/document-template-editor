@@ -210,7 +210,7 @@ const RichTextPanel = ({id, getBlock, updateBlock}) => {
         )}
       </div>
       <div style={{marginBottom:10}}>
-        <div style={{fontSize:11,color:C.grey50,fontFamily:'var(--font-body)',marginBottom:5}}>Format text</div>
+        <div style={{fontSize:11,color:C.grey50,fontFamily:'var(--font-body)',marginBottom:5}}>Format:</div>
         <div style={{display:'flex',gap:4,alignItems:'center',marginBottom:4}}>
           <select onChange={e=>exec('formatBlock',e.target.value)} value={fmts.blockStyle||'div'}
             style={{height:28,border:`1px solid ${C.grey30}`,borderRadius:5,fontSize:11,padding:'0 4px',
@@ -234,7 +234,7 @@ const RichTextPanel = ({id, getBlock, updateBlock}) => {
         </div>
       </div>
       <div>
-        <div style={{fontSize:11,color:C.grey50,fontFamily:'var(--font-body)',marginBottom:5}}>Insert variable</div>
+        <div style={{fontSize:11,color:C.grey50,fontFamily:'var(--font-body)',marginBottom:5}}>Insert:</div>
         <div style={{display:'flex',gap:4,alignItems:'center'}}>
           {VAR_CATEGORIES.map(cat => <VarBtn key={cat.id} cat={cat}/>)}
         </div>
@@ -1102,17 +1102,13 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
         <div style={{padding:'8px 0'}}>
           <RichTextPanel id={id} getBlock={getBlock} updateBlock={updateBlock}/>
         </div>
-        <SHead label="Background"/>
-        <div style={{display:'flex',gap:4,padding:'8px 0 12px'}}>
-          {[['white','White',C.white],['grey','Grey',C.bg]].map(([val,lbl,bg])=>{
-            const active = (b.bgStyle||'white')===val;
-            return (
-              <button key={val} onClick={()=>updateBlock(id,{bgStyle:val})}
-                style={{flex:1,height:32,border:`1px solid ${active?C.blue:C.grey30}`,borderRadius:6,background:bg,cursor:'pointer',fontSize:11,fontFamily:'var(--font-body)',color:active?C.blue:C.grey60,fontWeight:active?700:400,display:'flex',alignItems:'center',justifyContent:'center',gap:5,transition:'all 120ms'}}>
-                {lbl}
-              </button>
-            );
-          })}
+        <SHead label="Styling"/>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
+          <div>
+            <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Grey Background</div>
+            <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Use a grey background on this section</div>
+          </div>
+          <Tog on={(b.bgStyle||'white')==='grey'} onChange={()=>updateBlock(id,{bgStyle:(b.bgStyle||'white')==='grey'?'white':'grey'})}/>
         </div>
       </>
     );
@@ -1199,29 +1195,6 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
             </div>
         }
       </div>
-      <div style={{padding:'0 14px 10px',display:'flex',flexDirection:'column',gap:8}}>
-        <button onClick={()=>setEditing('__settings__')}
-          style={{width:'100%',height:30,display:'flex',alignItems:'center',justifyContent:'center',gap:6,
-            background:editing==='__settings__'?C.blue5:C.white,border:`1px solid ${editing==='__settings__'?C.blue:C.grey30}`,borderRadius:6,
-            cursor:'pointer',fontSize:12,color:editing==='__settings__'?C.blue:C.grey50,fontFamily:'var(--font-body)',
-            fontWeight:500,transition:'background 100ms,border-color 100ms,color 100ms'}}>
-          <FI n="gear" sz={11} col={editing==='__settings__'?C.blue:C.grey50}/> Settings
-        </button>
-        <div style={{display:'flex',alignItems:'center',gap:8}}>
-          <span style={{fontSize:12,color:C.grey60,fontFamily:'var(--font-body)',flex:'0 0 62px'}}>Font</span>
-          <select value={docCfg.font} onChange={e=>setDoc('font',e.target.value)}
-            style={{flex:1,height:28,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,padding:'0 6px',background:C.white,fontFamily:'var(--font-body)',cursor:'pointer',color:C.black}}>
-            {['Inter','Helvetica','Georgia','Garamond','Courier'].map(f=><option key={f}>{f}</option>)}
-          </select>
-        </div>
-        <div style={{display:'flex',alignItems:'center',gap:8}}>
-          <span style={{fontSize:12,color:C.grey60,fontFamily:'var(--font-body)',flex:'0 0 62px'}}>Page size</span>
-          <select value={pageSize} onChange={e=>setPageSize(e.target.value)}
-            style={{flex:1,height:28,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,padding:'0 6px',background:C.white,fontFamily:'var(--font-body)',cursor:'pointer',color:C.black}}>
-            {['A4','Letter','Legal','A5'].map(s=><option key={s}>{s}</option>)}
-          </select>
-        </div>
-      </div>
       <div style={{borderBottom:`1px solid ${C.grey20}`}}/>
       <div style={{flex:1,overflowY:'auto'}}>
         <div style={{padding:'8px 14px 4px'}}>
@@ -1261,13 +1234,36 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
           );
         })}
       </div>
-      <div style={{padding:'10px 14px',borderTop:`1px solid ${C.grey20}`}}>
+      <div style={{padding:'0 14px 10px'}}>
         <button onClick={()=>{const nb={id:nextId(),type:'text',label:'Text section',visible:true};setSections(p=>{const a=[...p];const li=a.findIndex(s=>s.id==='lineitems');a.splice(li>=0?li+1:a.length,0,nb);return a;});setTimeout(()=>{setEditing(nb.id);const el=sectionRefs.current[nb.id];if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},80);}}
           style={{width:'100%',height:34,display:'flex',alignItems:'center',justifyContent:'center',gap:6,
             background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,
             cursor:'pointer',fontSize:13,color:C.grey60,fontFamily:'var(--font-body)',
             fontWeight:500,transition:'background 100ms,border-color 100ms'}}>
           <FI n="plus" sz={12} col={C.grey60}/> Add text section
+        </button>
+      </div>
+      <div style={{padding:'10px 14px',borderTop:`1px solid ${C.grey20}`,display:'flex',flexDirection:'column',gap:8}}>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <span style={{fontSize:12,color:C.grey60,fontFamily:'var(--font-body)',flex:'0 0 62px'}}>Font</span>
+          <select value={docCfg.font} onChange={e=>setDoc('font',e.target.value)}
+            style={{flex:1,height:28,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,padding:'0 6px',background:C.white,fontFamily:'var(--font-body)',cursor:'pointer',color:C.black}}>
+            {['Inter','Helvetica','Georgia','Garamond','Courier'].map(f=><option key={f}>{f}</option>)}
+          </select>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <span style={{fontSize:12,color:C.grey60,fontFamily:'var(--font-body)',flex:'0 0 62px'}}>Page size</span>
+          <select value={pageSize} onChange={e=>setPageSize(e.target.value)}
+            style={{flex:1,height:28,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,padding:'0 6px',background:C.white,fontFamily:'var(--font-body)',cursor:'pointer',color:C.black}}>
+            {['A4','Letter','Legal','A5'].map(s=><option key={s}>{s}</option>)}
+          </select>
+        </div>
+        <button onClick={()=>setEditing('__settings__')}
+          style={{width:'100%',height:34,display:'flex',alignItems:'center',justifyContent:'center',gap:6,
+            background:editing==='__settings__'?C.blue5:C.white,border:`1px solid ${editing==='__settings__'?C.blue:C.grey30}`,borderRadius:6,
+            cursor:'pointer',fontSize:12,color:editing==='__settings__'?C.blue:C.grey50,fontFamily:'var(--font-body)',
+            fontWeight:500,transition:'background 100ms,border-color 100ms,color 100ms'}}>
+          <FI n="gear" sz={11} col={editing==='__settings__'?C.blue:C.grey50}/> Settings
         </button>
       </div>
     </div>
