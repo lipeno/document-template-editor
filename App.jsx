@@ -1641,18 +1641,25 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   );
 
   // ── View toolbar — bottom-right, sticky ───────────────────
+  const zoomBtnStyle = (disabled) => ({
+    width:36,height:36,display:'flex',alignItems:'center',justifyContent:'center',
+    background:C.white,border:`1px solid ${C.grey20}`,borderRadius:9,
+    boxShadow:'0 2px 8px rgba(0,0,0,.10)',cursor:disabled?'default':'pointer',
+    opacity:disabled?0.35:1,transition:'opacity 150ms',
+  });
   const ViewToolbar = () => (
-    <div style={{display:'flex',alignItems:'center',background:C.white,border:`1px solid ${C.grey30}`,borderRadius:8,boxShadow:'0 2px 10px rgba(0,0,0,.09)',overflow:'hidden'}}>
-      <button onClick={zoomOut} disabled={zoom<=ZOOM_STEPS[0]}
-        style={{width:30,height:32,display:'flex',alignItems:'center',justifyContent:'center',background:'none',border:'none',cursor:zoom<=ZOOM_STEPS[0]?'default':'pointer',opacity:zoom<=ZOOM_STEPS[0]?0.3:1,borderRight:`1px solid ${C.grey20}`}}>
-        <FI n="minus" sz={10} col={C.grey60}/>
-      </button>
-      <div onClick={()=>setZoom(1)} style={{width:44,height:32,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,color:C.grey60,fontFamily:'var(--font-body)',fontWeight:500,cursor:'pointer',userSelect:'none',borderRight:`1px solid ${C.grey20}`}}>
-        {Math.round(zoom*100)}%
-      </div>
+    <div style={{display:'flex',flexDirection:'column',gap:6}}>
       <button onClick={zoomIn} disabled={zoom>=ZOOM_STEPS[ZOOM_STEPS.length-1]}
-        style={{width:30,height:32,display:'flex',alignItems:'center',justifyContent:'center',background:'none',border:'none',cursor:zoom>=ZOOM_STEPS[ZOOM_STEPS.length-1]?'default':'pointer',opacity:zoom>=ZOOM_STEPS[ZOOM_STEPS.length-1]?0.3:1}}>
-        <FI n="plus" sz={10} col={C.grey60}/>
+        style={zoomBtnStyle(zoom>=ZOOM_STEPS[ZOOM_STEPS.length-1])}>
+        <FI n="magnifying-glass-plus" sz={13} col={C.grey60}/>
+      </button>
+      <button onClick={zoomOut} disabled={zoom<=ZOOM_STEPS[0]}
+        style={zoomBtnStyle(zoom<=ZOOM_STEPS[0])}>
+        <FI n="magnifying-glass-minus" sz={13} col={C.grey60}/>
+      </button>
+      <button onClick={()=>setZoom(1)}
+        style={zoomBtnStyle(false)}>
+        <FI n="rotate-left" sz={13} col={C.grey60}/>
       </button>
     </div>
   );
