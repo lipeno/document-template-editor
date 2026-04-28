@@ -530,7 +530,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   const doReset = () => {
     setDocCfg({primaryColor:'#136DEB',showLogo:true,showContact:true,showCompanyInfo:true,logoAlign:'Left',logoSize:'L',documentTitle:'Invoice',showDates:true,showLocation:true,showAddress:false,showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,footerCompanyDetails:true,footerContactDetails:true,footerVatNumber:true,footerPaymentDetails:true,footerPageNumbers:true,font:'Inter',partyOrder:'seller-first',showPartyLabels:false});
     setDateFormat('datetime'); setPageSize('A4'); setDocNumLevel('global'); setPrefixFormat('{year}-'); setDueDatesOn(false); setCustomCSS('');
-    setBrandColor('#136DEB'); setSecondColor('#131314');
+    setBrandColor('#136DEB');
     setBlockData({});
     setResetModal(false);
   };
@@ -578,7 +578,11 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     e.preventDefault();const from=dragRef.current;
     setDragOverSec(null);dragRef.current=null;
     if(from===null||from===i) return;
-    setSections(p=>{const a=[...p];const [m]=a.splice(from,1);a.splice(i,0,m);return a;});
+    setSections(p=>{
+      const locked=s=>s.id==='header'||s.id==='footer';
+      if(locked(p[from])||locked(p[i])) return p;
+      const a=[...p];const [m]=a.splice(from,1);a.splice(i,0,m);return a;
+    });
   };
   const onSecDragEnd = () => {setDragOverSec(null);dragRef.current=null;};
   const toggleSection = id => setSections(p=>p.map(s=>s.id===id?{...s,visible:!s.visible}:s));
@@ -721,8 +725,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
 
           {/* Branding */}
           <SHead label="Branding"/>
-          <ColorRow label="Brand color"     value={brandColor}  onChange={v=>{setBrandColor(v);setDoc('primaryColor',v);}}/>
-          <ColorRow label="Secondary color" value={secondColor} onChange={setSecondColor}/>
+          <ColorRow label="Brand color" value={brandColor} onChange={v=>{setBrandColor(v);setDoc('primaryColor',v);}}/>
           <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',padding:'8px 0'}}>
             <span style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Logo</span>
             <div style={{width:140}}>
@@ -814,8 +817,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   };
 
   // ── Branding panel ────────────────────────────────────────
-  const [brandColor, setBrandColor]   = React.useState('#136DEB');
-  const [secondColor, setSecondColor] = React.useState('#131314');
+  const [brandColor, setBrandColor] = React.useState('#136DEB');
 
   const ColorRow = ({label, value, onChange}) => {
     const [hex, setHex] = React.useState(value.replace('#','').toUpperCase());
@@ -1152,13 +1154,15 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
             <span style={{fontSize:12,color:C.grey60,fontFamily:'var(--font-body)',lineHeight:1.4}}>Select a section to edit and configure its content.</span>
           </div>
         </div>}
-        {sections.map((s,idx)=>(
+        {sections.map((s,idx)=>{
+          const locked=s.id==='header'||s.id==='footer';
+          return (
           <React.Fragment key={s.id}>
-          {dragOverSec===idx&&<div style={{height:2,background:C.blue,borderRadius:1,margin:'1px 8px'}}/>}
-          <div draggable onDragStart={e=>onDragStart(e,idx)} onDragOver={e=>onSecDragOver(e,idx)} onDrop={e=>onDrop(e,idx)} onDragEnd={onSecDragEnd}
+          {!locked&&dragOverSec===idx&&<div style={{height:2,background:C.blue,borderRadius:1,margin:'1px 8px'}}/>}
+          <div {...(!locked&&{draggable:true,onDragStart:e=>onDragStart(e,idx),onDragOver:e=>onSecDragOver(e,idx),onDrop:e=>onDrop(e,idx),onDragEnd:onSecDragEnd})}
             onMouseEnter={()=>setHovSec(s.id)} onMouseLeave={()=>setHovSec(null)}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 8px 0 14px',
-              background:hovSec===s.id?C.grey10:'transparent',borderLeft:`3px solid ${hovSec===s.id?C.blue:'transparent'}`,
+              background:hovSec===s.id?C.grey10:'transparent',borderLeft:`3px solid ${!locked&&hovSec===s.id?C.blue:'transparent'}`,
               transition:'background 100ms,border-color 100ms',minHeight:36}}>
               <div onClick={()=>setEditing(s.id)} style={{flex:1,display:'flex',alignItems:'center',gap:8,cursor:'pointer',padding:'8px 0'}}>
                 <span style={{fontSize:13,color:C.black,fontFamily:'var(--font-body)'}}>{s.label}</span>
@@ -1168,14 +1172,15 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
                   style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',background:'transparent',border:'1px solid transparent',borderRadius:6,cursor:'pointer',opacity:s.visible?(hovSec===s.id?1:0):1,transition:'opacity 150ms'}}>
                   <FI n={s.visible?'eye':'eye-slash'} sz={12} col={s.visible?C.grey60:C.grey50}/>
                 </button>
-                <div style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',border:`1px solid ${C.grey30}`,borderRadius:6,cursor:'grab',opacity:hovSec===s.id?1:0,transition:'opacity 150ms'}}>
+                {!locked&&<div style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',border:`1px solid ${C.grey30}`,borderRadius:6,cursor:'grab',opacity:hovSec===s.id?1:0,transition:'opacity 150ms'}}>
                   <FI n="grip-lines" sz={12} col={C.grey50}/>
-                </div>
+                </div>}
               </div>
             </div>
           </div>
           </React.Fragment>
-        ))}
+          );
+        })}
       </div>
       <div style={{padding:'10px 14px',borderTop:`1px solid ${C.grey20}`}}>
         <button onClick={()=>{const nb={id:nextId(),type:'text',label:'Text section',visible:true};setSections(p=>{const a=[...p];const li=a.findIndex(s=>s.id==='lineitems');a.splice(li>=0?li+1:a.length,0,nb);return a;});setTimeout(()=>{setEditing(nb.id);const el=sectionRefs.current[nb.id];if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},80);}}
