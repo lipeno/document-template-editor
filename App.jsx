@@ -529,7 +529,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   const doReset = () => {
     setDocCfg({primaryColor:'#136DEB',showLogo:true,showContact:true,showCompanyInfo:true,logoAlign:'Left',logoSize:'L',documentTitle:'Invoice',showDates:true,showLocation:true,showAddress:false,showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,footerCompanyDetails:true,footerContactDetails:true,footerVatNumber:true,footerPaymentDetails:true,footerPageNumbers:true,font:'Inter',partyOrder:'seller-first',showPartyLabels:false});
     setDateFormat('datetime'); setPageSize('A4'); setDocNumLevel('global'); setDueDatesOn(false); setCustomCSS('');
-    setBrandColor('#136DEB'); setSecondColor('#131314');
+    setBrandColor('#136DEB');
     setBlockData({});
     setResetModal(false);
   };
@@ -720,8 +720,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
 
           {/* Branding */}
           <SHead label="Branding"/>
-          <ColorRow label="Brand color"     value={brandColor}  onChange={v=>{setBrandColor(v);setDoc('primaryColor',v);}}/>
-          <ColorRow label="Secondary color" value={secondColor} onChange={setSecondColor}/>
+          <ColorRow label="Brand color" value={brandColor} onChange={v=>{setBrandColor(v);setDoc('primaryColor',v);}}/>
           <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',padding:'8px 0'}}>
             <span style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Logo</span>
             <div style={{display:'flex',flexDirection:'column',alignItems:'stretch',gap:6,width:140}}>
@@ -798,8 +797,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   };
 
   // ── Branding panel ────────────────────────────────────────
-  const [brandColor, setBrandColor]   = React.useState('#136DEB');
-  const [secondColor, setSecondColor] = React.useState('#131314');
+  const [brandColor, setBrandColor] = React.useState('#136DEB');
 
   const ColorRow = ({label, value, onChange}) => {
     const [hex, setHex] = React.useState(value.replace('#','').toUpperCase());
