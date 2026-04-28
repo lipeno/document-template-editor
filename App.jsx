@@ -16,26 +16,59 @@ const BQ = {
 //     with date format, page size, doc numbering, due dates
 // ─────────────────────────────────────────────────────────────
 
-const VARS = ['{{customer_name}}','{{order_number}}','{{date}}','{{due_date}}','{{company_name}}','{{total}}'];
+const VAR_DEFS = [
+  {label:'Customer name', tag:'{{customer_name}}'},
+  {label:'Order number',  tag:'{{order_number}}'},
+  {label:'Date',          tag:'{{date}}'},
+  {label:'Due date',      tag:'{{due_date}}'},
+  {label:'Company name',  tag:'{{company_name}}'},
+  {label:'Total',         tag:'{{total}}'},
+];
+
+const VAR_TAG_MAP = Object.fromEntries(VAR_DEFS.map(({tag,label}) => [tag, label]));
+const CHIP_STYLE = 'display:inline-block;background:#EDF5FF;color:#136DEB;border:1px solid #BBDBFA;border-radius:10px;padding:0 6px;font-size:0.85em;font-weight:500;white-space:nowrap;line-height:1.6;vertical-align:baseline;';
+const renderWithChips = html => html.replace(/\{\{([^}]+)\}\}/g, (match) => {
+  const label = VAR_TAG_MAP[match] || match;
+  return `<span style="${CHIP_STYLE}">${label}</span>`;
+});
 
 const RichTextPanel = ({id, getBlock, updateBlock}) => {
   const C = BQ;
   const editorRef = React.useRef(null);
   const b = getBlock(id);
   const [fmts, setFmts] = React.useState({});
+  const [varOpen, setVarOpen] = React.useState(false);
+  const [hovVar, setHovVar] = React.useState(null);
+
+  // Ensure Enter always creates <div> blocks, not <br> or <p>
+  React.useEffect(() => {
+    document.execCommand('defaultParagraphSeparator', false, 'div');
+  }, []);
 
   // Populate editor when switching sections
   React.useEffect(() => {
-    if (editorRef.current) {
-      editorRef.current.innerHTML = b.html || '';
-    }
+    setVarOpen(false);
+    if (!editorRef.current) return;
+    editorRef.current.innerHTML = b.html || '<div><br></div>';
+    // Wrap any bare text nodes in <div> so formatBlock can target them per-line
+    Array.from(editorRef.current.childNodes).forEach(node => {
+      if (node.nodeType === Node.TEXT_NODE && node.textContent) {
+        const div = document.createElement('div');
+        editorRef.current.insertBefore(div, node);
+        div.appendChild(node);
+      }
+    });
+    editorRef.current.focus();
   }, [id]);
 
   const save = () => updateBlock(id, {html: editorRef.current?.innerHTML || ''});
 
   const checkFmts = () => {
     try {
+      const raw = document.queryCommandValue('formatBlock')?.toLowerCase() || '';
+      const blockStyle = ['h1','h2','h3'].includes(raw) ? raw : 'div';
       setFmts({
+        blockStyle,
         bold:                 document.queryCommandState('bold'),
         italic:               document.queryCommandState('italic'),
         underline:            document.queryCommandState('underline'),
@@ -71,11 +104,10 @@ const RichTextPanel = ({id, getBlock, updateBlock}) => {
   return (
     <>
       <div style={{display:'flex',gap:4,marginBottom:6,alignItems:'center'}}>
-        <select onMouseDown={e=>e.stopPropagation()} onChange={e=>{exec('formatBlock',e.target.value);e.target.value='__';}}
-          defaultValue="__"
+        <select onMouseDown={e=>e.stopPropagation()} onChange={e=>exec('formatBlock',e.target.value)}
+          value={fmts.blockStyle || 'div'}
           style={{height:28,border:`1px solid ${C.grey30}`,borderRadius:5,fontSize:11,padding:'0 6px',
             background:C.white,fontFamily:'var(--font-body)',cursor:'pointer',flex:1,color:C.grey60}}>
-          <option value="__" disabled>Style…</option>
           <option value="div">Normal</option>
           <option value="h1">Heading 1</option>
           <option value="h2">Heading 2</option>
@@ -86,7 +118,7 @@ const RichTextPanel = ({id, getBlock, updateBlock}) => {
         <Btn icon="underline"     cmd="underline"/>
         <Btn icon="strikethrough" cmd="strikeThrough"/>
       </div>
-      <div style={{display:'flex',gap:4,marginBottom:8,alignItems:'center'}}>
+      <div style={{display:'flex',gap:4,marginBottom:10,alignItems:'center'}}>
         <Btn icon="list-ul"     cmd="insertUnorderedList"/>
         <Btn icon="list-ol"     cmd="insertOrderedList"/>
         <div style={{width:1,background:C.grey20,margin:'0 2px',height:20,flexShrink:0}}/>
@@ -95,21 +127,38 @@ const RichTextPanel = ({id, getBlock, updateBlock}) => {
         <Btn icon="align-right"  cmd="justifyRight"/>
       </div>
       <div ref={editorRef} contentEditable suppressContentEditableWarning
-        onInput={save} onKeyUp={checkFmts} onMouseUp={checkFmts} onSelect={checkFmts}
-        style={{width:'100%',minHeight:100,border:`1px solid ${C.grey30}`,borderRadius:6,
+        onInput={save} onFocus={checkFmts} onKeyUp={checkFmts} onMouseUp={checkFmts} onSelect={checkFmts}
+        style={{width:'100%',minHeight:140,border:`1px solid ${C.grey30}`,borderRadius:6,
           fontSize:12,padding:'8px',fontFamily:'var(--font-body)',outline:'none',
           lineHeight:1.6,color:C.black,boxSizing:'border-box',background:C.white,
           cursor:'text'}}
       />
-      <div style={{fontSize:10,fontWeight:700,color:C.grey50,textTransform:'uppercase',letterSpacing:'.07em',padding:'11px 0 5px',fontFamily:'var(--font-body)'}}>Insert variable</div>
-      <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
-        {VARS.map(v=>(
-          <button key={v} onMouseDown={e=>{e.preventDefault();exec('insertText',v);}}
-            style={{height:22,padding:'0 7px',background:C.blue5,color:C.blue,border:`1px solid ${C.blue30}`,
-              borderRadius:10,fontSize:10,cursor:'pointer',fontFamily:'var(--font-body)',whiteSpace:'nowrap'}}>
-            {v}
-          </button>
-        ))}
+      <div style={{borderTop:`1px solid ${C.grey20}`,marginTop:10}}>
+        <button onMouseDown={e=>{e.preventDefault();setVarOpen(o=>!o);}}
+          style={{width:'100%',display:'flex',alignItems:'center',justifyContent:'space-between',
+            padding:'8px 0',background:'none',border:'none',cursor:'pointer',fontFamily:'var(--font-body)'}}>
+          <div style={{display:'flex',alignItems:'center',gap:5}}>
+            <i className="fa-regular fa-code" style={{fontSize:10,color:C.grey40}}/>
+            <span style={{fontSize:11,color:C.grey50}}>Insert variable</span>
+          </div>
+          <i className={`fa-regular fa-chevron-${varOpen?'up':'down'}`} style={{fontSize:9,color:C.grey40}}/>
+        </button>
+        {varOpen && (
+          <div style={{marginBottom:8}}>
+            {VAR_DEFS.map(({label,tag})=>(
+              <button key={tag}
+                onMouseDown={e=>{e.preventDefault();exec('insertText',tag);setVarOpen(false);setHovVar(null);}}
+                onMouseEnter={()=>setHovVar(tag)} onMouseLeave={()=>setHovVar(null)}
+                style={{display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%',
+                  padding:'5px 6px',background:hovVar===tag?C.grey10:'none',border:'none',borderRadius:4,
+                  cursor:'pointer',textAlign:'left',fontFamily:'var(--font-body)',boxSizing:'border-box',
+                  transition:'background 80ms'}}>
+                <span style={{fontSize:12,color:C.black}}>{label}</span>
+                <span style={{fontSize:9,color:C.grey40,fontFamily:'monospace',opacity:hovVar===tag?1:0.6,transition:'opacity 80ms'}}>{tag}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </>
   );
@@ -536,7 +585,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     const nb={id:nextId(),type:'text',label:'Text section',visible:true};
     setSections(p=>{const a=[...p];const idx=a.findIndex(s=>s.id===afterId);a.splice(position==='above'?idx:idx+1,0,nb);return a;});
     setAddModal(null);
-    setTimeout(()=>setEditing(nb.id),50);
+    setTimeout(()=>{setEditing(nb.id);const el=sectionRefs.current[nb.id];if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},80);
   };
 
   // ── Atoms ─────────────────────────────────────────────────
@@ -952,6 +1001,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     const b = getBlock(id);
     return (
       <>
+        <div style={{fontSize:10,fontWeight:700,color:C.grey50,textTransform:'uppercase',letterSpacing:'.07em',paddingBottom:8,fontFamily:'var(--font-body)'}}>Content</div>
         <RichTextPanel id={id} getBlock={getBlock} updateBlock={updateBlock}/>
         <div style={{fontSize:10,fontWeight:700,color:C.grey50,textTransform:'uppercase',letterSpacing:'.07em',padding:'11px 0 5px',fontFamily:'var(--font-body)'}}>Background</div>
         <div style={{display:'flex',gap:4,paddingBottom:12}}>
@@ -1097,7 +1147,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
         ))}
       </div>
       <div style={{padding:'10px 14px',borderTop:`1px solid ${C.grey20}`}}>
-        <button onClick={()=>{const nb={id:nextId(),type:'text',label:'Text section',visible:true};setSections(p=>[...p,nb]);setTimeout(()=>setEditing(nb.id),50);}}
+        <button onClick={()=>{const nb={id:nextId(),type:'text',label:'Text section',visible:true};setSections(p=>{const a=[...p];const li=a.findIndex(s=>s.id==='lineitems');a.splice(li>=0?li+1:a.length,0,nb);return a;});setTimeout(()=>{setEditing(nb.id);const el=sectionRefs.current[nb.id];if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},80);}}
           style={{width:'100%',height:34,display:'flex',alignItems:'center',justifyContent:'center',gap:6,
             background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,
             cursor:'pointer',fontSize:13,color:C.grey60,fontFamily:'var(--font-body)',
@@ -1121,7 +1171,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
             <FI n="chevron-left" sz={10} col={C.grey50}/> {label}
           </button>
         </div>
-        <div style={{flex:1,overflowY:'auto',padding:'0 14px'}}>
+        <div style={{flex:1,overflowY:'auto',padding:'12px 14px 0'}}>
           {isText?TextSectionPanel({id:editing}):(sectionPanels[editing]||null)}
         </div>
         {isText&&(
@@ -1567,7 +1617,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
           <SectionWrap key={s.id} id={s.id} label="Text section">
             <div style={{padding:'10px 22px',borderTop:`1px solid ${C.grey20}`,minHeight:34,background:sectionBg}}>
               {b.html
-                ? <div style={{fontSize:9,color:C.black,lineHeight:1.6,fontFamily:'var(--font-body)'}} dangerouslySetInnerHTML={{__html:b.html}}/>
+                ? <div style={{fontSize:9,color:C.black,lineHeight:1.6,fontFamily:'var(--font-body)'}} dangerouslySetInnerHTML={{__html:renderWithChips(b.html)}}/>
                 : <div style={{fontSize:9,color:C.grey30,fontStyle:'italic',lineHeight:1.6}}>Empty text section</div>
               }
             </div>
@@ -1577,14 +1627,16 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
       return null;
     };
 
-    const mainSections = sections.filter(s=>s.id!=='footer'&&s.id!=='totals');
+    const liIdx = sections.findIndex(s=>s.id==='lineitems');
+    const page1Sections = sections.filter((s,i)=>s.id!=='footer'&&s.id!=='totals'&&(liIdx<0||i<=liIdx));
+    const page2UserSections = sections.filter((s,i)=>s.id!=='footer'&&s.id!=='totals'&&s.id!=='lineitems'&&i>liIdx);
     const totalsSec = sections.find(s=>s.id==='totals');
 
     return (
       <div style={{display:'flex',flexDirection:'column',gap:8}}>
         {/* Page 1 */}
         <div style={{background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,overflow:'visible',minHeight:pageDim.h,display:'flex',flexDirection:'column',justifyContent:'space-between'}}>
-          <div>{mainSections.map(renderSection)}</div>
+          <div>{page1Sections.map(renderSection)}</div>
           <FooterContent page={1}/>
         </div>
         {/* Page 2 — overflow line items, totals, footer */}
@@ -1624,6 +1676,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
                 </div>
               </div>
             )}
+            {page2UserSections.map(renderSection)}
             {totalsSec&&renderSection(totalsSec)}
           </div>
           <FooterContent page={2}/>
