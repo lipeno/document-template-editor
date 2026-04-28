@@ -519,6 +519,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   const [dateFormat,  setDateFormat]    = React.useState('datetime');
   const [pageSize,    setPageSize]      = React.useState('A4');
   const [docNumLevel, setDocNumLevel]   = React.useState('global');
+  const [prefixFormat, setPrefixFormat] = React.useState('{year}-');
   const [dueDatesOn,  setDueDatesOn]    = React.useState(false);
   const [customCSS,   setCustomCSS]     = React.useState('');
 
@@ -528,7 +529,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
 
   const doReset = () => {
     setDocCfg({primaryColor:'#136DEB',showLogo:true,showContact:true,showCompanyInfo:true,logoAlign:'Left',logoSize:'L',documentTitle:'Invoice',showDates:true,showLocation:true,showAddress:false,showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,footerCompanyDetails:true,footerContactDetails:true,footerVatNumber:true,footerPaymentDetails:true,footerPageNumbers:true,font:'Inter',partyOrder:'seller-first',showPartyLabels:false});
-    setDateFormat('datetime'); setPageSize('A4'); setDocNumLevel('global'); setDueDatesOn(false); setCustomCSS('');
+    setDateFormat('datetime'); setPageSize('A4'); setDocNumLevel('global'); setPrefixFormat('{year}-'); setDueDatesOn(false); setCustomCSS('');
     setBrandColor('#136DEB'); setSecondColor('#131314');
     setBlockData({});
     setResetModal(false);
@@ -747,11 +748,41 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
 
           {/* Document numbering */}
           <SHead label="Document numbering"/>
-          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)',marginTop:8,marginBottom:4}}>Document numbering</div>
           <Radio checked={docNumLevel==='global'} onChange={()=>setDocNumLevel('global')}
-            label="Global level" hint="Numbers increment by one: #1, #2, #3, etc."/>
+            label="Global sequence" hint="Numbers increment by one: #1, #2, #3, etc."/>
           <Radio checked={docNumLevel==='prefix'} onChange={()=>setDocNumLevel('prefix')}
-            label="Prefix level" hint="New sequence per year, month, or customer number."/>
+            label="Prefix sequence" hint="Customize the prefix with static or dynamic values."/>
+          {docNumLevel==='prefix' && (() => {
+            const VARS = [
+              {label:'Year',        token:'{year}',        ex:'2026'},
+              {label:'Month',       token:'{month}',       ex:'04'},
+              {label:'Customer #',  token:'{customer_nr}', ex:'42'},
+              {label:'Order #',     token:'{order_nr}',    ex:'18'},
+            ];
+            const preview = VARS.reduce((s,v)=>s.replaceAll(v.token,v.ex), prefixFormat||'') + '1';
+            return (
+              <div style={{marginTop:4,marginBottom:4,background:C.grey10,borderRadius:7,padding:'10px 10px 10px'}}>
+                <div style={{fontSize:10,color:C.grey60,marginBottom:10,lineHeight:1.55,fontFamily:'var(--font-body)'}}>
+                  Prefix document numbers with custom or dynamic values.
+                </div>
+                <div style={{fontSize:10,color:C.grey50,marginBottom:4,fontFamily:'var(--font-body)'}}>Prefix format</div>
+                <input value={prefixFormat} onChange={e=>setPrefixFormat(e.target.value)}
+                  placeholder="{year}-"
+                  style={{width:'100%',height:28,border:`1px solid ${C.grey30}`,borderRadius:5,fontSize:12,padding:'0 8px',background:C.white,fontFamily:'var(--font-body)',boxSizing:'border-box',outline:'none'}}/>
+                <div style={{marginTop:6,display:'flex',flexWrap:'wrap',gap:4}}>
+                  {VARS.map(v=>(
+                    <button key={v.token} onClick={()=>setPrefixFormat(p=>(p||'')+v.token)}
+                      style={{fontSize:10,padding:'2px 7px',border:`1px solid ${C.blue30}`,borderRadius:4,background:C.blue5,color:C.blue,cursor:'pointer',fontFamily:'var(--font-body)',fontWeight:500,lineHeight:1.6}}>
+                      + {v.label}
+                    </button>
+                  ))}
+                </div>
+                <div style={{marginTop:8,fontSize:10,color:C.grey50,fontFamily:'var(--font-body)'}}>
+                  Preview: <span style={{color:C.black,fontWeight:600,fontFamily:'monospace'}}>{preview}</span>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Invoice due dates */}
           <SHead label="Invoice due dates"/>
