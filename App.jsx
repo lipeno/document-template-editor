@@ -1338,7 +1338,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
       if (!footerVis || (!hasFooterContent && !hasPageNumbers)) return null;
       return (
         <FooterWrap>
-          <div style={{padding:'8px 22px',background:C.bg,borderTop:`1px solid ${C.grey20}`,fontSize:8,color:C.grey50,display:'flex',flexDirection:'column',gap:3}}>
+          <div style={{padding:'8px 22px',background:C.bg,borderTop:`1px solid ${C.grey20}`,fontSize:8,color:C.grey50,display:'flex',flexDirection:'column',gap:3,borderRadius:'0 0 5px 5px'}}>
             {docCfg.footerCompanyDetails && <div>Acme Rentals Inc. · 123 Main St, Springfield</div>}
             {docCfg.footerContactDetails && <div>hello@acmerentals.com · +1 555 000 1234</div>}
             {docCfg.footerVatNumber && <div>VAT: GB123456789</div>}
