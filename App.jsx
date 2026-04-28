@@ -675,40 +675,25 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
           <ColorRow label="Secondary color" value={secondColor} onChange={setSecondColor}/>
           <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',padding:'8px 0'}}>
             <span style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Logo</span>
-            <div style={{display:'flex',flexDirection:'column',alignItems:'stretch',gap:6,width:140}}>
-              <div style={{height:90,background:C.grey10,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:4,border:`1px solid ${C.grey20}`}}>
+            <div style={{width:140}}>
+              <div style={{height:110,background:C.grey10,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:4,border:`1px solid ${C.grey20}`,position:'relative',overflow:'hidden',paddingBottom:28}}>
                 <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
                   <circle cx="18" cy="18" r="16" fill="#222"/>
                   <path d="M10 26 C10 18 18 10 26 14 C22 18 20 22 18 26Z" fill="#fff" opacity=".6"/>
                   <path d="M14 28 C14 20 20 14 28 18 C24 22 22 26 18 28Z" fill="#fff" opacity=".4"/>
                 </svg>
                 <span style={{fontSize:9,fontWeight:700,color:C.black,letterSpacing:2,fontFamily:'var(--font-body)'}}>COMPANY</span>
+                <button style={{position:'absolute',bottom:0,left:0,right:0,height:28,border:'none',borderTop:`1px solid ${C.grey20}`,borderRadius:0,background:C.white,fontSize:11,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)',color:C.black}}>Change</button>
               </div>
-              <button style={{height:30,border:`1px solid ${C.grey30}`,borderRadius:16,background:C.white,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)',color:C.black}}>Change</button>
             </div>
           </div>
           <div style={{padding:'10px 0',display:'flex',flexDirection:'column',gap:8}}>
             <button onClick={()=>{setBrandColor('#136DEB');setSecondColor('#131314');setDoc('primaryColor','#136DEB');}} style={{width:'100%',height:32,background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,fontWeight:500,color:C.black,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6,fontFamily:'var(--font-body)'}}>
-              <FI n="rotate-left" sz={11} col={C.grey60}/> Load defaults
+              <FI n="rotate-left" sz={11} col={C.grey60}/> Load branding defaults
             </button>
-            <button onClick={e=>e.preventDefault()} style={{width:'100%',height:32,background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,fontWeight:500,color:C.black,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6,fontFamily:'var(--font-body)'}}>
-              <FI n="arrow-up-right-from-square" sz={10} col={C.grey60}/> Global Branding
-            </button>
-          </div>
-
-          {/* Format */}
-          <SHead label="Format"/>
-          <SelF label="Font family" value={docCfg.font} onChange={v=>setDoc('font',v)} opts={['Inter','Helvetica','Georgia','Garamond','Courier']}/>
-          <div style={{marginBottom:10}}>
-            <div style={{fontSize:11,color:C.grey60,marginBottom:4,fontFamily:'var(--font-body)'}}>Page size</div>
-            <div style={{display:'flex',gap:4}}>
-              {['A4','Letter','Legal','A5'].map(s=>(
-                <button key={s} onClick={()=>setPageSize(s)}
-                  style={{flex:1,height:28,border:`1px solid ${pageSize===s?C.blue:C.grey30}`,borderRadius:6,background:pageSize===s?C.blue5:C.white,color:pageSize===s?C.blue:C.grey60,fontSize:11,cursor:'pointer',fontFamily:'var(--font-body)',fontWeight:pageSize===s?600:400,transition:'all 120ms'}}>
-                  {s}
-                </button>
-              ))}
-            </div>
+            <a href="#" onClick={e=>e.preventDefault()} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:5,fontSize:12,color:C.blue,fontFamily:'var(--font-body)',textDecoration:'none',cursor:'pointer'}}>
+              <FI n="arrow-up-right-from-square" sz={10} col={C.blue}/> Global Branding
+            </a>
           </div>
 
           {/* Document numbering */}
@@ -1050,14 +1035,28 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
             </div>
         }
       </div>
-      <div style={{padding:'0 14px 10px'}}>
+      <div style={{padding:'0 14px 10px',display:'flex',flexDirection:'column',gap:8}}>
         <button onClick={()=>setEditing('__settings__')}
-          style={{width:'100%',height:34,display:'flex',alignItems:'center',justifyContent:'center',gap:6,
+          style={{width:'100%',height:30,display:'flex',alignItems:'center',justifyContent:'center',gap:6,
             background:editing==='__settings__'?C.blue5:C.white,border:`1px solid ${editing==='__settings__'?C.blue:C.grey30}`,borderRadius:6,
-            cursor:'pointer',fontSize:13,color:editing==='__settings__'?C.blue:C.grey60,fontFamily:'var(--font-body)',
+            cursor:'pointer',fontSize:12,color:editing==='__settings__'?C.blue:C.grey50,fontFamily:'var(--font-body)',
             fontWeight:500,transition:'background 100ms,border-color 100ms,color 100ms'}}>
-          <FI n="gear" sz={12} col={editing==='__settings__'?C.blue:C.grey60}/> Settings
+          <FI n="gear" sz={11} col={editing==='__settings__'?C.blue:C.grey50}/> Settings
         </button>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <span style={{fontSize:12,color:C.grey60,fontFamily:'var(--font-body)',flex:'0 0 62px'}}>Font</span>
+          <select value={docCfg.font} onChange={e=>setDoc('font',e.target.value)}
+            style={{flex:1,height:28,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,padding:'0 6px',background:C.white,fontFamily:'var(--font-body)',cursor:'pointer',color:C.black}}>
+            {['Inter','Helvetica','Georgia','Garamond','Courier'].map(f=><option key={f}>{f}</option>)}
+          </select>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <span style={{fontSize:12,color:C.grey60,fontFamily:'var(--font-body)',flex:'0 0 62px'}}>Page size</span>
+          <select value={pageSize} onChange={e=>setPageSize(e.target.value)}
+            style={{flex:1,height:28,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,padding:'0 6px',background:C.white,fontFamily:'var(--font-body)',cursor:'pointer',color:C.black}}>
+            {['A4','Letter','Legal','A5'].map(s=><option key={s}>{s}</option>)}
+          </select>
+        </div>
       </div>
       <div style={{borderBottom:`1px solid ${C.grey20}`}}/>
       <div style={{flex:1,overflowY:'auto'}}>
