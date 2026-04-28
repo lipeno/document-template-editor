@@ -699,7 +699,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     return disabled&&tooltip ? <Tooltip text={tooltip}>{el}</Tooltip> : el;
   };
   const SHead = ({label}) => (
-    <div style={{margin:'-1px -14px 0',padding:'11px 14px',background:C.grey10,borderTop:`1px solid ${C.grey20}`,borderBottom:`1px solid ${C.grey20}`,fontSize:13,fontWeight:700,color:C.black,fontFamily:'var(--font-body)'}}>{label}</div>
+    <div style={{margin:'-4px -14px 0',padding:'11px 14px',background:C.grey10,borderTop:`1px solid ${C.grey20}`,borderBottom:`1px solid ${C.grey20}`,fontSize:13,fontWeight:700,color:C.black,fontFamily:'var(--font-body)'}}>{label}</div>
   );
   const SelF = ({label,value,onChange,opts}) => (
     <div style={{marginTop:8,marginBottom:10}}>
@@ -800,7 +800,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
             <FI n="chevron-left" sz={10} col={C.grey50}/> Settings
           </button>
         </div>
-        <div style={{flex:1,overflowY:'auto',padding:'0 14px'}}>
+        <div style={{flex:1,overflowY:'auto',padding:'4px 14px 7px'}}>
 
           {/* Branding */}
           <SHead label="Branding"/>
@@ -1005,28 +1005,28 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
       <SHead label="Pickup & return settings"/>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
         <div>
-          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Pickup & return dates</div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Dates</div>
           <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Rental start and end dates</div>
         </div>
         <Tog on={docCfg.showDates} onChange={()=>setDoc('showDates')}/>
       </div>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
         <div>
-          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Pickup & return times</div>
-          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Includes time with pickup & return dates</div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Times</div>
+          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Includes time with dates</div>
         </div>
         <Tog on={dateFormat==='datetime'} onChange={()=>setDateFormat(dateFormat==='datetime'?'dateonly':'datetime')} disabled={!docCfg.showDates} tooltip="Requires pickup & return dates"/>
       </div>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
         <div>
-          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Pickup & return locations</div>
-          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Pickup or return branch name</div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Locations</div>
+          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Branch name</div>
         </div>
         <Tog on={docCfg.showLocation} onChange={()=>setDoc('showLocation')}/>
       </div>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
         <div>
-          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Pickup & return addresses</div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Addresses</div>
           <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Location name with its address</div>
         </div>
         <Tog on={docCfg.showAddress} onChange={()=>setDoc('showAddress')} disabled={!docCfg.showLocation} tooltip="Requires pickup & return locations"/>
@@ -1286,7 +1286,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
             <FI n="chevron-left" sz={10} col={C.grey50}/> {label}
           </button>
         </div>
-        <div style={{flex:1,overflowY:'auto',padding:'0 14px 0'}}>
+        <div style={{flex:1,overflowY:'auto',padding:'4px 14px 7px'}}>
           {isText?TextSectionPanel({id:editing}):(sectionPanels[editing]||null)}
         </div>
         {isText&&(
