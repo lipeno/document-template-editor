@@ -1109,7 +1109,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
           </button>
         </div>
         <div style={{flex:1,overflowY:'auto',padding:'0 14px'}}>
-          {isText?<TextSectionPanel id={editing}/>:(sectionPanels[editing]||null)}
+          {isText?TextSectionPanel({id:editing}):(sectionPanels[editing]||null)}
         </div>
         {isText&&(
           <div style={{padding:'12px 14px',borderTop:`1px solid ${C.grey20}`}}>
@@ -1648,7 +1648,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
       <div style={{flex:1,display:'flex',overflow:'hidden'}}>
         {/* Sidebar */}
         <div style={{width:240,background:C.white,borderRight:`1px solid ${C.grey30}`,display:'flex',flexDirection:'column',overflow:'hidden',flexShrink:0}}>
-          {editing?<SidebarSection/>:<SidebarList/>}
+          {editing?SidebarSection():SidebarList()}
         </div>
 
         {/* Preview — outer wrapper holds toolbar fixed, inner div scrolls */}
