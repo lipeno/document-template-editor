@@ -16,16 +16,54 @@ const BQ = {
 //     with date format, page size, doc numbering, due dates
 // ─────────────────────────────────────────────────────────────
 
-const VAR_DEFS = [
-  {label:'Customer name', tag:'{{customer_name}}'},
-  {label:'Order number',  tag:'{{order_number}}'},
-  {label:'Date',          tag:'{{date}}'},
-  {label:'Due date',      tag:'{{due_date}}'},
-  {label:'Company name',  tag:'{{company_name}}'},
-  {label:'Total',         tag:'{{total}}'},
+const VAR_CATEGORIES = [
+  {
+    id:'company', label:'Company', icon:'building',
+    vars:[
+      {label:'Address',    tag:'{{company_address}}'},
+      {label:'Email',      tag:'{{company_email}}'},
+      {label:'Phone',      tag:'{{company_phone}}'},
+      {label:'VAT number', tag:'{{company_vat_number}}'},
+    ]
+  },
+  {
+    id:'customer', label:'Customer', icon:'user',
+    vars:[
+      {label:'Email',   tag:'{{customer_email}}'},
+      {label:'Phone',   tag:'{{customer_phone}}'},
+      {label:'Address', tag:'{{customer_address}}'},
+    ]
+  },
+  {
+    id:'dates', label:'Booking dates', icon:'calendar',
+    vars:[
+      {label:'Start date', tag:'{{start_date}}'},
+      {label:'End date',   tag:'{{end_date}}'},
+      {label:'Issue date', tag:'{{date}}'},
+      {label:'Due date',   tag:'{{due_date}}'},
+    ]
+  },
+  {
+    id:'financial', label:'Financial', icon:'coins',
+    vars:[
+      {label:'Subtotal',    tag:'{{subtotal}}'},
+      {label:'Tax total',   tag:'{{tax_total}}'},
+      {label:'Deposit',     tag:'{{deposit}}'},
+      {label:'Discount',    tag:'{{discount}}'},
+      {label:'Balance due', tag:'{{balance_due}}'},
+    ]
+  },
+  {
+    id:'document', label:'Document', icon:'hashtag',
+    vars:[
+      {label:'Document number', tag:'{{document_number}}'},
+    ]
+  },
 ];
 
-const VAR_TAG_MAP = Object.fromEntries(VAR_DEFS.map(({tag,label}) => [tag, label]));
+const VAR_TAG_MAP = Object.fromEntries(
+  VAR_CATEGORIES.flatMap(c => c.vars).map(({tag,label}) => [tag, label])
+);
 const CHIP_STYLE = 'display:inline-block;background:#EDF5FF;color:#136DEB;border:1px solid #BBDBFA;border-radius:10px;padding:0 6px;font-size:0.85em;font-weight:500;white-space:nowrap;line-height:1.6;vertical-align:baseline;';
 const renderWithChips = html => html.replace(/\{\{([^}]+)\}\}/g, (match) => {
   const label = VAR_TAG_MAP[match] || match;
@@ -37,17 +75,24 @@ const RichTextPanel = ({id, getBlock, updateBlock}) => {
   const editorRef = React.useRef(null);
   const b = getBlock(id);
   const [fmts, setFmts] = React.useState({});
-  const [varOpen, setVarOpen] = React.useState(false);
-  const [hovVar, setHovVar] = React.useState(null);
+  const [catMenu, setCatMenu] = React.useState(null); // {id, x, y}
+  const [isEmpty, setIsEmpty] = React.useState(!b.html);
 
-  // Ensure Enter always creates <div> blocks, not <br> or <p>
   React.useEffect(() => {
     document.execCommand('defaultParagraphSeparator', false, 'div');
   }, []);
 
+  React.useEffect(() => {
+    if (!catMenu) return;
+    const close = () => setCatMenu(null);
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [catMenu]);
+
   // Populate editor when switching sections
   React.useEffect(() => {
-    setVarOpen(false);
+    setCatMenu(null);
+    setIsEmpty(!b.html);
     if (!editorRef.current) return;
     editorRef.current.innerHTML = b.html || '<div><br></div>';
     // Wrap any bare text nodes in <div> so formatBlock can target them per-line
@@ -61,7 +106,11 @@ const RichTextPanel = ({id, getBlock, updateBlock}) => {
     editorRef.current.focus();
   }, [id]);
 
-  const save = () => updateBlock(id, {html: editorRef.current?.innerHTML || ''});
+  const save = () => {
+    const html = editorRef.current?.innerHTML || '';
+    updateBlock(id, {html});
+    setIsEmpty((editorRef.current?.innerText?.trim() || '') === '');
+  };
 
   const checkFmts = () => {
     try {
@@ -82,6 +131,7 @@ const RichTextPanel = ({id, getBlock, updateBlock}) => {
     } catch(e) {}
   };
 
+
   const exec = (cmd, val) => {
     editorRef.current?.focus();
     document.execCommand(cmd, false, val || null);
@@ -89,76 +139,105 @@ const RichTextPanel = ({id, getBlock, updateBlock}) => {
     checkFmts();
   };
 
-  const Btn = ({icon, cmd, val}) => {
+  const Btn = ({icon, cmd, val, sz=11}) => {
     const on = !!fmts[cmd];
     return (
       <button onMouseDown={e=>{e.preventDefault();exec(cmd,val);}}
         style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',
           border:`1px solid ${on?C.blue:C.grey30}`,borderRadius:5,cursor:'pointer',
           background:on?C.blue5:'transparent',flexShrink:0,transition:'all 120ms'}}>
-        <i className={`fa-regular fa-${icon}`} style={{fontSize:11,color:on?C.blue:C.grey60,lineHeight:1}}/>
+        <i className={`fa-regular fa-${icon}`} style={{fontSize:sz,color:on?C.blue:C.grey60,lineHeight:1}}/>
       </button>
+    );
+  };
+
+  const VarBtn = ({cat}) => {
+    const btnRef = React.useRef(null);
+    const isOpen = catMenu?.id === cat.id;
+    return (
+      <div style={{position:'relative'}}>
+        <button ref={btnRef} title={cat.label}
+          onMouseDown={e=>{
+            e.preventDefault(); e.stopPropagation();
+            if (isOpen) { setCatMenu(null); return; }
+            const r = btnRef.current.getBoundingClientRect();
+            setCatMenu({id:cat.id, x:r.left, y:r.bottom+4});
+          }}
+          style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',
+            border:`1px solid ${isOpen?C.blue:C.grey30}`,borderRadius:5,cursor:'pointer',
+            background:isOpen?C.blue5:'transparent',flexShrink:0,transition:'all 120ms'}}>
+          <i className={`fa-regular fa-${cat.icon}`} style={{fontSize:11,color:isOpen?C.blue:C.grey60,lineHeight:1}}/>
+        </button>
+        {isOpen && ReactDOM.createPortal(
+          <div onMouseDown={e=>e.stopPropagation()}
+            style={{position:'fixed',top:catMenu.y,left:catMenu.x,zIndex:9999,
+              background:C.white,border:`1px solid ${C.grey20}`,borderRadius:6,
+              boxShadow:'0 4px 16px rgba(0,0,0,0.12)',minWidth:200,padding:'4px 0'}}>
+            <div style={{padding:'4px 10px 3px',borderBottom:`1px solid ${C.grey10}`,marginBottom:2}}>
+              <span style={{fontSize:10,color:C.grey40,fontWeight:500,textTransform:'uppercase',letterSpacing:'0.06em'}}>{cat.label}</span>
+            </div>
+            {cat.vars.map(({label,tag})=>(
+              <button key={tag}
+                onMouseDown={e=>{e.preventDefault();e.stopPropagation();exec('insertText',tag);setCatMenu(null);}}
+                style={{display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%',
+                  padding:'5px 10px',background:'none',border:'none',cursor:'pointer',gap:8,
+                  textAlign:'left',fontFamily:'var(--font-body)',boxSizing:'border-box'}}>
+                <span style={{fontSize:12,color:C.black}}>{label}</span>
+                <span style={{fontSize:9,color:C.grey40,fontFamily:'monospace',flexShrink:0}}>{tag}</span>
+              </button>
+            ))}
+          </div>,
+          document.body
+        )}
+      </div>
     );
   };
 
   return (
     <>
-      <div style={{display:'flex',gap:4,marginBottom:6,alignItems:'center'}}>
-        <select onMouseDown={e=>e.stopPropagation()} onChange={e=>exec('formatBlock',e.target.value)}
-          value={fmts.blockStyle || 'div'}
-          style={{height:28,border:`1px solid ${C.grey30}`,borderRadius:5,fontSize:11,padding:'0 6px',
-            background:C.white,fontFamily:'var(--font-body)',cursor:'pointer',flex:1,color:C.grey60}}>
-          <option value="div">Normal</option>
-          <option value="h1">Heading 1</option>
-          <option value="h2">Heading 2</option>
-          <option value="h3">Heading 3</option>
-        </select>
-        <Btn icon="bold"          cmd="bold"/>
-        <Btn icon="italic"        cmd="italic"/>
-        <Btn icon="underline"     cmd="underline"/>
-        <Btn icon="strikethrough" cmd="strikeThrough"/>
-      </div>
-      <div style={{display:'flex',gap:4,marginBottom:10,alignItems:'center'}}>
-        <Btn icon="list-ul"     cmd="insertUnorderedList"/>
-        <Btn icon="list-ol"     cmd="insertOrderedList"/>
-        <div style={{width:1,background:C.grey20,margin:'0 2px',height:20,flexShrink:0}}/>
-        <Btn icon="align-left"   cmd="justifyLeft"/>
-        <Btn icon="align-center" cmd="justifyCenter"/>
-        <Btn icon="align-right"  cmd="justifyRight"/>
-      </div>
-      <div ref={editorRef} contentEditable suppressContentEditableWarning
-        onInput={save} onFocus={checkFmts} onKeyUp={checkFmts} onMouseUp={checkFmts} onSelect={checkFmts}
-        style={{width:'100%',minHeight:140,border:`1px solid ${C.grey30}`,borderRadius:6,
-          fontSize:12,padding:'8px',fontFamily:'var(--font-body)',outline:'none',
-          lineHeight:1.6,color:C.black,boxSizing:'border-box',background:C.white,
-          cursor:'text'}}
-      />
-      <div style={{borderTop:`1px solid ${C.grey20}`,marginTop:10}}>
-        <button onMouseDown={e=>{e.preventDefault();setVarOpen(o=>!o);}}
-          style={{width:'100%',display:'flex',alignItems:'center',justifyContent:'space-between',
-            padding:'8px 0',background:'none',border:'none',cursor:'pointer',fontFamily:'var(--font-body)'}}>
-          <div style={{display:'flex',alignItems:'center',gap:5}}>
-            <i className="fa-regular fa-code" style={{fontSize:10,color:C.grey40}}/>
-            <span style={{fontSize:11,color:C.grey50}}>Insert variable</span>
-          </div>
-          <i className={`fa-regular fa-chevron-${varOpen?'up':'down'}`} style={{fontSize:9,color:C.grey40}}/>
-        </button>
-        {varOpen && (
-          <div style={{marginBottom:8}}>
-            {VAR_DEFS.map(({label,tag})=>(
-              <button key={tag}
-                onMouseDown={e=>{e.preventDefault();exec('insertText',tag);setVarOpen(false);setHovVar(null);}}
-                onMouseEnter={()=>setHovVar(tag)} onMouseLeave={()=>setHovVar(null)}
-                style={{display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%',
-                  padding:'5px 6px',background:hovVar===tag?C.grey10:'none',border:'none',borderRadius:4,
-                  cursor:'pointer',textAlign:'left',fontFamily:'var(--font-body)',boxSizing:'border-box',
-                  transition:'background 80ms'}}>
-                <span style={{fontSize:12,color:C.black}}>{label}</span>
-                <span style={{fontSize:9,color:C.grey40,fontFamily:'monospace',opacity:hovVar===tag?1:0.6,transition:'opacity 80ms'}}>{tag}</span>
-              </button>
-            ))}
+      <div style={{position:'relative',marginBottom:10}}>
+        <div ref={editorRef} contentEditable suppressContentEditableWarning
+          onInput={save} onFocus={checkFmts} onKeyUp={checkFmts} onMouseUp={checkFmts} onSelect={checkFmts}
+          style={{width:'100%',minHeight:140,border:`1px solid ${C.grey30}`,borderRadius:6,
+            fontSize:12,padding:'8px',fontFamily:'var(--font-body)',outline:'none',
+            lineHeight:1.6,color:C.black,boxSizing:'border-box',background:C.white,cursor:'text'}}
+        />
+        {isEmpty && (
+          <div style={{position:'absolute',top:0,left:0,right:0,padding:'8px',
+            fontSize:12,color:C.grey40,fontFamily:'var(--font-body)',lineHeight:1.6,pointerEvents:'none'}}>
+            Add a message, terms, or note. Use the options below to insert variables and apply formatting.
           </div>
         )}
+      </div>
+      <div style={{marginBottom:10}}>
+        <div style={{fontSize:11,color:C.grey50,fontFamily:'var(--font-body)',marginBottom:5}}>Format text</div>
+        <div style={{display:'flex',gap:4,alignItems:'center',marginBottom:4}}>
+          <select onChange={e=>exec('formatBlock',e.target.value)} value={fmts.blockStyle||'div'}
+            style={{height:28,border:`1px solid ${C.grey30}`,borderRadius:5,fontSize:11,padding:'0 4px',
+              background:C.white,fontFamily:'var(--font-body)',cursor:'pointer',color:C.grey60,flex:1}}>
+            <option value="div">Normal</option>
+            <option value="h1">Heading 1</option>
+            <option value="h2">Heading 2</option>
+            <option value="h3">Heading 3</option>
+          </select>
+          <Btn icon="bold"          cmd="bold"/>
+          <Btn icon="italic"        cmd="italic"/>
+          <Btn icon="underline"     cmd="underline"/>
+          <Btn icon="strikethrough" cmd="strikeThrough"/>
+        </div>
+        <div style={{display:'flex',gap:4,alignItems:'center'}}>
+          <Btn icon="list-ul"      cmd="insertUnorderedList"/>
+          <Btn icon="list-ol"      cmd="insertOrderedList"/>
+          <Btn icon="align-left"   cmd="justifyLeft"/>
+          <Btn icon="align-center" cmd="justifyCenter"/>
+          <Btn icon="align-right"  cmd="justifyRight"/>
+        </div>
+      </div>
+      <div>
+        <div style={{fontSize:11,color:C.grey50,fontFamily:'var(--font-body)',marginBottom:5}}>Insert variable</div>
+        <div style={{display:'flex',gap:4,alignItems:'center'}}>
+          {VAR_CATEGORIES.map(cat => <VarBtn key={cat.id} cat={cat}/>)}
+        </div>
       </div>
     </>
   );
