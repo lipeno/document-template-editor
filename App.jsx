@@ -1188,7 +1188,25 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     {name:'C-Stand Set (×4)',  sku:'CST-04',  qty:'4', period:'7 days', unit_price:'$15',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$9',  price_total:'$69',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
     {name:'Sandbags (×10)',    sku:'SND-10',  qty:'1', period:'7 days', unit_price:'$18',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$3',  price_total:'$21',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
     {name:'Apple Boxes (×6)',  sku:'APL-06',  qty:'1', period:'7 days', unit_price:'$12',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$2',  price_total:'$14',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    {name:"Director's Monitor 7\"", sku:'MON-7',  qty:'1', period:'7 days', unit_price:'$55',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$8',  price_total:'$63',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    {name:'Follow Focus System', sku:'FF-01',   qty:'1', period:'7 days', unit_price:'$45',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$7',  price_total:'$52',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    {name:'V-Mount Battery',    sku:'BAT-VM',  qty:'2', period:'7 days', unit_price:'$35',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$10', price_total:'$80',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    {name:'Dual Battery Charger', sku:'CHR-02', qty:'1', period:'7 days', unit_price:'$25',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$4',  price_total:'$29',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    {name:'Backdrop White',     sku:'BKD-W1',  qty:'1', period:'7 days', unit_price:'$18',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$3',  price_total:'$21',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    {name:'Backdrop Black',     sku:'BKD-B1',  qty:'1', period:'7 days', unit_price:'$18',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$3',  price_total:'$21',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    {name:'Reflector 5-in-1',   sku:'RFL-05',  qty:'2', period:'7 days', unit_price:'$15',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$4',  price_total:'$34',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    {name:'Color Gels Set',     sku:'GEL-01',  qty:'1', period:'7 days', unit_price:'$22',  charge_lbl:'Fixed',  discount:'5%',  coupons:'—', tax:'$3',  price_total:'$24',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    {name:'Pelican Case 1510',  sku:'PLC-15',  qty:'1', period:'7 days', unit_price:'$20',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$3',  price_total:'$23',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
   ];
+  const _amt = s => parseFloat((s||'0').replace(/[^0-9.]/g,''))||0;
+  const liSubtotal = liRows.reduce((s,r)=>s+_amt(r.unit_price)*_amt(r.qty),0);
+  const liTax      = liRows.reduce((s,r)=>s+_amt(r.tax),0);
+  const liDiscount = liRows.reduce((s,r)=>{
+    if(!r.discount||r.discount==='—')return s;
+    return s+_amt(r.unit_price)*_amt(r.qty)*(parseFloat(r.discount)/100);
+  },0);
+  const liTotal = liSubtotal - liDiscount + liTax;
+  const fmtAmt = n=>'$'+Math.round(n);
 
   // ── Visual column renderers ───────────────────────────────
   const _piByName = (name) => {
@@ -1512,13 +1530,13 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
           <div style={{padding:'8px 22px 14px',display:'flex',justifyContent:'flex-end',borderTop:`1px solid ${C.grey20}`}}>
             <div style={{width:140}}>
               {[
-                docCfg.showSubtotal        && ['Subtotal',          '$431',  false],
-                docCfg.showTotalDiscount   && ['Total discount',    '-$20',  false],
-                docCfg.showAppliedCoupons  && ['Applied coupons',   '-$10',  false],
-                docCfg.showSecurityDeposit && ['Security deposit',  '-$100', false],
-                docCfg.showCustomCharge    && ['Custom charge',     '$15',   false],
-                docCfg.showTaxBreakdown    && ['Tax (15%)',         '$36',   false],
-                docCfg.showTotalInclTaxes  && ['Total incl. taxes', '$352',  true],
+                docCfg.showSubtotal        && ['Subtotal',          fmtAmt(liSubtotal),          false],
+                docCfg.showTotalDiscount   && ['Total discount',    '-'+fmtAmt(liDiscount),      false],
+                docCfg.showAppliedCoupons  && ['Applied coupons',   '-$10',                      false],
+                docCfg.showSecurityDeposit && ['Security deposit',  '-$100',                     false],
+                docCfg.showCustomCharge    && ['Custom charge',     '$15',                       false],
+                docCfg.showTaxBreakdown    && ['Tax (15%)',         fmtAmt(liTax),               false],
+                docCfg.showTotalInclTaxes  && ['Total incl. taxes', fmtAmt(liTotal),             true],
               ].filter(Boolean).map(([l,v,bold])=>(
                 <div key={l} style={{display:'flex',justifyContent:'space-between',padding:'2px 0',borderTop:bold?`1px solid ${C.grey20}`:'none',marginTop:bold?4:0}}>
                   <span style={{fontSize:8,color:bold?C.black:C.grey50,fontWeight:bold?700:400}}>{l}</span>
