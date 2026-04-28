@@ -16,16 +16,54 @@ const BQ = {
 //     with date format, page size, doc numbering, due dates
 // ─────────────────────────────────────────────────────────────
 
-const VAR_DEFS = [
-  {label:'Customer name', tag:'{{customer_name}}'},
-  {label:'Order number',  tag:'{{order_number}}'},
-  {label:'Date',          tag:'{{date}}'},
-  {label:'Due date',      tag:'{{due_date}}'},
-  {label:'Company name',  tag:'{{company_name}}'},
-  {label:'Total',         tag:'{{total}}'},
+const VAR_CATEGORIES = [
+  {
+    id:'company', label:'Company', icon:'building',
+    vars:[
+      {label:'Address',    tag:'{{company_address}}'},
+      {label:'Email',      tag:'{{company_email}}'},
+      {label:'Phone',      tag:'{{company_phone}}'},
+      {label:'VAT number', tag:'{{company_vat_number}}'},
+    ]
+  },
+  {
+    id:'customer', label:'Customer', icon:'user',
+    vars:[
+      {label:'Email',   tag:'{{customer_email}}'},
+      {label:'Phone',   tag:'{{customer_phone}}'},
+      {label:'Address', tag:'{{customer_address}}'},
+    ]
+  },
+  {
+    id:'dates', label:'Booking dates', icon:'calendar',
+    vars:[
+      {label:'Start date', tag:'{{start_date}}'},
+      {label:'End date',   tag:'{{end_date}}'},
+      {label:'Issue date', tag:'{{date}}'},
+      {label:'Due date',   tag:'{{due_date}}'},
+    ]
+  },
+  {
+    id:'financial', label:'Financial', icon:'coins',
+    vars:[
+      {label:'Subtotal',    tag:'{{subtotal}}'},
+      {label:'Tax total',   tag:'{{tax_total}}'},
+      {label:'Deposit',     tag:'{{deposit}}'},
+      {label:'Discount',    tag:'{{discount}}'},
+      {label:'Balance due', tag:'{{balance_due}}'},
+    ]
+  },
+  {
+    id:'document', label:'Document', icon:'hashtag',
+    vars:[
+      {label:'Document number', tag:'{{document_number}}'},
+    ]
+  },
 ];
 
-const VAR_TAG_MAP = Object.fromEntries(VAR_DEFS.map(({tag,label}) => [tag, label]));
+const VAR_TAG_MAP = Object.fromEntries(
+  VAR_CATEGORIES.flatMap(c => c.vars).map(({tag,label}) => [tag, label])
+);
 const CHIP_STYLE = 'display:inline-block;background:#EDF5FF;color:#136DEB;border:1px solid #BBDBFA;border-radius:10px;padding:0 6px;font-size:0.85em;font-weight:500;white-space:nowrap;line-height:1.6;vertical-align:baseline;';
 const renderWithChips = html => html.replace(/\{\{([^}]+)\}\}/g, (match) => {
   const label = VAR_TAG_MAP[match] || match;
@@ -37,17 +75,24 @@ const RichTextPanel = ({id, getBlock, updateBlock}) => {
   const editorRef = React.useRef(null);
   const b = getBlock(id);
   const [fmts, setFmts] = React.useState({});
-  const [varOpen, setVarOpen] = React.useState(false);
-  const [hovVar, setHovVar] = React.useState(null);
+  const [catMenu, setCatMenu] = React.useState(null); // {id, x, y}
+  const [isEmpty, setIsEmpty] = React.useState(!b.html);
 
-  // Ensure Enter always creates <div> blocks, not <br> or <p>
   React.useEffect(() => {
     document.execCommand('defaultParagraphSeparator', false, 'div');
   }, []);
 
+  React.useEffect(() => {
+    if (!catMenu) return;
+    const close = () => setCatMenu(null);
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [catMenu]);
+
   // Populate editor when switching sections
   React.useEffect(() => {
-    setVarOpen(false);
+    setCatMenu(null);
+    setIsEmpty(!b.html);
     if (!editorRef.current) return;
     editorRef.current.innerHTML = b.html || '<div><br></div>';
     // Wrap any bare text nodes in <div> so formatBlock can target them per-line
@@ -61,7 +106,11 @@ const RichTextPanel = ({id, getBlock, updateBlock}) => {
     editorRef.current.focus();
   }, [id]);
 
-  const save = () => updateBlock(id, {html: editorRef.current?.innerHTML || ''});
+  const save = () => {
+    const html = editorRef.current?.innerHTML || '';
+    updateBlock(id, {html});
+    setIsEmpty((editorRef.current?.innerText?.trim() || '') === '');
+  };
 
   const checkFmts = () => {
     try {
@@ -82,6 +131,7 @@ const RichTextPanel = ({id, getBlock, updateBlock}) => {
     } catch(e) {}
   };
 
+
   const exec = (cmd, val) => {
     editorRef.current?.focus();
     document.execCommand(cmd, false, val || null);
@@ -89,76 +139,105 @@ const RichTextPanel = ({id, getBlock, updateBlock}) => {
     checkFmts();
   };
 
-  const Btn = ({icon, cmd, val}) => {
+  const Btn = ({icon, cmd, val, sz=11}) => {
     const on = !!fmts[cmd];
     return (
       <button onMouseDown={e=>{e.preventDefault();exec(cmd,val);}}
         style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',
           border:`1px solid ${on?C.blue:C.grey30}`,borderRadius:5,cursor:'pointer',
           background:on?C.blue5:'transparent',flexShrink:0,transition:'all 120ms'}}>
-        <i className={`fa-regular fa-${icon}`} style={{fontSize:11,color:on?C.blue:C.grey60,lineHeight:1}}/>
+        <i className={`fa-regular fa-${icon}`} style={{fontSize:sz,color:on?C.blue:C.grey60,lineHeight:1}}/>
       </button>
+    );
+  };
+
+  const VarBtn = ({cat}) => {
+    const btnRef = React.useRef(null);
+    const isOpen = catMenu?.id === cat.id;
+    return (
+      <div style={{position:'relative'}}>
+        <button ref={btnRef} title={cat.label}
+          onMouseDown={e=>{
+            e.preventDefault(); e.stopPropagation();
+            if (isOpen) { setCatMenu(null); return; }
+            const r = btnRef.current.getBoundingClientRect();
+            setCatMenu({id:cat.id, x:r.left, y:r.bottom+4});
+          }}
+          style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',
+            border:`1px solid ${isOpen?C.blue:C.grey30}`,borderRadius:5,cursor:'pointer',
+            background:isOpen?C.blue5:'transparent',flexShrink:0,transition:'all 120ms'}}>
+          <i className={`fa-regular fa-${cat.icon}`} style={{fontSize:11,color:isOpen?C.blue:C.grey60,lineHeight:1}}/>
+        </button>
+        {isOpen && ReactDOM.createPortal(
+          <div onMouseDown={e=>e.stopPropagation()}
+            style={{position:'fixed',top:catMenu.y,left:catMenu.x,zIndex:9999,
+              background:C.white,border:`1px solid ${C.grey20}`,borderRadius:6,
+              boxShadow:'0 4px 16px rgba(0,0,0,0.12)',minWidth:200,padding:'4px 0'}}>
+            <div style={{padding:'4px 10px 3px',borderBottom:`1px solid ${C.grey10}`,marginBottom:2}}>
+              <span style={{fontSize:10,color:C.grey40,fontWeight:500,textTransform:'uppercase',letterSpacing:'0.06em'}}>{cat.label}</span>
+            </div>
+            {cat.vars.map(({label,tag})=>(
+              <button key={tag}
+                onMouseDown={e=>{e.preventDefault();e.stopPropagation();exec('insertText',tag);setCatMenu(null);}}
+                style={{display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%',
+                  padding:'5px 10px',background:'none',border:'none',cursor:'pointer',gap:8,
+                  textAlign:'left',fontFamily:'var(--font-body)',boxSizing:'border-box'}}>
+                <span style={{fontSize:12,color:C.black}}>{label}</span>
+                <span style={{fontSize:9,color:C.grey40,fontFamily:'monospace',flexShrink:0}}>{tag}</span>
+              </button>
+            ))}
+          </div>,
+          document.body
+        )}
+      </div>
     );
   };
 
   return (
     <>
-      <div style={{display:'flex',gap:4,marginBottom:6,alignItems:'center'}}>
-        <select onMouseDown={e=>e.stopPropagation()} onChange={e=>exec('formatBlock',e.target.value)}
-          value={fmts.blockStyle || 'div'}
-          style={{height:28,border:`1px solid ${C.grey30}`,borderRadius:5,fontSize:11,padding:'0 6px',
-            background:C.white,fontFamily:'var(--font-body)',cursor:'pointer',flex:1,color:C.grey60}}>
-          <option value="div">Normal</option>
-          <option value="h1">Heading 1</option>
-          <option value="h2">Heading 2</option>
-          <option value="h3">Heading 3</option>
-        </select>
-        <Btn icon="bold"          cmd="bold"/>
-        <Btn icon="italic"        cmd="italic"/>
-        <Btn icon="underline"     cmd="underline"/>
-        <Btn icon="strikethrough" cmd="strikeThrough"/>
-      </div>
-      <div style={{display:'flex',gap:4,marginBottom:10,alignItems:'center'}}>
-        <Btn icon="list-ul"     cmd="insertUnorderedList"/>
-        <Btn icon="list-ol"     cmd="insertOrderedList"/>
-        <div style={{width:1,background:C.grey20,margin:'0 2px',height:20,flexShrink:0}}/>
-        <Btn icon="align-left"   cmd="justifyLeft"/>
-        <Btn icon="align-center" cmd="justifyCenter"/>
-        <Btn icon="align-right"  cmd="justifyRight"/>
-      </div>
-      <div ref={editorRef} contentEditable suppressContentEditableWarning
-        onInput={save} onFocus={checkFmts} onKeyUp={checkFmts} onMouseUp={checkFmts} onSelect={checkFmts}
-        style={{width:'100%',minHeight:140,border:`1px solid ${C.grey30}`,borderRadius:6,
-          fontSize:12,padding:'8px',fontFamily:'var(--font-body)',outline:'none',
-          lineHeight:1.6,color:C.black,boxSizing:'border-box',background:C.white,
-          cursor:'text'}}
-      />
-      <div style={{borderTop:`1px solid ${C.grey20}`,marginTop:10}}>
-        <button onMouseDown={e=>{e.preventDefault();setVarOpen(o=>!o);}}
-          style={{width:'100%',display:'flex',alignItems:'center',justifyContent:'space-between',
-            padding:'8px 0',background:'none',border:'none',cursor:'pointer',fontFamily:'var(--font-body)'}}>
-          <div style={{display:'flex',alignItems:'center',gap:5}}>
-            <i className="fa-regular fa-code" style={{fontSize:10,color:C.grey40}}/>
-            <span style={{fontSize:11,color:C.grey50}}>Insert variable</span>
-          </div>
-          <i className={`fa-regular fa-chevron-${varOpen?'up':'down'}`} style={{fontSize:9,color:C.grey40}}/>
-        </button>
-        {varOpen && (
-          <div style={{marginBottom:8}}>
-            {VAR_DEFS.map(({label,tag})=>(
-              <button key={tag}
-                onMouseDown={e=>{e.preventDefault();exec('insertText',tag);setVarOpen(false);setHovVar(null);}}
-                onMouseEnter={()=>setHovVar(tag)} onMouseLeave={()=>setHovVar(null)}
-                style={{display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%',
-                  padding:'5px 6px',background:hovVar===tag?C.grey10:'none',border:'none',borderRadius:4,
-                  cursor:'pointer',textAlign:'left',fontFamily:'var(--font-body)',boxSizing:'border-box',
-                  transition:'background 80ms'}}>
-                <span style={{fontSize:12,color:C.black}}>{label}</span>
-                <span style={{fontSize:9,color:C.grey40,fontFamily:'monospace',opacity:hovVar===tag?1:0.6,transition:'opacity 80ms'}}>{tag}</span>
-              </button>
-            ))}
+      <div style={{position:'relative',marginBottom:10}}>
+        <div ref={editorRef} contentEditable suppressContentEditableWarning
+          onInput={save} onFocus={checkFmts} onKeyUp={checkFmts} onMouseUp={checkFmts} onSelect={checkFmts}
+          style={{width:'100%',minHeight:140,border:`1px solid ${C.grey30}`,borderRadius:6,
+            fontSize:12,padding:'8px',fontFamily:'var(--font-body)',outline:'none',
+            lineHeight:1.6,color:C.black,boxSizing:'border-box',background:C.white,cursor:'text'}}
+        />
+        {isEmpty && (
+          <div style={{position:'absolute',top:0,left:0,right:0,padding:'8px',
+            fontSize:12,color:C.grey40,fontFamily:'var(--font-body)',lineHeight:1.6,pointerEvents:'none'}}>
+            Add a message, terms, or note. Use the options below to insert variables and apply formatting.
           </div>
         )}
+      </div>
+      <div style={{marginBottom:10}}>
+        <div style={{fontSize:11,color:C.grey50,fontFamily:'var(--font-body)',marginBottom:5}}>Format text</div>
+        <div style={{display:'flex',gap:4,alignItems:'center',marginBottom:4}}>
+          <select onChange={e=>exec('formatBlock',e.target.value)} value={fmts.blockStyle||'div'}
+            style={{height:28,border:`1px solid ${C.grey30}`,borderRadius:5,fontSize:11,padding:'0 4px',
+              background:C.white,fontFamily:'var(--font-body)',cursor:'pointer',color:C.grey60,flex:1}}>
+            <option value="div">Normal</option>
+            <option value="h1">Heading 1</option>
+            <option value="h2">Heading 2</option>
+            <option value="h3">Heading 3</option>
+          </select>
+          <Btn icon="bold"          cmd="bold"/>
+          <Btn icon="italic"        cmd="italic"/>
+          <Btn icon="underline"     cmd="underline"/>
+          <Btn icon="strikethrough" cmd="strikeThrough"/>
+        </div>
+        <div style={{display:'flex',gap:4,alignItems:'center'}}>
+          <Btn icon="list-ul"      cmd="insertUnorderedList"/>
+          <Btn icon="list-ol"      cmd="insertOrderedList"/>
+          <Btn icon="align-left"   cmd="justifyLeft"/>
+          <Btn icon="align-center" cmd="justifyCenter"/>
+          <Btn icon="align-right"  cmd="justifyRight"/>
+        </div>
+      </div>
+      <div>
+        <div style={{fontSize:11,color:C.grey50,fontFamily:'var(--font-body)',marginBottom:5}}>Insert variable</div>
+        <div style={{display:'flex',gap:4,alignItems:'center'}}>
+          {VAR_CATEGORIES.map(cat => <VarBtn key={cat.id} cat={cat}/>)}
+        </div>
       </div>
     </>
   );
@@ -519,6 +598,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   const [dateFormat,  setDateFormat]    = React.useState('datetime');
   const [pageSize,    setPageSize]      = React.useState('A4');
   const [docNumLevel, setDocNumLevel]   = React.useState('global');
+  const [prefixFormat, setPrefixFormat] = React.useState('{year}-');
   const [dueDatesOn,  setDueDatesOn]    = React.useState(false);
   const [customCSS,   setCustomCSS]     = React.useState('');
 
@@ -528,8 +608,8 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
 
   const doReset = () => {
     setDocCfg({primaryColor:'#136DEB',showLogo:true,showContact:true,showCompanyInfo:true,logoAlign:'Left',logoSize:'L',documentTitle:'Invoice',showDates:true,showLocation:true,showAddress:false,showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,footerCompanyDetails:true,footerContactDetails:true,footerVatNumber:true,footerPaymentDetails:true,footerPageNumbers:true,font:'Inter',partyOrder:'seller-first',showPartyLabels:false});
-    setDateFormat('datetime'); setPageSize('A4'); setDocNumLevel('global'); setDueDatesOn(false); setCustomCSS('');
-    setBrandColor('#136DEB'); setSecondColor('#131314');
+    setDateFormat('datetime'); setPageSize('A4'); setDocNumLevel('global'); setPrefixFormat('{year}-'); setDueDatesOn(false); setCustomCSS('');
+    setBrandColor('#136DEB');
     setBlockData({});
     setResetModal(false);
   };
@@ -577,7 +657,11 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     e.preventDefault();const from=dragRef.current;
     setDragOverSec(null);dragRef.current=null;
     if(from===null||from===i) return;
-    setSections(p=>{const a=[...p];const [m]=a.splice(from,1);a.splice(i,0,m);return a;});
+    setSections(p=>{
+      const locked=s=>s.id==='header'||s.id==='footer';
+      if(locked(p[from])||locked(p[i])) return p;
+      const a=[...p];const [m]=a.splice(from,1);a.splice(i,0,m);return a;
+    });
   };
   const onSecDragEnd = () => {setDragOverSec(null);dragRef.current=null;};
   const toggleSection = id => setSections(p=>p.map(s=>s.id===id?{...s,visible:!s.visible}:s));
@@ -720,53 +804,67 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
 
           {/* Branding */}
           <SHead label="Branding"/>
-          <ColorRow label="Brand color"     value={brandColor}  onChange={v=>{setBrandColor(v);setDoc('primaryColor',v);}}/>
-          <ColorRow label="Secondary color" value={secondColor} onChange={setSecondColor}/>
+          <ColorRow label="Brand color" value={brandColor} onChange={v=>{setBrandColor(v);setDoc('primaryColor',v);}}/>
           <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',padding:'8px 0'}}>
             <span style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Logo</span>
-            <div style={{display:'flex',flexDirection:'column',alignItems:'stretch',gap:6,width:140}}>
-              <div style={{height:90,background:C.grey10,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:4,border:`1px solid ${C.grey20}`}}>
+            <div style={{width:140}}>
+              <div style={{height:110,background:C.grey10,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:4,border:`1px solid ${C.grey20}`,position:'relative',overflow:'hidden',paddingBottom:28}}>
                 <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
                   <circle cx="18" cy="18" r="16" fill="#222"/>
                   <path d="M10 26 C10 18 18 10 26 14 C22 18 20 22 18 26Z" fill="#fff" opacity=".6"/>
                   <path d="M14 28 C14 20 20 14 28 18 C24 22 22 26 18 28Z" fill="#fff" opacity=".4"/>
                 </svg>
                 <span style={{fontSize:9,fontWeight:700,color:C.black,letterSpacing:2,fontFamily:'var(--font-body)'}}>COMPANY</span>
+                <button style={{position:'absolute',bottom:0,left:0,right:0,height:28,border:'none',borderTop:`1px solid ${C.grey20}`,borderRadius:0,background:C.white,fontSize:11,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)',color:C.black}}>Change</button>
               </div>
-              <button style={{height:30,border:`1px solid ${C.grey30}`,borderRadius:16,background:C.white,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)',color:C.black}}>Change</button>
             </div>
           </div>
           <div style={{padding:'10px 0',display:'flex',flexDirection:'column',gap:8}}>
             <button onClick={()=>{setBrandColor('#136DEB');setSecondColor('#131314');setDoc('primaryColor','#136DEB');}} style={{width:'100%',height:32,background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,fontWeight:500,color:C.black,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6,fontFamily:'var(--font-body)'}}>
-              <FI n="rotate-left" sz={11} col={C.grey60}/> Load defaults
+              <FI n="rotate-left" sz={11} col={C.grey60}/> Load branding defaults
             </button>
-            <button onClick={e=>e.preventDefault()} style={{width:'100%',height:32,background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,fontWeight:500,color:C.black,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6,fontFamily:'var(--font-body)'}}>
-              <FI n="arrow-up-right-from-square" sz={10} col={C.grey60}/> Global Branding
-            </button>
-          </div>
-
-          {/* Format */}
-          <SHead label="Format"/>
-          <SelF label="Font family" value={docCfg.font} onChange={v=>setDoc('font',v)} opts={['Inter','Helvetica','Georgia','Garamond','Courier']}/>
-          <div style={{marginBottom:10}}>
-            <div style={{fontSize:11,color:C.grey60,marginBottom:4,fontFamily:'var(--font-body)'}}>Page size</div>
-            <div style={{display:'flex',gap:4}}>
-              {['A4','Letter','Legal','A5'].map(s=>(
-                <button key={s} onClick={()=>setPageSize(s)}
-                  style={{flex:1,height:28,border:`1px solid ${pageSize===s?C.blue:C.grey30}`,borderRadius:6,background:pageSize===s?C.blue5:C.white,color:pageSize===s?C.blue:C.grey60,fontSize:11,cursor:'pointer',fontFamily:'var(--font-body)',fontWeight:pageSize===s?600:400,transition:'all 120ms'}}>
-                  {s}
-                </button>
-              ))}
-            </div>
+            <a href="#" onClick={e=>e.preventDefault()} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:5,fontSize:12,color:C.blue,fontFamily:'var(--font-body)',textDecoration:'none',cursor:'pointer'}}>
+              <FI n="arrow-up-right-from-square" sz={10} col={C.blue}/> Global Branding
+            </a>
           </div>
 
           {/* Document numbering */}
           <SHead label="Document numbering"/>
-          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)',marginTop:8,marginBottom:4}}>Document numbering</div>
           <Radio checked={docNumLevel==='global'} onChange={()=>setDocNumLevel('global')}
-            label="Global level" hint="Numbers increment by one: #1, #2, #3, etc."/>
+            label="Global sequence" hint="Numbers increment by one: #1, #2, #3, etc."/>
           <Radio checked={docNumLevel==='prefix'} onChange={()=>setDocNumLevel('prefix')}
-            label="Prefix level" hint="New sequence per year, month, or customer number."/>
+            label="Prefix sequence" hint="Customize the prefix with static or dynamic values."/>
+          {docNumLevel==='prefix' && (() => {
+            const VARS = [
+              {label:'Year',        token:'{year}',        ex:'2026'},
+              {label:'Month',       token:'{month}',       ex:'04'},
+              {label:'Customer #',  token:'{customer_nr}', ex:'42'},
+              {label:'Order #',     token:'{order_nr}',    ex:'18'},
+            ];
+            const preview = VARS.reduce((s,v)=>s.replaceAll(v.token,v.ex), prefixFormat||'') + '1';
+            return (
+              <div style={{marginTop:4,marginBottom:4,background:C.grey10,borderRadius:7,padding:'10px 10px 10px'}}>
+                <div style={{fontSize:10,color:C.grey60,marginBottom:10,lineHeight:1.55,fontFamily:'var(--font-body)'}}>
+                  Prefix document numbers with custom or dynamic values.
+                </div>
+                <div style={{fontSize:10,color:C.grey50,marginBottom:4,fontFamily:'var(--font-body)'}}>Prefix format</div>
+                <input value={prefixFormat} onChange={e=>setPrefixFormat(e.target.value)}
+                  placeholder="{year}-"
+                  style={{width:'100%',height:28,border:`1px solid ${C.grey30}`,borderRadius:5,fontSize:12,padding:'0 8px',background:C.white,fontFamily:'var(--font-body)',boxSizing:'border-box',outline:'none'}}/>
+                <div style={{marginTop:6,display:'flex',flexWrap:'wrap',gap:4}}>
+                  {VARS.map(v=>(
+                    <button key={v.token} onClick={()=>setPrefixFormat(p=>(p||'')+v.token)}
+                      style={{fontSize:10,padding:'2px 7px',border:`1px solid ${C.blue30}`,borderRadius:4,background:C.blue5,color:C.blue,cursor:'pointer',fontFamily:'var(--font-body)',fontWeight:500,lineHeight:1.6}}>
+                      + {v.label}
+                    </button>
+                  ))}
+                </div>
+                <div style={{marginTop:8,fontSize:10,color:C.grey50,fontFamily:'var(--font-body)'}}>
+                  Preview: <span style={{color:C.black,fontWeight:600,fontFamily:'monospace'}}>{preview}</span>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Invoice due dates */}
           <SHead label="Invoice due dates"/>
@@ -798,8 +896,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   };
 
   // ── Branding panel ────────────────────────────────────────
-  const [brandColor, setBrandColor]   = React.useState('#136DEB');
-  const [secondColor, setSecondColor] = React.useState('#131314');
+  const [brandColor, setBrandColor] = React.useState('#136DEB');
 
   const ColorRow = ({label, value, onChange}) => {
     const [hex, setHex] = React.useState(value.replace('#','').toUpperCase());
@@ -1001,10 +1098,12 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     const b = getBlock(id);
     return (
       <>
-        <div style={{fontSize:10,fontWeight:700,color:C.grey50,textTransform:'uppercase',letterSpacing:'.07em',paddingBottom:8,fontFamily:'var(--font-body)'}}>Content</div>
-        <RichTextPanel id={id} getBlock={getBlock} updateBlock={updateBlock}/>
-        <div style={{fontSize:10,fontWeight:700,color:C.grey50,textTransform:'uppercase',letterSpacing:'.07em',padding:'11px 0 5px',fontFamily:'var(--font-body)'}}>Background</div>
-        <div style={{display:'flex',gap:4,paddingBottom:12}}>
+        <SHead label="Content"/>
+        <div style={{padding:'8px 0'}}>
+          <RichTextPanel id={id} getBlock={getBlock} updateBlock={updateBlock}/>
+        </div>
+        <SHead label="Background"/>
+        <div style={{display:'flex',gap:4,padding:'8px 0 12px'}}>
           {[['white','White',C.white],['grey','Grey',C.bg]].map(([val,lbl,bg])=>{
             const active = (b.bgStyle||'white')===val;
             return (
@@ -1100,14 +1199,28 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
             </div>
         }
       </div>
-      <div style={{padding:'0 14px 10px'}}>
+      <div style={{padding:'0 14px 10px',display:'flex',flexDirection:'column',gap:8}}>
         <button onClick={()=>setEditing('__settings__')}
-          style={{width:'100%',height:34,display:'flex',alignItems:'center',justifyContent:'center',gap:6,
+          style={{width:'100%',height:30,display:'flex',alignItems:'center',justifyContent:'center',gap:6,
             background:editing==='__settings__'?C.blue5:C.white,border:`1px solid ${editing==='__settings__'?C.blue:C.grey30}`,borderRadius:6,
-            cursor:'pointer',fontSize:13,color:editing==='__settings__'?C.blue:C.grey60,fontFamily:'var(--font-body)',
+            cursor:'pointer',fontSize:12,color:editing==='__settings__'?C.blue:C.grey50,fontFamily:'var(--font-body)',
             fontWeight:500,transition:'background 100ms,border-color 100ms,color 100ms'}}>
-          <FI n="gear" sz={12} col={editing==='__settings__'?C.blue:C.grey60}/> Settings
+          <FI n="gear" sz={11} col={editing==='__settings__'?C.blue:C.grey50}/> Settings
         </button>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <span style={{fontSize:12,color:C.grey60,fontFamily:'var(--font-body)',flex:'0 0 62px'}}>Font</span>
+          <select value={docCfg.font} onChange={e=>setDoc('font',e.target.value)}
+            style={{flex:1,height:28,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,padding:'0 6px',background:C.white,fontFamily:'var(--font-body)',cursor:'pointer',color:C.black}}>
+            {['Inter','Helvetica','Georgia','Garamond','Courier'].map(f=><option key={f}>{f}</option>)}
+          </select>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <span style={{fontSize:12,color:C.grey60,fontFamily:'var(--font-body)',flex:'0 0 62px'}}>Page size</span>
+          <select value={pageSize} onChange={e=>setPageSize(e.target.value)}
+            style={{flex:1,height:28,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,padding:'0 6px',background:C.white,fontFamily:'var(--font-body)',cursor:'pointer',color:C.black}}>
+            {['A4','Letter','Legal','A5'].map(s=><option key={s}>{s}</option>)}
+          </select>
+        </div>
       </div>
       <div style={{borderBottom:`1px solid ${C.grey20}`}}/>
       <div style={{flex:1,overflowY:'auto'}}>
@@ -1120,31 +1233,33 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
             <span style={{fontSize:12,color:C.grey60,fontFamily:'var(--font-body)',lineHeight:1.4}}>Select a section to edit and configure its content.</span>
           </div>
         </div>}
-        {sections.map((s,idx)=>(
+        {sections.map((s,idx)=>{
+          const locked=s.id==='header'||s.id==='footer';
+          return (
           <React.Fragment key={s.id}>
-          {dragOverSec===idx&&<div style={{height:2,background:C.blue,borderRadius:1,margin:'1px 8px'}}/>}
-          <div draggable onDragStart={e=>onDragStart(e,idx)} onDragOver={e=>onSecDragOver(e,idx)} onDrop={e=>onDrop(e,idx)} onDragEnd={onSecDragEnd}
+          {!locked&&dragOverSec===idx&&<div style={{height:2,background:C.blue,borderRadius:1,margin:'1px 8px'}}/>}
+          <div {...(!locked&&{draggable:true,onDragStart:e=>onDragStart(e,idx),onDragOver:e=>onSecDragOver(e,idx),onDrop:e=>onDrop(e,idx),onDragEnd:onSecDragEnd})}
             onMouseEnter={()=>setHovSec(s.id)} onMouseLeave={()=>setHovSec(null)}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 8px 0 14px',
-              background:hovSec===s.id?C.grey10:'transparent',borderLeft:`3px solid ${hovSec===s.id?C.blue:'transparent'}`,
+              background:hovSec===s.id?C.grey10:'transparent',borderLeft:`3px solid ${!locked&&hovSec===s.id?C.blue:'transparent'}`,
               transition:'background 100ms,border-color 100ms',minHeight:36}}>
               <div onClick={()=>setEditing(s.id)} style={{flex:1,display:'flex',alignItems:'center',gap:8,cursor:'pointer',padding:'8px 0'}}>
                 <span style={{fontSize:13,color:C.black,fontFamily:'var(--font-body)'}}>{s.label}</span>
-                {s.type==='text'&&<span style={{fontSize:9,color:C.grey40,background:C.grey10,padding:'1px 5px',borderRadius:3,fontFamily:'var(--font-body)'}}>Text</span>}
               </div>
               <div style={{display:'flex',gap:3,alignItems:'center'}}>
                 <button onClick={e=>{e.stopPropagation();toggleSection(s.id);}}
                   style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',background:'transparent',border:'1px solid transparent',borderRadius:6,cursor:'pointer',opacity:s.visible?(hovSec===s.id?1:0):1,transition:'opacity 150ms'}}>
                   <FI n={s.visible?'eye':'eye-slash'} sz={12} col={s.visible?C.grey60:C.grey50}/>
                 </button>
-                <div style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',border:`1px solid ${C.grey30}`,borderRadius:6,cursor:'grab',opacity:hovSec===s.id?1:0,transition:'opacity 150ms'}}>
+                {!locked&&<div style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',border:`1px solid ${C.grey30}`,borderRadius:6,cursor:'grab',opacity:hovSec===s.id?1:0,transition:'opacity 150ms'}}>
                   <FI n="grip-lines" sz={12} col={C.grey50}/>
-                </div>
+                </div>}
               </div>
             </div>
           </div>
           </React.Fragment>
-        ))}
+          );
+        })}
       </div>
       <div style={{padding:'10px 14px',borderTop:`1px solid ${C.grey20}`}}>
         <button onClick={()=>{const nb={id:nextId(),type:'text',label:'Text section',visible:true};setSections(p=>{const a=[...p];const li=a.findIndex(s=>s.id==='lineitems');a.splice(li>=0?li+1:a.length,0,nb);return a;});setTimeout(()=>{setEditing(nb.id);const el=sectionRefs.current[nb.id];if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},80);}}
@@ -1541,6 +1656,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
                         const kitRows=kitAllRows[kitName];
                         const tp=kitRows.reduce((s,r)=>s+parseFloat(r.price_total.replace(/[^0-9.]/g,'')||0),0);
                         const tt=kitRows.reduce((s,r)=>s+parseFloat((r.tax||'').replace(/[^0-9.]/g,'')||0),0);
+                        const tr_=kitRows.reduce((s,r)=>s+parseFloat((r.unit_price||'').replace(/[^0-9.]/g,'')||0),0);
                         // Header label
                         els.push(
                           <tr key={`bh-${kitName}`}>
@@ -1568,12 +1684,16 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
                         els.push(
                           <tr key={`bt-${kitName}`} style={{borderBottom:`1px solid ${C.grey20}`}}>
                             {visLICols.map((col,ci)=>(
-                              <td key={col.id} style={{padding:'3px 4px',fontSize:7,fontWeight:600,
-                                color:ci===0?C.grey50:C.grey50,
-                                textAlign:COL_DATA[col.id]?.align||'right',whiteSpace:'nowrap',
-                                background:col.id===hovLI?C.blue5:'transparent',transition:'background 100ms',
-                                ...(ci===0?{boxShadow:`inset 2px 0 0 ${C.grey30}`}:{})}}>
-                                {ci===0?'Kit total':col.id==='price_total'?`$${tp}`:col.id==='tax'?`$${tt}`:''}
+                              <td key={col.id} style={{padding:'3px 4px 5px',
+                                fontSize:ci===0?6.5:8,fontWeight:ci===0?600:600,
+                                color:C.grey40,
+                                letterSpacing:ci===0?.6:0,
+                                textTransform:ci===0?'uppercase':'none',
+                                textAlign:ci===0?'left':COL_DATA[col.id]?.align||'right',
+                                whiteSpace:'nowrap',
+                                borderTop:`1px solid ${C.grey30}`,
+                                background:col.id===hovLI?C.blue5:'transparent',transition:'background 100ms'}}>
+                                {ci===0?'Kit total':col.id==='price_total'?`$${tp}`:col.id==='tax'?`$${tt}`:col.id==='unit_price'?`$${tr_}`:''}
                               </td>
                             ))}
                           </tr>
