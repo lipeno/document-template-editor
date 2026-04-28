@@ -1001,10 +1001,12 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     const b = getBlock(id);
     return (
       <>
-        <div style={{fontSize:10,fontWeight:700,color:C.grey50,textTransform:'uppercase',letterSpacing:'.07em',paddingBottom:8,fontFamily:'var(--font-body)'}}>Content</div>
-        <RichTextPanel id={id} getBlock={getBlock} updateBlock={updateBlock}/>
-        <div style={{fontSize:10,fontWeight:700,color:C.grey50,textTransform:'uppercase',letterSpacing:'.07em',padding:'11px 0 5px',fontFamily:'var(--font-body)'}}>Background</div>
-        <div style={{display:'flex',gap:4,paddingBottom:12}}>
+        <SHead label="Content"/>
+        <div style={{padding:'8px 0'}}>
+          <RichTextPanel id={id} getBlock={getBlock} updateBlock={updateBlock}/>
+        </div>
+        <SHead label="Background"/>
+        <div style={{display:'flex',gap:4,padding:'8px 0 12px'}}>
           {[['white','White',C.white],['grey','Grey',C.bg]].map(([val,lbl,bg])=>{
             const active = (b.bgStyle||'white')===val;
             return (
@@ -1130,7 +1132,6 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
               transition:'background 100ms,border-color 100ms',minHeight:36}}>
               <div onClick={()=>setEditing(s.id)} style={{flex:1,display:'flex',alignItems:'center',gap:8,cursor:'pointer',padding:'8px 0'}}>
                 <span style={{fontSize:13,color:C.black,fontFamily:'var(--font-body)'}}>{s.label}</span>
-                {s.type==='text'&&<span style={{fontSize:9,color:C.grey40,background:C.grey10,padding:'1px 5px',borderRadius:3,fontFamily:'var(--font-body)'}}>Text</span>}
               </div>
               <div style={{display:'flex',gap:3,alignItems:'center'}}>
                 <button onClick={e=>{e.stopPropagation();toggleSection(s.id);}}
@@ -1171,7 +1172,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
             <FI n="chevron-left" sz={10} col={C.grey50}/> {label}
           </button>
         </div>
-        <div style={{flex:1,overflowY:'auto',padding:'12px 14px 0'}}>
+        <div style={{flex:1,overflowY:'auto',padding:'0 14px 0'}}>
           {isText?TextSectionPanel({id:editing}):(sectionPanels[editing]||null)}
         </div>
         {isText&&(
