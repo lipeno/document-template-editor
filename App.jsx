@@ -412,13 +412,16 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   const setLIDrop = (id,val) => setLineItems(p => p.map(i => i.id===id&&i.dropdown?{...i,dropdown:{...i.dropdown,val}}:i));
 
   const liDragRef = React.useRef(null);
+  const [dragOverLI, setDragOverLI] = React.useState(null);
   const onLIDragStart = (e,i) => { liDragRef.current=i; e.dataTransfer.effectAllowed='move'; };
+  const onLIDragOver = (e,i) => { e.preventDefault(); setDragOverLI(i); };
   const onLIDrop = (e,i) => {
     e.preventDefault(); const from=liDragRef.current;
+    setDragOverLI(null); liDragRef.current=null;
     if(from===null||from===i) return;
     setLineItems(p=>{ const a=[...p]; const [m]=a.splice(from,1); a.splice(i,0,m); return a; });
-    liDragRef.current=null;
   };
+  const onLIDragEnd = () => { setDragOverLI(null); liDragRef.current=null; };
   const [hovLI, setHovLI] = React.useState(null);
 
   // ── Sections ──────────────────────────────────────────────
@@ -518,13 +521,16 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   }, [pageDim.w]);
 
   const dragRef = React.useRef(null);
+  const [dragOverSec, setDragOverSec] = React.useState(null);
   const onDragStart = (e,i) => {dragRef.current=i;e.dataTransfer.effectAllowed='move';};
+  const onSecDragOver = (e,i) => {e.preventDefault();setDragOverSec(i);};
   const onDrop = (e,i) => {
     e.preventDefault();const from=dragRef.current;
+    setDragOverSec(null);dragRef.current=null;
     if(from===null||from===i) return;
     setSections(p=>{const a=[...p];const [m]=a.splice(from,1);a.splice(i,0,m);return a;});
-    dragRef.current=null;
   };
+  const onSecDragEnd = () => {setDragOverSec(null);dragRef.current=null;};
   const toggleSection = id => setSections(p=>p.map(s=>s.id===id?{...s,visible:!s.visible}:s));
   const insertTextSection = (afterId,position) => {
     const nb={id:nextId(),type:'text',label:'Text section',visible:true};
@@ -609,11 +615,14 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
           const isHov=hovLI===item.id;
           if(item.special) return null;
           return (
-            <div key={item.id}
+            <React.Fragment key={item.id}>
+            {item.drag&&dragOverLI===idx&&<div style={{height:2,background:C.blue,borderRadius:1,margin:'1px 8px'}}/>}
+            <div
               draggable={item.drag}
               onDragStart={item.drag?e=>onLIDragStart(e,idx):undefined}
-              onDragOver={item.drag?e=>e.preventDefault():undefined}
+              onDragOver={item.drag?e=>onLIDragOver(e,idx):undefined}
               onDrop={item.drag?e=>onLIDrop(e,idx):undefined}
+              onDragEnd={item.drag?onLIDragEnd:undefined}
               onMouseEnter={()=>setHovLI(item.id)}
               onMouseLeave={()=>setHovLI(null)}
               style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 8px 0 14px',
@@ -640,6 +649,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
                 </div>
               </div>
             </div>
+            </React.Fragment>
           );
         })}
       </div>
@@ -1061,7 +1071,9 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
           </div>
         </div>}
         {sections.map((s,idx)=>(
-          <div key={s.id} draggable onDragStart={e=>onDragStart(e,idx)} onDragOver={e=>e.preventDefault()} onDrop={e=>onDrop(e,idx)}
+          <React.Fragment key={s.id}>
+          {dragOverSec===idx&&<div style={{height:2,background:C.blue,borderRadius:1,margin:'1px 8px'}}/>}
+          <div draggable onDragStart={e=>onDragStart(e,idx)} onDragOver={e=>onSecDragOver(e,idx)} onDrop={e=>onDrop(e,idx)} onDragEnd={onSecDragEnd}
             onMouseEnter={()=>setHovSec(s.id)} onMouseLeave={()=>setHovSec(null)}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 8px 0 14px',
               background:hovSec===s.id?C.grey10:'transparent',borderLeft:`3px solid ${hovSec===s.id?C.blue:'transparent'}`,
@@ -1081,6 +1093,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
               </div>
             </div>
           </div>
+          </React.Fragment>
         ))}
       </div>
       <div style={{padding:'10px 14px',borderTop:`1px solid ${C.grey20}`}}>
