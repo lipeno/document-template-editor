@@ -1230,7 +1230,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
         {!editing&&<div style={{padding:'2px 14px 6px'}}>
           <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',background:C.blue5,border:`1px solid ${C.blue30}`,borderRadius:6}}>
             <FI n="circle-info" sz={13} col={C.blue}/>
-            <span style={{fontSize:12,color:C.grey60,fontFamily:'var(--font-body)',lineHeight:1.4}}>Click on a section name to edit and configure its content.</span>
+            <span style={{fontSize:12,color:C.grey60,fontFamily:'var(--font-body)',lineHeight:1.4}}>Select a section to configure.</span>
           </div>
         </div>}
         {sections.map((s,idx)=>{
