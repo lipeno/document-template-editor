@@ -1541,6 +1541,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
                         const kitRows=kitAllRows[kitName];
                         const tp=kitRows.reduce((s,r)=>s+parseFloat(r.price_total.replace(/[^0-9.]/g,'')||0),0);
                         const tt=kitRows.reduce((s,r)=>s+parseFloat((r.tax||'').replace(/[^0-9.]/g,'')||0),0);
+                        const tr_=kitRows.reduce((s,r)=>s+parseFloat((r.unit_price||'').replace(/[^0-9.]/g,'')||0),0);
                         // Header label
                         els.push(
                           <tr key={`bh-${kitName}`}>
@@ -1568,12 +1569,16 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
                         els.push(
                           <tr key={`bt-${kitName}`} style={{borderBottom:`1px solid ${C.grey20}`}}>
                             {visLICols.map((col,ci)=>(
-                              <td key={col.id} style={{padding:'3px 4px',fontSize:7,fontWeight:600,
-                                color:ci===0?C.grey50:C.grey50,
-                                textAlign:COL_DATA[col.id]?.align||'right',whiteSpace:'nowrap',
-                                background:col.id===hovLI?C.blue5:'transparent',transition:'background 100ms',
-                                ...(ci===0?{boxShadow:`inset 2px 0 0 ${C.grey30}`}:{})}}>
-                                {ci===0?'Kit total':col.id==='price_total'?`$${tp}`:col.id==='tax'?`$${tt}`:''}
+                              <td key={col.id} style={{padding:'3px 4px 5px',
+                                fontSize:ci===0?6.5:8,fontWeight:ci===0?600:600,
+                                color:C.grey40,
+                                letterSpacing:ci===0?.6:0,
+                                textTransform:ci===0?'uppercase':'none',
+                                textAlign:ci===0?'left':COL_DATA[col.id]?.align||'right',
+                                whiteSpace:'nowrap',
+                                borderTop:`1px solid ${C.grey30}`,
+                                background:col.id===hovLI?C.blue5:'transparent',transition:'background 100ms'}}>
+                                {ci===0?'Kit total':col.id==='price_total'?`$${tp}`:col.id==='tax'?`$${tt}`:col.id==='unit_price'?`$${tr_}`:''}
                               </td>
                             ))}
                           </tr>
