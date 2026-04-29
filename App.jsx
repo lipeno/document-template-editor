@@ -795,11 +795,12 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     return (
       <div style={{height:'100%',display:'flex',flexDirection:'column'}}>
         {/* Back */}
-        <div style={{padding:'0 14px',borderBottom:`1px solid ${C.grey20}`}}>
+        <div style={{padding:'0 14px',borderBottom:`1px solid ${C.grey20}`,display:'flex',alignItems:'center',gap:8,height:52}}>
           <button onClick={()=>setEditing(null)}
-            style={{height:40,display:'flex',alignItems:'center',gap:6,background:'none',border:'none',cursor:'pointer',color:C.grey50,fontSize:12,fontFamily:'var(--font-body)',padding:0}}>
-            <FI n="chevron-left" sz={10} col={C.grey50}/> Settings
+            style={{display:'flex',alignItems:'center',background:'none',border:'none',cursor:'pointer',padding:0,flexShrink:0}}>
+            <FI n="chevron-left" sz={13} col={C.grey50}/>
           </button>
+          <span style={{fontSize:18,fontWeight:700,color:C.black,fontFamily:'var(--font-body)',lineHeight:1}}>Settings</span>
         </div>
         <div style={{flex:1,overflowY:'auto',padding:'4px 14px 7px'}}>
 
@@ -871,9 +872,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
 
         </div>
         <div style={{padding:'12px 14px',borderTop:`1px solid ${C.grey20}`,flexShrink:0}}>
-          <button onClick={()=>setResetModal(true)} style={{width:'100%',height:32,background:'#e53e3e',border:'none',borderRadius:6,fontSize:12,fontWeight:600,color:'#fff',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6,fontFamily:'var(--font-body)'}}>
-            <FI n="rotate-left" sz={11} col="#fff"/> Reset template
-          </button>
+          <Button size="sm" variant="danger" icon="rotate-left" style={{width:'100%',justifyContent:'center'}} onClick={()=>setResetModal(true)}>Reset template</Button>
         </div>
       </div>
     );
@@ -1266,13 +1265,10 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
         })}
       </div>
       <div style={{padding:'0 14px 10px'}}>
-        <button onClick={()=>{const nb={id:nextId(),type:'text',label:'Text section',visible:true};setSections(p=>{const a=[...p];const li=a.findIndex(s=>s.id==='lineitems');a.splice(li>=0?li+1:a.length,0,nb);return a;});setTimeout(()=>{setEditing(nb.id);const el=sectionRefs.current[nb.id];if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},80);}}
-          style={{width:'100%',height:34,display:'flex',alignItems:'center',justifyContent:'center',gap:6,
-            background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,
-            cursor:'pointer',fontSize:13,color:C.grey60,fontFamily:'var(--font-body)',
-            fontWeight:500,transition:'background 100ms,border-color 100ms'}}>
-          <FI n="plus" sz={12} col={C.grey60}/> Add text section
-        </button>
+        <Button size="sm" variant="secondary" icon="plus" style={{width:'100%',justifyContent:'center'}}
+          onClick={()=>{const nb={id:nextId(),type:'text',label:'Text section',visible:true};setSections(p=>{const a=[...p];const li=a.findIndex(s=>s.id==='lineitems');a.splice(li>=0?li+1:a.length,0,nb);return a;});setTimeout(()=>{setEditing(nb.id);const el=sectionRefs.current[nb.id];if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},80);}}>
+          Add text section
+        </Button>
       </div>
       <div style={{padding:'10px 14px',borderTop:`1px solid ${C.grey20}`,display:'flex',flexDirection:'column',gap:8}}>
         <div style={{display:'flex',alignItems:'center',gap:8}}>
@@ -1289,13 +1285,11 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
             {['A4','Letter','Legal','A5'].map(s=><option key={s}>{s}</option>)}
           </select>
         </div>
-        <button onClick={()=>setEditing('__settings__')}
-          style={{width:'100%',height:34,display:'flex',alignItems:'center',justifyContent:'center',gap:6,
-            background:editing==='__settings__'?C.blue5:C.white,border:`1px solid ${editing==='__settings__'?C.blue:C.grey30}`,borderRadius:6,
-            cursor:'pointer',fontSize:12,color:editing==='__settings__'?C.blue:C.grey50,fontFamily:'var(--font-body)',
-            fontWeight:500,transition:'background 100ms,border-color 100ms,color 100ms'}}>
-          <FI n="gear" sz={11} col={editing==='__settings__'?C.blue:C.grey50}/> Settings
-        </button>
+        <Button size="sm" variant={editing==='__settings__'?'primary':'secondary'} icon="gear"
+          style={{width:'100%',justifyContent:'center'}}
+          onClick={()=>setEditing('__settings__')}>
+          Settings
+        </Button>
       </div>
     </div>
   );
@@ -1307,11 +1301,12 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     const label=sec?.label||'';
     return (
       <div style={{display:'flex',flexDirection:'column',height:'100%'}}>
-        <div style={{padding:'0 14px',borderBottom:`1px solid ${C.grey20}`}}>
+        <div style={{padding:'0 14px',borderBottom:`1px solid ${C.grey20}`,display:'flex',alignItems:'center',gap:8,height:52}}>
           <button onClick={()=>setEditing(null)}
-            style={{height:40,display:'flex',alignItems:'center',gap:6,background:'none',border:'none',cursor:'pointer',color:C.grey50,fontSize:12,fontFamily:'var(--font-body)',padding:0}}>
-            <FI n="chevron-left" sz={10} col={C.grey50}/> {label}
+            style={{display:'flex',alignItems:'center',background:'none',border:'none',cursor:'pointer',padding:0,flexShrink:0}}>
+            <FI n="chevron-left" sz={13} col={C.grey50}/>
           </button>
+          <span style={{fontSize:18,fontWeight:700,color:C.black,fontFamily:'var(--font-body)',lineHeight:1}}>{label}</span>
         </div>
         <div style={{flex:1,overflowY:'auto',padding:'4px 14px 7px'}}>
           {isText?TextSectionPanel({id:editing}):(sectionPanels[editing]||null)}
@@ -1876,19 +1871,14 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   return (
     <div style={{display:'flex',flexDirection:'column',width:'100%',height:'100vh',fontFamily:'var(--font-body)',background:C.bg,overflow:'hidden',position:'relative'}}>
       {/* Top bar */}
-      <div style={{height:44,background:C.white,borderBottom:`1px solid ${C.grey30}`,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 16px',flexShrink:0,position:'relative'}}>
+      <div style={{height:58,background:C.white,borderBottom:`1px solid ${C.grey30}`,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 16px',flexShrink:0,position:'relative'}}>
         <div style={{display:'flex',alignItems:'center',gap:6}}>
-          <button onClick={onExit} style={{height:30,padding:'0 10px',background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,color:C.black,cursor:'pointer',display:'flex',alignItems:'center',gap:5,fontFamily:'var(--font-body)'}}>
-            <FI n="arrow-left" sz={10} col={C.black}/> Exit
-          </button>
+          <Button variant="secondary" icon="arrow-left" onClick={onExit}>Exit</Button>
         </div>
-        <span style={{fontSize:13,fontWeight:600,color:C.black,fontFamily:'var(--font-body)',position:'absolute',left:'50%',transform:'translateX(-50%)'}}>{docType?.key==='contract' ? (templates.find(t=>t.id===activeTplId)?.name||'Contract template') : `${docType?.label||'Invoice'} template`}</span>
+        <span style={{fontSize:16,fontWeight:600,color:C.black,fontFamily:'var(--font-body)',position:'absolute',left:'50%',transform:'translateX(-50%)'}}>{docType?.key==='contract' ? (templates.find(t=>t.id===activeTplId)?.name||'Contract template') : `${docType?.label||'Invoice'} template`}</span>
         <div style={{display:'flex',gap:6}}>
-          <button onClick={()=>window.open(window.location.href.replace(/\?.*$/,'')+`?preview&dt=${docType?.key||'invoice'}`, '_blank')}
-            style={{height:30,padding:'0 12px',background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:5,fontFamily:'var(--font-body)',color:C.black}}>
-            <FI n="eye" sz={11} col={C.grey60}/> Preview
-          </button>
-          <button style={{height:30,padding:'0 16px',background:C.blue,color:'#fff',border:'none',borderRadius:6,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)'}}>Save</button>
+          <Button variant="secondary" icon="eye" onClick={()=>window.open(window.location.href.replace(/\?.*$/,'')+`?preview&dt=${docType?.key||'invoice'}`, '_blank')}>Preview</Button>
+          <Button variant="primary">Save</Button>
         </div>
       </div>
 
