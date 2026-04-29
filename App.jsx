@@ -806,13 +806,10 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
           {/* Branding */}
           <SHead label="Branding"/>
           <ColorRow label="Brand color" value={brandColor} onChange={v=>{setBrandColor(v);setDoc('primaryColor',v);}}/>
-          <div style={{padding:'10px 0',display:'flex',flexDirection:'column',gap:8}}>
+          <div style={{padding:'10px 0'}}>
             <button onClick={()=>{setBrandColor('#136DEB');setSecondColor('#131314');setDoc('primaryColor','#136DEB');}} style={{width:'100%',height:32,background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,fontWeight:500,color:C.black,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6,fontFamily:'var(--font-body)'}}>
-              <FI n="rotate-left" sz={11} col={C.grey60}/> Load branding defaults
+              <FI n="rotate-left" sz={11} col={C.grey60}/> Load brand default
             </button>
-            <a href="#" onClick={e=>e.preventDefault()} style={{display:'flex',alignItems:'center',justifyContent:'center',gap:5,fontSize:12,color:C.blue,fontFamily:'var(--font-body)',textDecoration:'none',cursor:'pointer'}}>
-              <FI n="arrow-up-right-from-square" sz={10} col={C.blue}/> Global Branding
-            </a>
           </div>
 
           {/* Document numbering */}
@@ -987,6 +984,11 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
               </svg>
               <span style={{fontSize:9,fontWeight:700,color:C.black,letterSpacing:2,fontFamily:'var(--font-body)'}}>COMPANY</span>
               <button style={{position:'absolute',bottom:0,left:0,right:0,height:28,border:'none',borderTop:`1px solid ${C.grey20}`,borderRadius:0,background:C.white,fontSize:11,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)',color:C.black}}>Change</button>
+            </div>
+            <div style={{marginTop:6}}>
+              <button style={{width:'100%',height:32,background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,fontWeight:500,color:C.black,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6,fontFamily:'var(--font-body)'}}>
+                <FI n="rotate-left" sz={11} col={C.grey60}/> Load brand default
+              </button>
             </div>
           </div>
           <div>
