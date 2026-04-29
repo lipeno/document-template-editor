@@ -61,6 +61,9 @@ const VAR_CATEGORIES = [
   },
 ];
 
+const FOOTER_DEFAULT_HTML = '<div>{{company_address}}</div><div>{{company_email}} · {{company_phone}}</div><div>VAT: {{company_vat_number}}</div>';
+const FOOTER_DEFAULT_BLOCK = {html: FOOTER_DEFAULT_HTML, bgStyle:'grey', showPageNumbers: true};
+
 const VAR_TAG_MAP = Object.fromEntries(
   VAR_CATEGORIES.flatMap(c => c.vars).map(({tag,label}) => [tag, label])
 );
@@ -557,7 +560,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     {id:'lineitems',type:'builtin',label:'Line Items',       visible:true},
     {id:'totals',   type:'builtin',label:'Totals & Fees',    visible:true},
     {id:'body',     type:'text',   label:'Additional text',  visible:true},
-    {id:'footer',   type:'builtin',label:'Footer',           visible:true},
+    {id:'footer',   type:'text',   label:'Footer',           visible:true},
   ]);
 
   const [editing, setEditing] = React.useState(null);
@@ -600,15 +603,15 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   const [dueDatesOn,  setDueDatesOn]    = React.useState(false);
   const [customCSS,   setCustomCSS]     = React.useState('');
 
-  const [blockData, setBlockData] = React.useState({});
+  const [blockData, setBlockData] = React.useState({footer: FOOTER_DEFAULT_BLOCK});
   const updateBlock = (id,p2) => setBlockData(p=>({...p,[id]:{...(p[id]||{}),...p2}}));
   const getBlock = id => ({text:'',textStyle:'normal',bold:false,italic:false,underline:false,strikethrough:false,bulletList:false,numberedList:false,align:'left',bgStyle:'white',...(blockData[id]||{})});
 
   const doReset = () => {
-    setDocCfg({primaryColor:'#136DEB',showLogo:true,showContact:true,showCompanyInfo:true,logoAlign:'Right',logoSize:'M',documentTitle:'Invoice',showOrderNumber:true,showIssueDate:true,showDueDate:true,showDates:true,showLocation:true,showAddress:false,showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,footerCompanyDetails:true,footerContactDetails:true,footerVatNumber:true,footerPaymentDetails:true,footerPageNumbers:true,font:'Inter',partyOrder:'seller-first',showPartyLabels:false});
+    setDocCfg({primaryColor:'#136DEB',showLogo:true,showContact:true,showCompanyInfo:true,logoAlign:'Right',logoSize:'M',documentTitle:'Invoice',showOrderNumber:true,showIssueDate:true,showDueDate:true,showDates:true,showLocation:true,showAddress:false,showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,font:'Inter',partyOrder:'seller-first',showPartyLabels:false});
     setDateFormat('datetime'); setPageSize('A4'); setDocNumLevel('global'); setPrefixFormat('{year}-'); setDueDatesOn(false); setCustomCSS('');
     setBrandColor('#136DEB');
-    setBlockData({});
+    setBlockData({footer: FOOTER_DEFAULT_BLOCK});
     setResetModal(false);
   };
 
@@ -618,7 +621,6 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     showDates:true,showLocation:true,showAddress:false,
     showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,
     showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,
-    footerCompanyDetails:true,footerContactDetails:true,footerVatNumber:true,footerPaymentDetails:true,footerPageNumbers:true,
     font:'Inter',
     partyOrder:'seller-first',showPartyLabels:false,
   });
@@ -1060,44 +1062,6 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
         </div>
       ))}
     </>,
-    footer: <>
-      <SHead label="Footer settings"/>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
-        <div>
-          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Company details</div>
-          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Business name and address</div>
-        </div>
-        <Tog on={docCfg.footerCompanyDetails} onChange={()=>setDoc('footerCompanyDetails')}/>
-      </div>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
-        <div>
-          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Contact details</div>
-          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Phone, email, and website</div>
-        </div>
-        <Tog on={docCfg.footerContactDetails} onChange={()=>setDoc('footerContactDetails')}/>
-      </div>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
-        <div>
-          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>VAT number</div>
-          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Your registered VAT or tax ID</div>
-        </div>
-        <Tog on={docCfg.footerVatNumber} onChange={()=>setDoc('footerVatNumber')}/>
-      </div>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
-        <div>
-          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Payment details</div>
-          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Bank details or payment info</div>
-        </div>
-        <Tog on={docCfg.footerPaymentDetails} onChange={()=>setDoc('footerPaymentDetails')}/>
-      </div>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
-        <div>
-          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Page numbers</div>
-          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Current page and total count</div>
-        </div>
-        <Tog on={docCfg.footerPageNumbers} onChange={()=>setDoc('footerPageNumbers')}/>
-      </div>
-    </>,
   };
 
   // ── Text section panel ────────────────────────────────────
@@ -1116,6 +1080,23 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
             <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Use a grey background on this section</div>
           </div>
           <Tog on={(b.bgStyle||'white')==='grey'} onChange={()=>updateBlock(id,{bgStyle:(b.bgStyle||'white')==='grey'?'white':'grey'})}/>
+        </div>
+      </>
+    );
+  };
+
+  const FooterSectionPanel = () => {
+    const b = getBlock('footer');
+    return (
+      <>
+        {TextSectionPanel({id:'footer'})}
+        <SHead label="Page numbers"/>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
+          <div>
+            <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Show page numbers</div>
+            <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Current page and total count</div>
+          </div>
+          <Tog on={b.showPageNumbers!==false} onChange={()=>updateBlock('footer',{showPageNumbers:b.showPageNumbers===false})}/>
         </div>
       </>
     );
@@ -1274,7 +1255,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
           <span style={{fontSize:18,fontWeight:700,color:C.black,fontFamily:'var(--font-body)',lineHeight:1}}>{label}</span>
         </div>
         <div style={{flex:1,overflowY:'auto',padding:'4px 14px 7px'}}>
-          {isText?TextSectionPanel({id:editing}):(sectionPanels[editing]||null)}
+          {editing==='footer'?FooterSectionPanel():isText?TextSectionPanel({id:editing}):(sectionPanels[editing]||null)}
         </div>
       </div>
     );
@@ -1409,8 +1390,6 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     const totalPages = 2;
     const footerSec = sections.find(s=>s.id==='footer');
     const footerVis = footerSec?.visible ?? true;
-    const hasFooterContent = footerVis && (docCfg.footerCompanyDetails||docCfg.footerContactDetails||docCfg.footerVatNumber||docCfg.footerPaymentDetails);
-    const hasPageNumbers = footerVis && docCfg.footerPageNumbers;
 
     // Lightweight wrapper for footer-linked elements (no add-section buttons)
     const FooterWrap = ({children}) => {
@@ -1436,15 +1415,18 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     };
 
     const FooterContent = ({page}) => {
-      if (!footerVis || (!hasFooterContent && !hasPageNumbers)) return null;
+      const b = getBlock('footer');
+      const showPageNums = b.showPageNumbers !== false;
+      if (!footerVis || (!b.html && !showPageNums && !isEdit)) return null;
+      const sectionBg = (b.bgStyle||'grey')==='grey' ? C.bg : C.white;
       return (
         <FooterWrap>
-          <div style={{padding:'8px 22px',background:C.bg,borderTop:`1px solid ${C.grey20}`,fontSize:8,color:C.grey50,display:'flex',flexDirection:'column',gap:3,borderRadius:'0 0 5px 5px'}}>
-            {docCfg.footerCompanyDetails && <div>Acme Rentals Inc. · 123 Main St, Springfield</div>}
-            {docCfg.footerContactDetails && <div>hello@acmerentals.com · +1 555 000 1234</div>}
-            {docCfg.footerVatNumber && <div>VAT: GB123456789</div>}
-            {docCfg.footerPaymentDetails && <div>Payment due within 30 days. IBAN: GB00 BARC 1234 5678 9012 34</div>}
-            {hasPageNumbers && <div style={{textAlign:'right'}}>Page {page} of {totalPages}</div>}
+          <div style={{padding:'8px 22px',background:sectionBg,borderTop:`1px solid ${C.grey20}`,fontSize:8,color:C.grey50,lineHeight:1.5,borderRadius:'0 0 5px 5px'}}>
+            {b.html
+              ? <div dangerouslySetInnerHTML={{__html:renderWithChips(b.html)}}/>
+              : isEdit && <div style={{fontStyle:'italic',color:C.grey30}}>Empty — click to add content</div>
+            }
+            {showPageNums && <div style={{textAlign:'right'}}>Page {page} of {totalPages}</div>}
           </div>
         </FooterWrap>
       );
