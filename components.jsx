@@ -39,7 +39,7 @@ const Badge = ({ children, variant = 'draft' }) => {
   );
 };
 
-const Button = ({ children, variant = 'primary', icon, size = 'md', onClick, disabled }) => {
+const Button = ({ children, variant = 'primary', icon, size = 'md', onClick, disabled, style }) => {
   const base = {
     display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid transparent',
     borderRadius: 6, cursor: disabled ? 'default' : 'pointer', outline: 'none',
@@ -57,7 +57,7 @@ const Button = ({ children, variant = 'primary', icon, size = 'md', onClick, dis
     ghost:     { background: 'transparent', color: '#136DEB', borderColor: 'transparent' },
   };
   return (
-    <button style={{ ...base, ...variants[variant] }} onClick={onClick} disabled={disabled}>
+    <button style={{ ...base, ...variants[variant], ...style }} onClick={onClick} disabled={disabled}>
       {icon && <Icon name={icon} />}{children}
     </button>
   );
