@@ -73,32 +73,32 @@ const renderWithChips = html => html.replace(/\{\{([^}]+)\}\}/g, (match) => {
   return `<span style="${CHIP_STYLE}">${label}</span>`;
 });
 
-const RichTextPanel = ({id, getBlock, updateBlock}) => {
+const RichTextPanel = ({id, getBlock, updateBlock, placeholder='Add a message, terms, or note...'}) => {
   const C = BQ;
   const editorRef = React.useRef(null);
   const b = getBlock(id);
   const [fmts, setFmts] = React.useState({});
-  const [catMenu, setCatMenu] = React.useState(null); // {id, x, y}
+  const [openMenu, setOpenMenu] = React.useState(null); // 'vars' | 'para' | 'align'
+  const [menuPos, setMenuPos] = React.useState({x:0, y:0});
   const [isEmpty, setIsEmpty] = React.useState(!b.html);
+  const [isFocused, setIsFocused] = React.useState(false);
 
   React.useEffect(() => {
     document.execCommand('defaultParagraphSeparator', false, 'div');
   }, []);
 
   React.useEffect(() => {
-    if (!catMenu) return;
-    const close = () => setCatMenu(null);
+    if (!openMenu) return;
+    const close = () => setOpenMenu(null);
     document.addEventListener('mousedown', close);
     return () => document.removeEventListener('mousedown', close);
-  }, [catMenu]);
+  }, [openMenu]);
 
-  // Populate editor when switching sections
   React.useEffect(() => {
-    setCatMenu(null);
+    setOpenMenu(null);
     setIsEmpty(!b.html);
     if (!editorRef.current) return;
     editorRef.current.innerHTML = b.html || '<div><br></div>';
-    // Wrap any bare text nodes in <div> so formatBlock can target them per-line
     Array.from(editorRef.current.childNodes).forEach(node => {
       if (node.nodeType === Node.TEXT_NODE && node.textContent) {
         const div = document.createElement('div');
@@ -121,19 +121,18 @@ const RichTextPanel = ({id, getBlock, updateBlock}) => {
       const blockStyle = ['h1','h2','h3'].includes(raw) ? raw : 'div';
       setFmts({
         blockStyle,
-        bold:                 document.queryCommandState('bold'),
-        italic:               document.queryCommandState('italic'),
-        underline:            document.queryCommandState('underline'),
-        strikeThrough:        document.queryCommandState('strikeThrough'),
-        insertUnorderedList:  document.queryCommandState('insertUnorderedList'),
-        insertOrderedList:    document.queryCommandState('insertOrderedList'),
-        justifyLeft:          document.queryCommandState('justifyLeft'),
-        justifyCenter:        document.queryCommandState('justifyCenter'),
-        justifyRight:         document.queryCommandState('justifyRight'),
+        bold:                document.queryCommandState('bold'),
+        italic:              document.queryCommandState('italic'),
+        underline:           document.queryCommandState('underline'),
+        strikeThrough:       document.queryCommandState('strikeThrough'),
+        insertUnorderedList: document.queryCommandState('insertUnorderedList'),
+        insertOrderedList:   document.queryCommandState('insertOrderedList'),
+        justifyLeft:         document.queryCommandState('justifyLeft'),
+        justifyCenter:       document.queryCommandState('justifyCenter'),
+        justifyRight:        document.queryCommandState('justifyRight'),
       });
     } catch(e) {}
   };
-
 
   const exec = (cmd, val) => {
     editorRef.current?.focus();
@@ -142,107 +141,189 @@ const RichTextPanel = ({id, getBlock, updateBlock}) => {
     checkFmts();
   };
 
-  const Btn = ({icon, cmd, val, sz=11}) => {
-    const on = !!fmts[cmd];
+  const insertLink = () => {
+    const url = window.prompt('Enter URL:');
+    if (url) exec('createLink', url.startsWith('http') ? url : 'https://' + url);
+  };
+
+  const openDropdown = (type, btnEl) => {
+    const r = btnEl.getBoundingClientRect();
+    setMenuPos({x: r.left, y: r.bottom + 4});
+    setOpenMenu(type);
+  };
+
+  const TBtn = ({icon, cmd, val, title, onMouseDown: onMD, sz=13}) => {
+    const isActive = cmd ? !!fmts[cmd] : false;
     return (
-      <button onMouseDown={e=>{e.preventDefault();exec(cmd,val);}}
+      <button title={title}
+        onMouseDown={onMD || (e=>{e.preventDefault();exec(cmd,val);})}
         style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',
-          border:`1px solid ${on?C.blue:C.grey30}`,borderRadius:5,cursor:'pointer',
-          background:on?C.blue5:'transparent',flexShrink:0,transition:'all 120ms'}}>
-        <i className={`fa-regular fa-${icon}`} style={{fontSize:sz,color:on?C.blue:C.grey60,lineHeight:1}}/>
+          border:'none',borderRadius:4,cursor:'pointer',flexShrink:0,transition:'background 100ms',
+          background: isActive ? C.blue5 : 'transparent'}}>
+        <i className={`fa-regular fa-${icon}`}
+          style={{fontSize:sz, color: isActive ? C.blue : C.grey60, lineHeight:1, pointerEvents:'none'}}/>
       </button>
     );
   };
 
-  const VarBtn = ({cat}) => {
-    const btnRef = React.useRef(null);
-    const isOpen = catMenu?.id === cat.id;
+  const MenuBtn = ({icon, type, title, sz=13}) => {
+    const isOpen = openMenu === type;
     return (
-      <div style={{position:'relative'}}>
-        <button ref={btnRef} title={cat.label}
-          onMouseDown={e=>{
-            e.preventDefault(); e.stopPropagation();
-            if (isOpen) { setCatMenu(null); return; }
-            const r = btnRef.current.getBoundingClientRect();
-            setCatMenu({id:cat.id, x:r.left, y:r.bottom+4});
-          }}
-          style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',
-            border:`1px solid ${isOpen?C.blue:C.grey30}`,borderRadius:5,cursor:'pointer',
-            background:isOpen?C.blue5:'transparent',flexShrink:0,transition:'all 120ms'}}>
-          <i className={`fa-regular fa-${cat.icon}`} style={{fontSize:11,color:isOpen?C.blue:C.grey60,lineHeight:1}}/>
-        </button>
-        {isOpen && ReactDOM.createPortal(
-          <div onMouseDown={e=>e.stopPropagation()}
-            style={{position:'fixed',top:catMenu.y,left:catMenu.x,zIndex:9999,
-              background:C.white,border:`1px solid ${C.grey20}`,borderRadius:6,
-              boxShadow:'0 4px 16px rgba(0,0,0,0.12)',minWidth:200,padding:'4px 0'}}>
-            <div style={{padding:'4px 10px 3px',borderBottom:`1px solid ${C.grey10}`,marginBottom:2}}>
-              <span style={{fontSize:10,color:C.grey40,fontWeight:500,textTransform:'uppercase',letterSpacing:'0.06em'}}>{cat.label}</span>
-            </div>
-            {cat.vars.map(({label,tag})=>(
-              <button key={tag}
-                onMouseDown={e=>{e.preventDefault();e.stopPropagation();exec('insertText',tag);setCatMenu(null);}}
-                style={{display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%',
-                  padding:'5px 10px',background:'none',border:'none',cursor:'pointer',gap:8,
-                  textAlign:'left',fontFamily:'var(--font-body)',boxSizing:'border-box'}}>
-                <span style={{fontSize:12,color:C.black}}>{label}</span>
-                <span style={{fontSize:9,color:C.grey40,fontFamily:'monospace',flexShrink:0}}>{tag}</span>
-              </button>
-            ))}
-          </div>,
-          document.body
-        )}
-      </div>
+      <button title={title}
+        onMouseDown={e=>{e.preventDefault();e.stopPropagation();
+          if(isOpen){setOpenMenu(null);return;}
+          openDropdown(type, e.currentTarget);
+        }}
+        style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',
+          border:'none',borderRadius:4,cursor:'pointer',flexShrink:0,transition:'background 100ms',
+          background: isOpen ? C.blue5 : 'transparent'}}>
+        <i className={`fa-regular fa-${icon}`}
+          style={{fontSize:sz, color: isOpen ? C.blue : C.grey60, lineHeight:1, pointerEvents:'none'}}/>
+      </button>
     );
   };
 
+  const Sep = () => (
+    <div style={{width:1,height:16,background:C.grey20,margin:'0 2px',flexShrink:0}}/>
+  );
+
+  const PARA_LABELS = {div:'Normal', h1:'Heading 1', h2:'Heading 2', h3:'Heading 3'};
+
   return (
-    <>
-      <div style={{position:'relative',marginBottom:10}}>
+    <div style={{border:`1px solid ${isFocused ? C.blue : C.grey30}`,borderRadius:8,
+      overflow:'hidden',background:C.white,transition:'border-color 120ms'}}>
+
+      {/* ── Toolbar ── */}
+      <div style={{display:'flex',alignItems:'center',padding:'4px 6px',gap:1}}>
+        <MenuBtn icon="plus"      type="vars" title="Insert variable"/>
+        <MenuBtn icon="paragraph" type="para" title="Paragraph style"/>
+        <TBtn icon="bold"    cmd="bold"    title="Bold"/>
+        <TBtn icon="italic"  cmd="italic"  title="Italic"/>
+        <TBtn icon="underline" cmd="underline" title="Underline"/>
+        <MenuBtn icon="ellipsis" type="more" title="More formatting"/>
+      </div>
+
+      {/* ── Divider ── */}
+      <div style={{height:1,background:C.grey20}}/>
+
+      {/* ── Editor ── */}
+      <div style={{position:'relative'}}>
         <div ref={editorRef} contentEditable suppressContentEditableWarning
-          onInput={save} onFocus={checkFmts} onKeyUp={checkFmts} onMouseUp={checkFmts} onSelect={checkFmts}
-          style={{width:'100%',minHeight:140,border:`1px solid ${C.grey30}`,borderRadius:6,
-            fontSize:12,padding:'8px',fontFamily:'var(--font-body)',outline:'none',
-            lineHeight:1.6,color:C.black,boxSizing:'border-box',background:C.white,cursor:'text'}}
+          onInput={save}
+          onFocus={()=>{setIsFocused(true);checkFmts();}}
+          onBlur={()=>setIsFocused(false)}
+          onKeyUp={checkFmts} onMouseUp={checkFmts} onSelect={checkFmts}
+          style={{width:'100%',minHeight:300,maxHeight:400,overflowY:'auto',border:'none',fontSize:12,padding:'10px',
+            fontFamily:'var(--font-body)',outline:'none',lineHeight:1.6,color:C.black,
+            boxSizing:'border-box',background:'transparent',cursor:'text'}}
         />
         {isEmpty && (
-          <div style={{position:'absolute',top:0,left:0,right:0,padding:'8px',
-            fontSize:12,color:C.grey40,fontFamily:'var(--font-body)',lineHeight:1.6,pointerEvents:'none'}}>
-            Add a message, terms, or note. Use the options below to insert variables and apply formatting.
+          <div style={{position:'absolute',top:0,left:0,right:0,padding:'10px',fontSize:12,
+            color:C.grey40,fontFamily:'var(--font-body)',lineHeight:1.6,pointerEvents:'none'}}>
+            {placeholder}
           </div>
         )}
       </div>
-      <div style={{marginBottom:10}}>
-        <div style={{fontSize:11,color:C.grey50,fontFamily:'var(--font-body)',marginBottom:5}}>Format:</div>
-        <div style={{display:'flex',gap:4,alignItems:'center',marginBottom:4}}>
-          <select onChange={e=>exec('formatBlock',e.target.value)} value={fmts.blockStyle||'div'}
-            style={{height:28,border:`1px solid ${C.grey30}`,borderRadius:5,fontSize:11,padding:'0 4px',
-              background:C.white,fontFamily:'var(--font-body)',cursor:'pointer',color:C.grey60,flex:1}}>
-            <option value="div">Normal</option>
-            <option value="h1">Heading 1</option>
-            <option value="h2">Heading 2</option>
-            <option value="h3">Heading 3</option>
-          </select>
-          <Btn icon="bold"          cmd="bold"/>
-          <Btn icon="italic"        cmd="italic"/>
-          <Btn icon="underline"     cmd="underline"/>
-          <Btn icon="strikethrough" cmd="strikeThrough"/>
-        </div>
-        <div style={{display:'flex',gap:4,alignItems:'center'}}>
-          <Btn icon="list-ul"      cmd="insertUnorderedList"/>
-          <Btn icon="list-ol"      cmd="insertOrderedList"/>
-          <Btn icon="align-left"   cmd="justifyLeft"/>
-          <Btn icon="align-center" cmd="justifyCenter"/>
-          <Btn icon="align-right"  cmd="justifyRight"/>
-        </div>
-      </div>
-      <div>
-        <div style={{fontSize:11,color:C.grey50,fontFamily:'var(--font-body)',marginBottom:5}}>Insert:</div>
-        <div style={{display:'flex',gap:4,alignItems:'center'}}>
-          {VAR_CATEGORIES.map(cat => <VarBtn key={cat.id} cat={cat}/>)}
-        </div>
-      </div>
-    </>
+
+      {/* ── Dropdown: Variables ── */}
+      {openMenu === 'vars' && ReactDOM.createPortal(
+        <div onMouseDown={e=>e.stopPropagation()}
+          style={{position:'fixed',top:menuPos.y,left:menuPos.x,zIndex:9999,background:C.white,
+            border:`1px solid ${C.grey20}`,borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.12)',
+            minWidth:220,padding:'4px 0',maxHeight:360,overflowY:'auto'}}>
+          {VAR_CATEGORIES.map((cat, i) => (
+            <React.Fragment key={cat.id}>
+              <div style={{padding:`${i===0?6:10}px 12px 3px`}}>
+                <span style={{fontSize:10,color:C.grey40,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em'}}>
+                  {cat.label}
+                </span>
+              </div>
+              {cat.vars.map(({label,tag})=>(
+                <button key={tag}
+                  onMouseDown={e=>{e.preventDefault();e.stopPropagation();exec('insertText',tag);setOpenMenu(null);}}
+                  style={{display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%',
+                    padding:'5px 12px',background:'none',border:'none',cursor:'pointer',gap:8,
+                    textAlign:'left',fontFamily:'var(--font-body)',boxSizing:'border-box'}}>
+                  <span style={{fontSize:12,color:C.black}}>{label}</span>
+                  <span style={{fontSize:9,color:C.grey40,fontFamily:'monospace',flexShrink:0}}>{tag}</span>
+                </button>
+              ))}
+            </React.Fragment>
+          ))}
+        </div>,
+        document.body
+      )}
+
+      {/* ── Dropdown: Paragraph style ── */}
+      {openMenu === 'para' && ReactDOM.createPortal(
+        <div onMouseDown={e=>e.stopPropagation()}
+          style={{position:'fixed',top:menuPos.y,left:menuPos.x,zIndex:9999,background:C.white,
+            border:`1px solid ${C.grey20}`,borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.12)',
+            minWidth:160,padding:'4px 0'}}>
+          {Object.entries(PARA_LABELS).map(([val,label])=>{
+            const active = (fmts.blockStyle||'div') === val;
+            return (
+              <button key={val}
+                onMouseDown={e=>{e.preventDefault();e.stopPropagation();exec('formatBlock',val);setOpenMenu(null);}}
+                style={{display:'flex',alignItems:'center',width:'100%',padding:'7px 12px',
+                  background: active ? C.blue5 : 'none',border:'none',cursor:'pointer',
+                  textAlign:'left',fontFamily:'var(--font-body)',boxSizing:'border-box'}}>
+                <span style={{fontSize:12,color:active?C.blue:C.black,fontWeight:active?500:400}}>{label}</span>
+              </button>
+            );
+          })}
+        </div>,
+        document.body
+      )}
+
+      {/* ── Dropdown: More formatting ── */}
+      {openMenu === 'more' && ReactDOM.createPortal(
+        <div onMouseDown={e=>e.stopPropagation()}
+          style={{position:'fixed',top:menuPos.y,left:menuPos.x,zIndex:9999,background:C.white,
+            border:`1px solid ${C.grey20}`,borderRadius:8,boxShadow:'0 4px 16px rgba(0,0,0,0.12)',
+            minWidth:180,padding:'4px 0'}}>
+          {[['strikethrough','Strikethrough','strikeThrough'],['link','Insert link',null]].map(([icon,label,cmd])=>{
+            const active = cmd ? !!fmts[cmd] : false;
+            return (
+              <button key={icon}
+                onMouseDown={e=>{e.preventDefault();e.stopPropagation();
+                  if(cmd) exec(cmd); else insertLink();
+                  setOpenMenu(null);
+                }}
+                style={{display:'flex',alignItems:'center',gap:8,width:'100%',padding:'6px 12px',
+                  background:active?C.blue5:'none',border:'none',cursor:'pointer',
+                  textAlign:'left',fontFamily:'var(--font-body)',boxSizing:'border-box'}}>
+                <i className={`fa-regular fa-${icon}`} style={{fontSize:12,color:active?C.blue:C.grey60,width:14}}/>
+                <span style={{fontSize:12,color:active?C.blue:C.black}}>{label}</span>
+              </button>
+            );
+          })}
+          <div style={{height:1,background:C.grey10,margin:'4px 0'}}/>
+          {[['list-ul','Bulleted list','insertUnorderedList'],['list-ol','Numbered list','insertOrderedList']].map(([icon,label,cmd])=>(
+            <button key={cmd}
+              onMouseDown={e=>{e.preventDefault();e.stopPropagation();exec(cmd);setOpenMenu(null);}}
+              style={{display:'flex',alignItems:'center',gap:8,width:'100%',padding:'6px 12px',
+                background:fmts[cmd]?C.blue5:'none',border:'none',cursor:'pointer',
+                textAlign:'left',fontFamily:'var(--font-body)',boxSizing:'border-box'}}>
+              <i className={`fa-regular fa-${icon}`} style={{fontSize:12,color:fmts[cmd]?C.blue:C.grey60,width:14}}/>
+              <span style={{fontSize:12,color:fmts[cmd]?C.blue:C.black}}>{label}</span>
+            </button>
+          ))}
+          <div style={{height:1,background:C.grey10,margin:'4px 0'}}/>
+          {[['align-left','Align left','justifyLeft'],['align-center','Align center','justifyCenter'],['align-right','Align right','justifyRight']].map(([icon,label,cmd])=>(
+            <button key={cmd}
+              onMouseDown={e=>{e.preventDefault();e.stopPropagation();exec(cmd);setOpenMenu(null);}}
+              style={{display:'flex',alignItems:'center',gap:8,width:'100%',padding:'6px 12px',
+                background:fmts[cmd]?C.blue5:'none',border:'none',cursor:'pointer',
+                textAlign:'left',fontFamily:'var(--font-body)',boxSizing:'border-box'}}>
+              <i className={`fa-regular fa-${icon}`} style={{fontSize:12,color:fmts[cmd]?C.blue:C.grey60,width:14}}/>
+              <span style={{fontSize:12,color:fmts[cmd]?C.blue:C.black}}>{label}</span>
+            </button>
+          ))}
+        </div>,
+        document.body
+      )}
+    </div>
   );
 };
 
@@ -681,6 +762,22 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   const SHead = ({label}) => (
     <div style={{margin:'-4px -14px 0',padding:'11px 14px',background:C.grey10,borderTop:`1px solid ${C.grey20}`,borderBottom:`1px solid ${C.grey20}`,fontSize:13,fontWeight:700,color:C.black,fontFamily:'var(--font-body)'}}>{label}</div>
   );
+  const SegCtrl = ({value, onChange, opts}) => (
+    <div style={{display:'flex',border:`1px solid ${C.grey30}`,borderRadius:6,overflow:'hidden',marginTop:6}}>
+      {opts.map(({val,label},i) => {
+        const active = value === val;
+        return (
+          <button key={val} onClick={()=>onChange(val)}
+            style={{flex:1,height:26,fontSize:11,fontFamily:'var(--font-body)',
+              background:active?C.blue5:'transparent',color:active?C.blue:C.grey60,
+              border:'none',borderRight:i<opts.length-1?`1px solid ${C.grey30}`:'none',
+              cursor:'pointer',fontWeight:active?600:400,transition:'all 100ms'}}>
+            {label}
+          </button>
+        );
+      })}
+    </div>
+  );
   const SelF = ({label,value,onChange,opts}) => (
     <div style={{marginTop:8,marginBottom:10}}>
       <div style={{fontSize:11,color:C.grey60,marginBottom:4,fontFamily:'var(--font-body)'}}>{label}</div>
@@ -1067,14 +1164,44 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   // ── Text section panel ────────────────────────────────────
   const TextSectionPanel = ({id}) => {
     const b = getBlock(id);
+    const isFooter = id === 'footer';
+    const description = isFooter
+      ? 'Shown at the bottom of every page'
+      : 'Notes, terms, or custom messages';
+    const placeholder = isFooter
+      ? 'Add contact details, terms, or company info...'
+      : 'Add a note or message...';
     return (
       <>
         <SHead label="Content"/>
-        <div style={{padding:'8px 0'}}>
-          <RichTextPanel id={id} getBlock={getBlock} updateBlock={updateBlock}/>
+        <div style={{padding:'7px 0 4px',flexShrink:0}}>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Text</div>
+          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>{description}</div>
+        </div>
+        <div style={{paddingBottom:8}}>
+          <RichTextPanel id={id} getBlock={getBlock} updateBlock={updateBlock} placeholder={placeholder}/>
         </div>
         <SHead label="Styling"/>
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
+        <div style={{padding:'7px 0',flexShrink:0}}>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Padding</div>
+          <SegCtrl value={b.padding||'normal'} onChange={v=>updateBlock(id,{padding:v})}
+            opts={[{val:'compact',label:'Compact'},{val:'normal',label:'Normal'},{val:'spacious',label:'Spacious'}]}/>
+        </div>
+        <div style={{padding:'7px 0',flexShrink:0}}>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Text size</div>
+          <SegCtrl value={b.textSize||'normal'} onChange={v=>updateBlock(id,{textSize:v})}
+            opts={[{val:'small',label:'Small'},{val:'normal',label:'Normal'},{val:'large',label:'Large'}]}/>
+        </div>
+        {isFooter && (
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',flexShrink:0}}>
+            <div>
+              <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Company logo</div>
+              <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Show brand logo in footer</div>
+            </div>
+            <Tog on={b.showLogo===true} onChange={()=>updateBlock(id,{showLogo:!b.showLogo})}/>
+          </div>
+        )}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',flexShrink:0}}>
           <div>
             <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Grey Background</div>
             <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Use a grey background on this section</div>
@@ -1419,14 +1546,31 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
       const showPageNums = b.showPageNumbers !== false;
       if (!footerVis || (!b.html && !showPageNums && !isEdit)) return null;
       const sectionBg = (b.bgStyle||'grey')==='grey' ? C.bg : C.white;
+      const pad = b.padding==='compact'?'4px 22px':b.padding==='spacious'?'14px 22px':'8px 22px';
+      const fs  = b.textSize==='small'?7:b.textSize==='large'?10:8;
+      const logoH = 12;
       return (
         <FooterWrap>
-          <div style={{padding:'8px 22px',background:sectionBg,borderTop:`1px solid ${C.grey20}`,fontSize:8,color:C.grey50,lineHeight:1.5,borderRadius:'0 0 5px 5px'}}>
+          <div style={{padding:pad,background:sectionBg,borderTop:`1px solid ${C.grey20}`,fontSize:fs,color:C.grey50,lineHeight:1.5,borderRadius:'0 0 5px 5px'}}>
             {b.html
               ? <div dangerouslySetInnerHTML={{__html:renderWithChips(b.html)}}/>
               : isEdit && <div style={{fontStyle:'italic',color:C.grey30}}>Empty — click to add content</div>
             }
-            {showPageNums && <div style={{textAlign:'right'}}>Page {page} of {totalPages}</div>}
+            {(b.showLogo || showPageNums) && (
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginTop:(b.html||isEdit)?4:0}}>
+                {b.showLogo ? (
+                  <div style={{display:'flex',alignItems:'center',gap:3}}>
+                    <svg width={logoH} height={logoH} viewBox="0 0 36 36" fill="none">
+                      <circle cx="18" cy="18" r="16" fill="#222"/>
+                      <path d="M10 26 C10 18 18 10 26 14 C22 18 20 22 18 26Z" fill="#fff" opacity=".6"/>
+                      <path d="M14 28 C14 20 20 14 28 18 C24 22 22 26 18 28Z" fill="#fff" opacity=".4"/>
+                    </svg>
+                    <span style={{fontSize:logoH*0.55,fontWeight:700,letterSpacing:'0.08em',color:C.black}}>COMPANY</span>
+                  </div>
+                ) : <div/>}
+                {showPageNums ? <div>Page {page} of {totalPages}</div> : <div/>}
+              </div>
+            )}
           </div>
         </FooterWrap>
       );
@@ -1661,12 +1805,14 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
         const b=getBlock(s.id);
         if(!b.html&&!isEdit) return null;
         const sectionBg = b.bgStyle==='grey' ? C.bg : C.white;
+        const pad = b.padding==='compact'?'6px 22px':b.padding==='spacious'?'18px 22px':'10px 22px';
+        const fs  = b.textSize==='small'?8:b.textSize==='large'?11:9;
         return (
           <SectionWrap key={s.id} id={s.id} label={s.label}>
-            <div style={{padding:'10px 22px',borderTop:`1px solid ${C.grey20}`,minHeight:34,background:sectionBg}}>
+            <div style={{padding:pad,borderTop:`1px solid ${C.grey20}`,minHeight:34,background:sectionBg}}>
               {b.html
-                ? <div style={{fontSize:9,color:C.black,lineHeight:1.6,fontFamily:'var(--font-body)'}} dangerouslySetInnerHTML={{__html:renderWithChips(b.html)}}/>
-                : <div style={{fontSize:9,color:C.grey30,fontStyle:'italic',lineHeight:1.6}}>Empty — click to add content</div>
+                ? <div style={{fontSize:fs,color:C.black,lineHeight:1.6,fontFamily:'var(--font-body)'}} dangerouslySetInnerHTML={{__html:renderWithChips(b.html)}}/>
+                : <div style={{fontSize:fs,color:C.grey30,fontStyle:'italic',lineHeight:1.6}}>Empty — click to add content</div>
               }
             </div>
           </SectionWrap>
