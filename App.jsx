@@ -607,7 +607,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   const getBlock = id => ({text:'',textStyle:'normal',bold:false,italic:false,underline:false,strikethrough:false,bulletList:false,numberedList:false,align:'left',bgStyle:'white',...(blockData[id]||{})});
 
   const doReset = () => {
-    setDocCfg({primaryColor:'#136DEB',showLogo:true,showContact:true,showCompanyInfo:true,logoAlign:'Left',logoSize:'L',documentTitle:'Invoice',showDates:true,showLocation:true,showAddress:false,showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,footerCompanyDetails:true,footerContactDetails:true,footerVatNumber:true,footerPaymentDetails:true,footerPageNumbers:true,font:'Inter',partyOrder:'seller-first',showPartyLabels:false});
+    setDocCfg({primaryColor:'#136DEB',showLogo:true,showContact:true,showCompanyInfo:true,logoAlign:'Right',logoSize:'M',documentTitle:'Invoice',showOrderNumber:true,showIssueDate:true,showDueDate:true,showDates:true,showLocation:true,showAddress:false,showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,footerCompanyDetails:true,footerContactDetails:true,footerVatNumber:true,footerPaymentDetails:true,footerPageNumbers:true,font:'Inter',partyOrder:'seller-first',showPartyLabels:false});
     setDateFormat('datetime'); setPageSize('A4'); setDocNumLevel('global'); setPrefixFormat('{year}-'); setDueDatesOn(false); setCustomCSS('');
     setBrandColor('#136DEB');
     setBlockData({});
@@ -615,7 +615,8 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   };
 
   const [docCfg, setDocCfg] = React.useState({
-    primaryColor:'#136DEB',showLogo:true,showContact:true,showCompanyInfo:true,logoAlign:'Left',logoSize:'L',documentTitle:docType?.label||'Invoice',
+    primaryColor:'#136DEB',showLogo:true,showContact:true,showCompanyInfo:true,logoAlign:'Right',logoSize:'M',documentTitle:docType?.label||'Invoice',
+    showOrderNumber:true,showIssueDate:true,showDueDate:true,
     showDates:true,showLocation:true,showAddress:false,
     showSubtotal:true,showTotalDiscount:true,showAppliedCoupons:false,
     showSecurityDeposit:false,showCustomCharge:false,showTaxBreakdown:false,showTotalInclTaxes:true,
@@ -805,20 +806,6 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
           {/* Branding */}
           <SHead label="Branding"/>
           <ColorRow label="Brand color" value={brandColor} onChange={v=>{setBrandColor(v);setDoc('primaryColor',v);}}/>
-          <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',padding:'8px 0'}}>
-            <span style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Logo</span>
-            <div style={{width:140}}>
-              <div style={{height:110,background:C.grey10,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:4,border:`1px solid ${C.grey20}`,position:'relative',overflow:'hidden',paddingBottom:28}}>
-                <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-                  <circle cx="18" cy="18" r="16" fill="#222"/>
-                  <path d="M10 26 C10 18 18 10 26 14 C22 18 20 22 18 26Z" fill="#fff" opacity=".6"/>
-                  <path d="M14 28 C14 20 20 14 28 18 C24 22 22 26 18 28Z" fill="#fff" opacity=".4"/>
-                </svg>
-                <span style={{fontSize:9,fontWeight:700,color:C.black,letterSpacing:2,fontFamily:'var(--font-body)'}}>COMPANY</span>
-                <button style={{position:'absolute',bottom:0,left:0,right:0,height:28,border:'none',borderTop:`1px solid ${C.grey20}`,borderRadius:0,background:C.white,fontSize:11,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)',color:C.black}}>Change</button>
-              </div>
-            </div>
-          </div>
           <div style={{padding:'10px 0',display:'flex',flexDirection:'column',gap:8}}>
             <button onClick={()=>{setBrandColor('#136DEB');setSecondColor('#131314');setDoc('primaryColor','#136DEB');}} style={{width:'100%',height:32,background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,fontWeight:500,color:C.black,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6,fontFamily:'var(--font-body)'}}>
               <FI n="rotate-left" sz={11} col={C.grey60}/> Load branding defaults
@@ -931,7 +918,56 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   // ── Section settings ──────────────────────────────────────
   const sectionPanels = {
     header: <>
-      <SHead label="Logo & title"/>
+      <SHead label="Title"/>
+      <div style={{padding:'7px 0 14px',display:'flex',flexDirection:'column',gap:10}}>
+        <div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)',marginBottom:6}}>Document title</div>
+          <DInput
+            value={docCfg.documentTitle}
+            onChange={v=>setDoc('documentTitle',v)}
+            style={{width:'100%',height:32,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,padding:'0 8px',background:C.white,fontFamily:'var(--font-body)',color:C.black,boxSizing:'border-box',outline:'none'}}
+          />
+        </div>
+        <div>
+          <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)',marginBottom:6}}>Document title side</div>
+          <div style={{display:'flex',gap:4}}>
+            {[['Left','align-left'],['Center','align-center'],['Right','align-right']].map(([a,icon])=>{
+              const titleToLogo = {Left:'Right',Center:'Center',Right:'Left'};
+              const active = docCfg.logoAlign===titleToLogo[a];
+              return (
+                <button key={a} onClick={()=>setDoc('logoAlign',titleToLogo[a])}
+                  style={{flex:1,height:26,border:`1px solid ${active?C.blue:C.grey30}`,borderRadius:6,background:active?C.blue5:C.white,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',transition:'all 120ms'}}>
+                  <FI n={icon} sz={11} col={active?C.blue:C.grey50}/>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <div>
+            <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Order number</div>
+            <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Unique reference for this document</div>
+          </div>
+          <Tog on={docCfg.showOrderNumber} onChange={()=>setDoc('showOrderNumber')}/>
+        </div>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <div>
+            <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Issue date</div>
+            <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Date the document was created</div>
+          </div>
+          <Tog on={docCfg.showIssueDate} onChange={()=>setDoc('showIssueDate')}/>
+        </div>
+        {docType?.key==='invoice' && (
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+            <div>
+              <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Due date</div>
+              <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Final date for payment or return</div>
+            </div>
+            <Tog on={docCfg.showDueDate} onChange={()=>setDoc('showDueDate')}/>
+          </div>
+        )}
+      </div>
+      <SHead label="Logo"/>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
         <div>
           <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Company logo</div>
@@ -940,37 +976,30 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
         <Tog on={docCfg.showLogo} onChange={()=>setDoc('showLogo')}/>
       </div>
       {docCfg.showLogo && (
-        <div style={{padding:'10px 0 12px'}}>
-          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
-            <div style={{fontSize:11,color:C.grey60,fontFamily:'var(--font-body)',width:36,flexShrink:0}}>Size</div>
-            <div style={{display:'flex',gap:4,flex:1}}>
+        <div style={{padding:'4px 0 12px',display:'flex',flexDirection:'column',gap:10}}>
+          <div>
+            <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)',marginBottom:6}}>Logo image</div>
+            <div style={{height:110,background:C.grey10,borderRadius:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:4,border:`1px solid ${C.grey20}`,position:'relative',overflow:'hidden',paddingBottom:28}}>
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                <circle cx="18" cy="18" r="16" fill="#222"/>
+                <path d="M10 26 C10 18 18 10 26 14 C22 18 20 22 18 26Z" fill="#fff" opacity=".6"/>
+                <path d="M14 28 C14 20 20 14 28 18 C24 22 22 26 18 28Z" fill="#fff" opacity=".4"/>
+              </svg>
+              <span style={{fontSize:9,fontWeight:700,color:C.black,letterSpacing:2,fontFamily:'var(--font-body)'}}>COMPANY</span>
+              <button style={{position:'absolute',bottom:0,left:0,right:0,height:28,border:'none',borderTop:`1px solid ${C.grey20}`,borderRadius:0,background:C.white,fontSize:11,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)',color:C.black}}>Change</button>
+            </div>
+          </div>
+          <div>
+            <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)',marginBottom:6}}>Logo size</div>
+            <div style={{display:'flex',gap:4}}>
               {['S','M','L'].map(sz=>(
                 <button key={sz} onClick={()=>setDoc('logoSize',sz)}
                   style={{flex:1,height:26,border:`1px solid ${docCfg.logoSize===sz?C.blue:C.grey30}`,borderRadius:6,background:docCfg.logoSize===sz?C.blue5:C.white,color:docCfg.logoSize===sz?C.blue:C.grey60,fontSize:11,cursor:'pointer',fontFamily:'var(--font-body)',fontWeight:docCfg.logoSize===sz?600:400,transition:'all 120ms'}}>{sz}</button>
               ))}
             </div>
           </div>
-          <div style={{display:'flex',alignItems:'center',gap:8}}>
-            <div style={{fontSize:11,color:C.grey60,fontFamily:'var(--font-body)',width:36,flexShrink:0}}>Side</div>
-            <div style={{display:'flex',gap:4,flex:1}}>
-              {[['Left','align-left'],['Right','align-right']].map(([a,icon])=>(
-                <button key={a} onClick={()=>setDoc('logoAlign',a)}
-                  style={{flex:1,height:26,border:`1px solid ${docCfg.logoAlign===a?C.blue:C.grey30}`,borderRadius:6,background:docCfg.logoAlign===a?C.blue5:C.white,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',transition:'all 120ms'}}>
-                  <FI n={icon} sz={11} col={docCfg.logoAlign===a?C.blue:C.grey50}/>
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       )}
-      <div style={{padding:'7px 0'}}>
-        <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)',marginBottom:6}}>Document title</div>
-        <DInput
-          value={docCfg.documentTitle}
-          onChange={v=>setDoc('documentTitle',v)}
-          style={{width:'100%',height:32,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:12,padding:'0 8px',background:C.white,fontFamily:'var(--font-body)',color:C.black,boxSizing:'border-box',outline:'none'}}
-        />
-      </div>
       <SHead label="Company details"/>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
         <div>
@@ -989,7 +1018,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0'}}>
         <div>
           <div style={{fontSize:12,color:C.black,fontFamily:'var(--font-body)'}}>Swap party order</div>
-          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Places customer on the left, seller on the right</div>
+          <div style={{fontSize:10,color:C.grey40,fontFamily:'var(--font-body)',marginTop:1}}>Places customer/renter on the left</div>
         </div>
         <Tog on={docCfg.partyOrder==='customer-first'} onChange={()=>setDoc('partyOrder',docCfg.partyOrder==='customer-first'?'seller-first':'customer-first')}/>
       </div>
@@ -1528,9 +1557,9 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
         <SectionWrap key="header" id="header" label="Header">
           <div style={{padding:'18px 22px 14px',borderBottom:`1px solid ${C.grey20}`}}>
             {(() => {
-              const align = docCfg.logoAlign || 'Left';
-              const logoW = docCfg.logoSize==='S'?44:docCfg.logoSize==='M'?60:80;
-              const logoH = docCfg.logoSize==='S'?14:docCfg.logoSize==='M'?18:24;
+              const align = docCfg.logoAlign || 'Right';
+              const logoW = docCfg.logoSize==='S'?44:docCfg.logoSize==='M'?80:110;
+              const logoH = docCfg.logoSize==='S'?14:docCfg.logoSize==='M'?24:32;
               const LogoEl = docCfg.showLogo ? (
                 <div style={{display:'flex',alignItems:'center',gap:logoH*0.25}}>
                   <svg width={logoH} height={logoH} viewBox="0 0 36 36" fill="none">
@@ -1542,9 +1571,18 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
                 </div>
               ) : null;
               const InvoiceEl = (
-                <div style={{textAlign:align==='Right'?'left':'right'}}>
+                <div style={{textAlign:align==='Center'?'center':align==='Right'?'left':'right'}}>
                   <div style={{fontSize:13,fontWeight:700}}>{(docCfg.documentTitle||'Invoice').toUpperCase()}</div>
-                  <div style={{fontSize:9,color:C.grey50}}>#ORD-2024-0089</div>
+                  {docCfg.showOrderNumber && <div style={{fontSize:9,color:C.grey50}}>#ORD-2024-0089</div>}
+                  {docCfg.showIssueDate && <div style={{fontSize:9,color:C.grey50}}>Issue date: Jan 15, 2025</div>}
+                  {docType?.key==='invoice' && docCfg.showDueDate && <div style={{fontSize:9,color:C.grey50}}>Due: Feb 15, 2025</div>}
+                </div>
+              );
+              if(align==='Center') return (
+                <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:12}}>
+                  {LogoEl||<div/>}
+                  {InvoiceEl}
+                  {LogoEl ? <div style={{visibility:'hidden'}}>{LogoEl}</div> : <div/>}
                 </div>
               );
               return (
