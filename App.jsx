@@ -513,7 +513,6 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     { id:'price_total', label:'Price total',                            drag:true,  on:true,  dropdown:null },
     { id:'bundle',      label:'Bundle item pricing',                    drag:false, on:true,  dropdown:null, special:true },
     { id:'barcode',     label:'Barcode',                                drag:true,  on:false, dropdown:null },
-    { id:'qr',          label:'QR code',                                drag:true,  on:false, dropdown:null },
     { id:'item_type',   label:'Item type (Rental, Sales, Service)',     drag:true,  on:false, dropdown:null },
     { id:'custom',      label:'Custom fields',                          drag:true,  on:false, dropdown:null },
   ]);
@@ -532,7 +531,6 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     price_total:{ label:'Total',    vals:['$320','$56','$55'],          align:'right'  },
     item_type:  { label:'Type',     vals:['Rental','Rental','Rental'],  align:'right'  },
     barcode:    { label:'Barcode',  vals:['▐▌▐▐▌▌','▐▌▐▐▌▌','▐▌▐▐▌▌'], align:'center' },
-    qr:         { label:'QR',       vals:['⊞','⊞','⊞'],                align:'center' },
     custom:     { label:'Custom',   vals:['—','—','—'],                 align:'right'  },
   };
 
@@ -1318,28 +1316,28 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   // Visible line item columns in order
   const visLICols = lineItems.filter(i=>i.on&&!i.special&&COL_DATA[i.id]);
   const liRows = [
-    {name:'Tripod & Head',     sku:'TRP-02',  qty:'1', period:'7 days', unit_price:'$49',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$7',  price_total:'$56',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-    {name:'Memory Cards',      sku:'MEM-04',  qty:'4', period:'7 days', unit_price:'$12',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$7',  price_total:'$55',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-    {name:'Prime Lens 85mm',   sku:'LNS-85',  qty:'1', period:'7 days', unit_price:'$59',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$9',  price_total:'$68',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-    {name:'Canon EOS R5',      sku:'R5-001',  qty:'1', period:'7 days', unit_price:'$149', charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$22', price_total:'$171', item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img', bundleKit:'Camera Bundle Kit'},
-    {name:'Lens 50mm',         sku:'LNS-02',  qty:'1', period:'7 days', unit_price:'$29',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$4',  price_total:'$33',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img', bundleKit:'Camera Bundle Kit'},
-    {name:'Zoom Lens 24-70mm', sku:'LNS-24',  qty:'1', period:'7 days', unit_price:'$79',  charge_lbl:'1 day',  discount:'10%', coupons:'—', tax:'$10', price_total:'$81',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-    {name:'LED Panel 600',     sku:'LED-600', qty:'3', period:'7 days', unit_price:'$35',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$15', price_total:'$120', item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-    {name:'Softbox Kit',       sku:'SBX-02',  qty:'2', period:'7 days', unit_price:'$25',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$7',  price_total:'$57',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-    {name:'Audio Recorder',    sku:'AUD-07',  qty:'1', period:'7 days', unit_price:'$45',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$7',  price_total:'$52',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-    {name:'Boom Pole & Mic',   sku:'MIC-03',  qty:'1', period:'7 days', unit_price:'$29',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$4',  price_total:'$33',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-    {name:'C-Stand Set (×4)',  sku:'CST-04',  qty:'4', period:'7 days', unit_price:'$15',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$9',  price_total:'$69',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-    {name:'Sandbags (×10)',    sku:'SND-10',  qty:'1', period:'7 days', unit_price:'$18',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$3',  price_total:'$21',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-    {name:'Apple Boxes (×6)',  sku:'APL-06',  qty:'1', period:'7 days', unit_price:'$12',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$2',  price_total:'$14',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-    {name:"Director's Monitor 7\"", sku:'MON-7',  qty:'1', period:'7 days', unit_price:'$55',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$8',  price_total:'$63',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-    {name:'Follow Focus System', sku:'FF-01',   qty:'1', period:'7 days', unit_price:'$45',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$7',  price_total:'$52',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-    {name:'V-Mount Battery',    sku:'BAT-VM',  qty:'2', period:'7 days', unit_price:'$35',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$10', price_total:'$80',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-    {name:'Dual Battery Charger', sku:'CHR-02', qty:'1', period:'7 days', unit_price:'$25',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$4',  price_total:'$29',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-    {name:'Backdrop White',     sku:'BKD-W1',  qty:'1', period:'7 days', unit_price:'$18',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$3',  price_total:'$21',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-    {name:'Backdrop Black',     sku:'BKD-B1',  qty:'1', period:'7 days', unit_price:'$18',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$3',  price_total:'$21',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-    {name:'Reflector 5-in-1',   sku:'RFL-05',  qty:'2', period:'7 days', unit_price:'$15',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$4',  price_total:'$34',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-    {name:'Color Gels Set',     sku:'GEL-01',  qty:'1', period:'7 days', unit_price:'$22',  charge_lbl:'Fixed',  discount:'5%',  coupons:'—', tax:'$3',  price_total:'$24',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-    {name:'Pelican Case 1510',  sku:'PLC-15',  qty:'1', period:'7 days', unit_price:'$20',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$3',  price_total:'$23',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+    {name:'Tripod & Head',     sku:'TRP-02',  qty:'1', period:'7 days', unit_price:'$49',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$7',  price_total:'$56',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+    {name:'Memory Cards',      sku:'MEM-04',  qty:'4', period:'7 days', unit_price:'$12',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$7',  price_total:'$55',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+    {name:'Prime Lens 85mm',   sku:'LNS-85',  qty:'1', period:'7 days', unit_price:'$59',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$9',  price_total:'$68',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+    {name:'Canon EOS R5',      sku:'R5-001',  qty:'1', period:'7 days', unit_price:'$149', charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$22', price_total:'$171', item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img', bundleKit:'Camera Bundle Kit'},
+    {name:'Lens 50mm',         sku:'LNS-02',  qty:'1', period:'7 days', unit_price:'$29',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$4',  price_total:'$33',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img', bundleKit:'Camera Bundle Kit'},
+    {name:'Zoom Lens 24-70mm', sku:'LNS-24',  qty:'1', period:'7 days', unit_price:'$79',  charge_lbl:'1 day',  discount:'10%', coupons:'—', tax:'$10', price_total:'$81',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+    {name:'LED Panel 600',     sku:'LED-600', qty:'3', period:'7 days', unit_price:'$35',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$15', price_total:'$120', item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+    {name:'Softbox Kit',       sku:'SBX-02',  qty:'2', period:'7 days', unit_price:'$25',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$7',  price_total:'$57',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+    {name:'Audio Recorder',    sku:'AUD-07',  qty:'1', period:'7 days', unit_price:'$45',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$7',  price_total:'$52',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+    {name:'Boom Pole & Mic',   sku:'MIC-03',  qty:'1', period:'7 days', unit_price:'$29',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$4',  price_total:'$33',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+    {name:'C-Stand Set (×4)',  sku:'CST-04',  qty:'4', period:'7 days', unit_price:'$15',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$9',  price_total:'$69',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+    {name:'Sandbags (×10)',    sku:'SND-10',  qty:'1', period:'7 days', unit_price:'$18',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$3',  price_total:'$21',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+    {name:'Apple Boxes (×6)',  sku:'APL-06',  qty:'1', period:'7 days', unit_price:'$12',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$2',  price_total:'$14',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+    {name:"Director's Monitor 7\"", sku:'MON-7',  qty:'1', period:'7 days', unit_price:'$55',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$8',  price_total:'$63',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+    {name:'Follow Focus System', sku:'FF-01',   qty:'1', period:'7 days', unit_price:'$45',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$7',  price_total:'$52',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+    {name:'V-Mount Battery',    sku:'BAT-VM',  qty:'2', period:'7 days', unit_price:'$35',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$10', price_total:'$80',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+    {name:'Dual Battery Charger', sku:'CHR-02', qty:'1', period:'7 days', unit_price:'$25',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$4',  price_total:'$29',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+    {name:'Backdrop White',     sku:'BKD-W1',  qty:'1', period:'7 days', unit_price:'$18',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$3',  price_total:'$21',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+    {name:'Backdrop Black',     sku:'BKD-B1',  qty:'1', period:'7 days', unit_price:'$18',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$3',  price_total:'$21',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+    {name:'Reflector 5-in-1',   sku:'RFL-05',  qty:'2', period:'7 days', unit_price:'$15',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$4',  price_total:'$34',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+    {name:'Color Gels Set',     sku:'GEL-01',  qty:'1', period:'7 days', unit_price:'$22',  charge_lbl:'Fixed',  discount:'5%',  coupons:'—', tax:'$3',  price_total:'$24',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+    {name:'Pelican Case 1510',  sku:'PLC-15',  qty:'1', period:'7 days', unit_price:'$20',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$3',  price_total:'$23',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
   ];
   const _amt = s => parseFloat((s||'0').replace(/[^0-9.]/g,''))||0;
   const liSubtotal = liRows.reduce((s,r)=>s+_amt(r.unit_price)*_amt(r.qty),0);
@@ -1398,39 +1396,12 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     );
   };
 
-  const QRImg = ({sku}) => {
-    const sz=22, N=11;
-    const grid=Array.from({length:N},()=>Array(N).fill(0));
-    const sf=(r0,c0)=>{
-      for(let r=r0;r<r0+5;r++) for(let c=c0;c<c0+5;c++){
-        grid[r][c]=(r===r0||r===r0+4||c===c0||c===c0+4||(r===r0+2&&c===c0+2))?1:0;
-      }
-    };
-    sf(0,0); sf(0,N-5); sf(N-5,0);
-    let seed=(sku||'X').split('').reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,13);
-    const next=()=>{ seed=(seed*1664525+1013904223)>>>0; return (seed>>16)&1; };
-    for(let r=0;r<N;r++) for(let c=0;c<N;c++){
-      if((r<5&&c<5)||(r<5&&c>=N-5)||(r>=N-5&&c<5)) continue;
-      grid[r][c]=next();
-    }
-    const cs=sz/N;
-    return (
-      <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`} style={{display:'inline-block',verticalAlign:'middle'}}>
-        <rect width={sz} height={sz} fill="white"/>
-        {grid.flatMap((row,r)=>row.map((cell,c)=>
-          cell?<rect key={`${r}-${c}`} x={(c*cs+.2).toFixed(2)} y={(r*cs+.2).toFixed(2)} width={(cs-.4).toFixed(2)} height={(cs-.4).toFixed(2)} fill="#111"/>:null
-        ))}
-      </svg>
-    );
-  };
-
   const renderCell = (col, row) => {
     if(col.id==='image'){
       const sz=lineItems.find(i=>i.id==='image')?.dropdown?.val||'Medium';
       return <div style={{display:'flex',justifyContent:'center'}}><ProductImage name={row.name} sku={row.sku} size={sz}/></div>;
     }
     if(col.id==='barcode') return <div style={{display:'flex',justifyContent:'center'}}><BarcodeImg sku={row.sku}/></div>;
-    if(col.id==='qr') return <div style={{display:'flex',justifyContent:'center'}}><QRImg sku={row.sku}/></div>;
     return row[col.id]||'—';
   };
 
@@ -1480,16 +1451,16 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     };
 
     const page2Rows = [
-      {name:'Backdrop Set (White)',  sku:'BKD-W',  qty:'1', period:'7 days', unit_price:'$39',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$6',  price_total:'$45',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-      {name:'Backdrop Set (Black)',  sku:'BKD-B',  qty:'1', period:'7 days', unit_price:'$39',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$6',  price_total:'$45',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-      {name:'Backdrop Stand',        sku:'BKS-01', qty:'2', period:'7 days', unit_price:'$19',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$5',  price_total:'$41',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-      {name:'Reflector 5-in-1',      sku:'RFL-05', qty:'2', period:'7 days', unit_price:'$14',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$4',  price_total:'$32',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-      {name:'Color Gels Pack',       sku:'GEL-01', qty:'1', period:'7 days', unit_price:'$9',   charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$1',  price_total:'$10',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-      {name:'V-Mount Battery ×2',    sku:'BAT-VM', qty:'2', period:'7 days', unit_price:'$22',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$6',  price_total:'$50',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-      {name:'Charger + Cables Kit',  sku:'CHG-01', qty:'1', period:'7 days', unit_price:'$12',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$2',  price_total:'$14',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-      {name:'Production Monitor 7"', sku:'MON-07', qty:'1', period:'7 days', unit_price:'$55',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$8',  price_total:'$63',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-      {name:'Wireless Follow Focus', sku:'WFF-01', qty:'1', period:'7 days', unit_price:'$69',  charge_lbl:'1 day',  discount:'5%',  coupons:'—', tax:'$9',  price_total:'$74',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
-      {name:'Pelican Case (Large)',   sku:'PLC-L',  qty:'2', period:'7 days', unit_price:'$18',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$5',  price_total:'$41',  item_type:'Rental', barcode:'▐▌▐▌', qr:'⊞', custom:'—', image:'img'},
+      {name:'Backdrop Set (White)',  sku:'BKD-W',  qty:'1', period:'7 days', unit_price:'$39',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$6',  price_total:'$45',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+      {name:'Backdrop Set (Black)',  sku:'BKD-B',  qty:'1', period:'7 days', unit_price:'$39',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$6',  price_total:'$45',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+      {name:'Backdrop Stand',        sku:'BKS-01', qty:'2', period:'7 days', unit_price:'$19',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$5',  price_total:'$41',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+      {name:'Reflector 5-in-1',      sku:'RFL-05', qty:'2', period:'7 days', unit_price:'$14',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$4',  price_total:'$32',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+      {name:'Color Gels Pack',       sku:'GEL-01', qty:'1', period:'7 days', unit_price:'$9',   charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$1',  price_total:'$10',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+      {name:'V-Mount Battery ×2',    sku:'BAT-VM', qty:'2', period:'7 days', unit_price:'$22',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$6',  price_total:'$50',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+      {name:'Charger + Cables Kit',  sku:'CHG-01', qty:'1', period:'7 days', unit_price:'$12',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$2',  price_total:'$14',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+      {name:'Production Monitor 7"', sku:'MON-07', qty:'1', period:'7 days', unit_price:'$55',  charge_lbl:'1 day',  discount:'—',   coupons:'—', tax:'$8',  price_total:'$63',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+      {name:'Wireless Follow Focus', sku:'WFF-01', qty:'1', period:'7 days', unit_price:'$69',  charge_lbl:'1 day',  discount:'5%',  coupons:'—', tax:'$9',  price_total:'$74',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
+      {name:'Pelican Case (Large)',   sku:'PLC-L',  qty:'2', period:'7 days', unit_price:'$18',  charge_lbl:'Fixed',  discount:'—',   coupons:'—', tax:'$5',  price_total:'$41',  item_type:'Rental', barcode:'▐▌▐▌', custom:'—', image:'img'},
     ];
 
     const renderSection = s => {
@@ -1597,7 +1568,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
                           <td key={col.id} style={{padding:col.id==='image'?'2px 4px':'4px',fontSize:8,
                             color:COL_DATA[col.id]?.align==='left'?C.black:C.grey60,
                             textAlign:COL_DATA[col.id]?.align||'right',
-                            whiteSpace:['image','barcode','qr'].includes(col.id)?'normal':'nowrap',
+                            whiteSpace:['image','barcode'].includes(col.id)?'normal':'nowrap',
                             background:col.id===hovLI?C.blue5:'transparent',transition:'background 100ms'}}>
                             {renderCell(col,row)}
                           </td>
@@ -1617,7 +1588,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
                               <td key={col.id} style={{padding:col.id==='image'?'2px 4px':'4px',fontSize:8,
                                 color:COL_DATA[col.id]?.align==='left'?C.black:C.grey60,
                                 textAlign:COL_DATA[col.id]?.align||'right',
-                                whiteSpace:['image','barcode','qr'].includes(col.id)?'normal':'nowrap',
+                                whiteSpace:['image','barcode'].includes(col.id)?'normal':'nowrap',
                                 background:col.id===hovLI?C.blue5:'transparent',transition:'background 100ms'}}>
                                 {renderCell(col,row)}
                               </td>
@@ -1646,7 +1617,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
                               <td key={col.id} style={{padding:col.id==='image'?'2px 4px':'3px 4px',fontSize:7.5,
                                 color:COL_DATA[col.id]?.align==='left'?C.grey60:C.grey50,
                                 textAlign:COL_DATA[col.id]?.align||'right',
-                                whiteSpace:['image','barcode','qr'].includes(col.id)?'normal':'nowrap',
+                                whiteSpace:['image','barcode'].includes(col.id)?'normal':'nowrap',
                                 background:col.id===hovLI?C.blue5:'transparent',transition:'background 100ms',
                                 ...(ci===0?{boxShadow:`inset 2px 0 0 ${C.grey30}`}:{})}}>
                                 {renderCell(col,krow)}
@@ -1758,7 +1729,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
                               <td key={col.id} style={{padding:col.id==='image'?'2px 4px':'4px',fontSize:8,
                                 color:COL_DATA[col.id]?.align==='left'?C.black:C.grey60,
                                 textAlign:COL_DATA[col.id]?.align||'right',
-                                whiteSpace:['image','barcode','qr'].includes(col.id)?'normal':'nowrap',
+                                whiteSpace:['image','barcode'].includes(col.id)?'normal':'nowrap',
                                 background:col.id===hovLI?C.blue5:'transparent',transition:'background 100ms'}}>
                                 {renderCell(col,row)}
                               </td>
