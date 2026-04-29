@@ -660,8 +660,8 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     if(from===null||from===i) return;
     setSections(p=>{
       const locked=s=>s.id==='header'||s.id==='footer';
-      if(locked(p[from])||locked(p[i])) return p;
-      const a=[...p];const [m]=a.splice(from,1);a.splice(i,0,m);return a;
+      if(locked(p[from])) return p;
+      const a=[...p];const [m]=a.splice(from,1);const insertAt=Math.max(1,Math.min(i,a.length-1));a.splice(insertAt,0,m);return a;
     });
   };
   const onSecDragEnd = () => {setDragOverSec(null);dragRef.current=null;};
@@ -1241,8 +1241,8 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
           const locked=s.id==='header'||s.id==='footer';
           return (
           <React.Fragment key={s.id}>
-          {!locked&&dragOverSec===idx&&<div style={{height:2,background:C.blue,borderRadius:1,margin:'1px 8px'}}/>}
-          <div {...(!locked&&{draggable:true,onDragStart:e=>onDragStart(e,idx),onDragOver:e=>onSecDragOver(e,idx),onDrop:e=>onDrop(e,idx),onDragEnd:onSecDragEnd})}
+          {s.id!=='header'&&dragOverSec===idx&&<div style={{height:2,background:C.blue,borderRadius:1,margin:'1px 8px'}}/>}
+          <div {...(!locked?{draggable:true,onDragStart:e=>onDragStart(e,idx),onDragOver:e=>onSecDragOver(e,idx),onDrop:e=>onDrop(e,idx),onDragEnd:onSecDragEnd}:{onDragOver:e=>onSecDragOver(e,s.id==='header'?idx+1:idx),onDrop:e=>onDrop(e,s.id==='header'?idx+1:idx),onDragEnd:onSecDragEnd})}
             onMouseEnter={()=>setHovSec(s.id)} onMouseLeave={()=>setHovSec(null)}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 8px 0 14px',
               background:hovSec===s.id?C.grey10:'transparent',borderLeft:`3px solid ${!locked&&hovSec===s.id?C.blue:'transparent'}`,
