@@ -558,6 +558,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     {id:'logistics',type:'builtin',label:'Pick-up & Return',visible:true},
     {id:'lineitems',type:'builtin',label:'Line Items',       visible:true},
     {id:'totals',   type:'builtin',label:'Totals & Fees',    visible:true},
+    {id:'body',     type:'text',   label:'Additional text',  visible:true},
     {id:'footer',   type:'builtin',label:'Footer',           visible:true},
   ]);
 
@@ -565,7 +566,6 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
   const [zoom,     setZoom]     = React.useState(1);
   const [hovSec,   setHovSec]   = React.useState(null);
   const [hovPrev,  setHovPrev]  = React.useState(null);
-  const [addModal,   setAddModal]   = React.useState(null);
   const [resetModal, setResetModal] = React.useState(false);
 
   // Template switcher state (contracts only)
@@ -650,28 +650,7 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     return () => ro.disconnect();
   }, [pageDim.w]);
 
-  const dragRef = React.useRef(null);
-  const [dragOverSec, setDragOverSec] = React.useState(null);
-  const onDragStart = (e,i) => {dragRef.current=i;e.dataTransfer.effectAllowed='move';};
-  const onSecDragOver = (e,i) => {e.preventDefault();setDragOverSec(i);};
-  const onDrop = (e,i) => {
-    e.preventDefault();const from=dragRef.current;
-    setDragOverSec(null);dragRef.current=null;
-    if(from===null||from===i) return;
-    setSections(p=>{
-      const locked=s=>s.id==='header'||s.id==='footer';
-      if(locked(p[from])) return p;
-      const a=[...p];const [m]=a.splice(from,1);const insertAt=Math.max(1,Math.min(i,a.length-1));a.splice(insertAt,0,m);return a;
-    });
-  };
-  const onSecDragEnd = () => {setDragOverSec(null);dragRef.current=null;};
   const toggleSection = id => setSections(p=>p.map(s=>s.id===id?{...s,visible:!s.visible}:s));
-  const insertTextSection = (afterId,position) => {
-    const nb={id:nextId(),type:'text',label:'Text section',visible:true};
-    setSections(p=>{const a=[...p];const idx=a.findIndex(s=>s.id===afterId);a.splice(position==='above'?idx:idx+1,0,nb);return a;});
-    setAddModal(null);
-    setTimeout(()=>{setEditing(nb.id);const el=sectionRefs.current[nb.id];if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},80);
-  };
 
   // ── Atoms ─────────────────────────────────────────────────
   const FI = ({n,sz=12,col=C.grey50}) =>
@@ -1236,15 +1215,12 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
             <span style={{fontSize:12,color:C.grey60,fontFamily:'var(--font-body)',lineHeight:1.4}}>Select a section to configure.</span>
           </div>
         </div>}
-        {sections.map((s,idx)=>{
-          const locked=s.id==='header'||s.id==='footer';
+        {sections.map((s)=>{
           return (
           <React.Fragment key={s.id}>
-          {s.id!=='header'&&dragOverSec===idx&&<div style={{height:2,background:C.blue,borderRadius:1,margin:'1px 8px'}}/>}
-          <div {...(!locked?{draggable:true,onDragStart:e=>onDragStart(e,idx),onDragOver:e=>onSecDragOver(e,idx),onDrop:e=>onDrop(e,idx),onDragEnd:onSecDragEnd}:{onDragOver:e=>onSecDragOver(e,s.id==='header'?idx+1:idx),onDrop:e=>onDrop(e,s.id==='header'?idx+1:idx),onDragEnd:onSecDragEnd})}
-            onMouseEnter={()=>setHovSec(s.id)} onMouseLeave={()=>setHovSec(null)}>
+          <div onMouseEnter={()=>setHovSec(s.id)} onMouseLeave={()=>setHovSec(null)}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 8px 0 14px',
-              background:hovSec===s.id?C.grey10:'transparent',borderLeft:`3px solid ${!locked&&hovSec===s.id?C.blue:'transparent'}`,
+              background:hovSec===s.id?C.grey10:'transparent',borderLeft:`3px solid ${hovSec===s.id?C.blue:'transparent'}`,
               transition:'background 100ms,border-color 100ms',minHeight:36}}>
               <div onClick={()=>setEditing(s.id)} style={{flex:1,display:'flex',alignItems:'center',gap:8,cursor:'pointer',padding:'8px 0'}}>
                 <span style={{fontSize:13,color:C.black,fontFamily:'var(--font-body)'}}>{s.label}</span>
@@ -1254,21 +1230,12 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
                   style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',background:'transparent',border:'1px solid transparent',borderRadius:6,cursor:'pointer',opacity:s.visible?(hovSec===s.id?1:0):1,transition:'opacity 150ms'}}>
                   <FI n={s.visible?'eye':'eye-slash'} sz={12} col={s.visible?C.grey60:C.grey50}/>
                 </button>
-                {!locked&&<div style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',border:`1px solid ${C.grey30}`,borderRadius:6,cursor:'grab',opacity:hovSec===s.id?1:0,transition:'opacity 150ms'}}>
-                  <FI n="grip-lines" sz={12} col={C.grey50}/>
-                </div>}
               </div>
             </div>
           </div>
           </React.Fragment>
           );
         })}
-      </div>
-      <div style={{padding:'0 14px 10px'}}>
-        <Button size="sm" variant="secondary" icon="plus" style={{width:'100%',justifyContent:'center'}}
-          onClick={()=>{const nb={id:nextId(),type:'text',label:'Text section',visible:true};setSections(p=>{const a=[...p];const li=a.findIndex(s=>s.id==='lineitems');a.splice(li>=0?li+1:a.length,0,nb);return a;});setTimeout(()=>{setEditing(nb.id);const el=sectionRefs.current[nb.id];if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},80);}}>
-          Add text section
-        </Button>
       </div>
       <div style={{padding:'10px 14px',borderTop:`1px solid ${C.grey20}`,display:'flex',flexDirection:'column',gap:8}}>
         <div style={{display:'flex',alignItems:'center',gap:8}}>
@@ -1311,14 +1278,6 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
         <div style={{flex:1,overflowY:'auto',padding:'4px 14px 7px'}}>
           {isText?TextSectionPanel({id:editing}):(sectionPanels[editing]||null)}
         </div>
-        {isText&&(
-          <div style={{padding:'12px 14px',borderTop:`1px solid ${C.grey20}`}}>
-            <button onClick={()=>{setSections(p=>p.filter(s=>s.id!==editing));setEditing(null);}}
-              style={{width:'100%',height:32,background:C.red,color:'#fff',border:'none',borderRadius:6,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)',display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
-              <FI n="trash" sz={11} col="#fff"/> Remove text section
-            </button>
-          </div>
-        )}
       </div>
     );
   };
@@ -1332,14 +1291,6 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
     const isActive=isEdit&&editing===id;
     return (
       <div ref={el => { sectionRefs.current[id] = el; }} style={{position:'relative'}} onMouseEnter={()=>isEdit&&setHovPrev(id)} onMouseLeave={()=>isEdit&&setHovPrev(null)}>
-        {isHov&&(
-          <div style={{position:'absolute',top:-11,left:'50%',transform:'translateX(-50%)',zIndex:20}}>
-            <div onClick={e=>{e.stopPropagation();setAddModal({afterId:id,position:'above'});}}
-              style={{height:20,padding:'0 10px',background:C.blue,color:'#fff',borderRadius:10,fontSize:10,fontWeight:600,fontFamily:'var(--font-body)',display:'flex',alignItems:'center',gap:4,cursor:'pointer',whiteSpace:'nowrap',boxShadow:'0 1px 4px rgba(0,0,0,.15)'}}>
-              <FI n="plus" sz={9} col="#fff"/> Add text section above
-            </div>
-          </div>
-        )}
         <div onClick={()=>isEdit&&setEditing(id)}
           style={{cursor:isEdit?'pointer':'default',position:'relative',display:vis?'block':'none'}}>
           {isActive&&(
@@ -1360,14 +1311,6 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
           )}
           {children}
         </div>
-        {isHov&&(
-          <div style={{position:'absolute',bottom:-11,left:'50%',transform:'translateX(-50%)',zIndex:20}}>
-            <div onClick={e=>{e.stopPropagation();setAddModal({afterId:id,position:'below'});}}
-              style={{height:20,padding:'0 10px',background:C.blue,color:'#fff',borderRadius:10,fontSize:10,fontWeight:600,fontFamily:'var(--font-body)',display:'flex',alignItems:'center',gap:4,cursor:'pointer',whiteSpace:'nowrap',boxShadow:'0 1px 4px rgba(0,0,0,.15)'}}>
-              <FI n="plus" sz={9} col="#fff"/> Add text section below
-            </div>
-          </div>
-        )}
       </div>
     );
   };
@@ -1763,13 +1706,14 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
       );
       if(s.type==='text'){
         const b=getBlock(s.id);
+        if(!b.html&&!isEdit) return null;
         const sectionBg = b.bgStyle==='grey' ? C.bg : C.white;
         return (
-          <SectionWrap key={s.id} id={s.id} label="Text section">
+          <SectionWrap key={s.id} id={s.id} label={s.label}>
             <div style={{padding:'10px 22px',borderTop:`1px solid ${C.grey20}`,minHeight:34,background:sectionBg}}>
               {b.html
                 ? <div style={{fontSize:9,color:C.black,lineHeight:1.6,fontFamily:'var(--font-body)'}} dangerouslySetInnerHTML={{__html:renderWithChips(b.html)}}/>
-                : <div style={{fontSize:9,color:C.grey30,fontStyle:'italic',lineHeight:1.6}}>Empty text section</div>
+                : <div style={{fontSize:9,color:C.grey30,fontStyle:'italic',lineHeight:1.6}}>Empty — click to add content</div>
               }
             </div>
           </SectionWrap>
@@ -1827,8 +1771,8 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
                 </div>
               </div>
             )}
-            {page2UserSections.map(renderSection)}
             {totalsSec&&renderSection(totalsSec)}
+            {page2UserSections.map(renderSection)}
           </div>
           <FooterContent page={2}/>
         </div>
@@ -1919,24 +1863,6 @@ const ExpN = ({ onExit, docType, isPreviewOnly = false }) => {  const C = BQ;
         </div>
       )}
 
-      {/* Add text section modal */}
-      {addModal&&(
-        <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,.28)',zIndex:50,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setAddModal(null)}>
-          <div onClick={e=>e.stopPropagation()}
-            style={{background:C.white,borderRadius:10,padding:24,width:300,boxShadow:'0 8px 32px rgba(0,0,0,.18)'}}>
-            <div style={{fontSize:14,fontWeight:700,color:C.black,marginBottom:6,fontFamily:'var(--font-body)'}}>Add text section</div>
-            <div style={{fontSize:12,color:C.grey50,marginBottom:16,lineHeight:1.5,fontFamily:'var(--font-body)'}}>
-              Insert a custom text section {addModal.position==='above'?'above':'below'} this section — supports free text, formatting and variables.
-            </div>
-            <div style={{display:'flex',gap:8}}>
-              <button onClick={()=>insertTextSection(addModal.afterId,addModal.position)}
-                style={{flex:1,height:34,background:C.blue,color:'#fff',border:'none',borderRadius:6,fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:'var(--font-body)'}}>Add text section</button>
-              <button onClick={()=>setAddModal(null)}
-                style={{height:34,padding:'0 14px',background:C.white,border:`1px solid ${C.grey30}`,borderRadius:6,fontSize:13,cursor:'pointer',fontFamily:'var(--font-body)'}}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
